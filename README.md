@@ -1,0 +1,48 @@
+# Talos Homelab Configuration
+This repository contains the configuration for my homelab. It is managed by [Talos](https://www.talos.dev/), a Kubernetes distribution.
+
+See [Documentation](https://www.talos.dev/v1.5/) for more information.
+
+## Cilium Config
+
+It's important that following machineconfig and clusterconfigs are set:
+```yaml
+cluster:
+  network:
+    cni:
+      name: none
+  proxy:
+    disabled: true
+
+machine:
+  features:
+    kubePrism:
+      enabled: true
+      port: 7445
+```
+Templated cilium config install method:
+```bash
+export KUBERNETES_API_SERVER_ADDRESS=10.0.0.4
+export KUBERNETES_API_SERVER_PORT=6443
+export QPS=30
+export BURST=60
+
+helm template \
+    cilium \
+    cilium/cilium \
+    --version 1.14.0 \
+    --namespace kube-system \
+    --set ipam.mode=kubernetes \
+    --set=kubeProxyReplacement=true \
+    --set l2announcements.enabled=true \
+    --set k8sClientRateLimit.qps=$(QPS) \
+    --set k8sClientRateLimit.burst=$(BURST) \
+    --set=securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
+    --set=securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
+    --set=cgroup.autoMount.enabled=false \
+    --set=cgroup.hostRoot=/sys/fs/cgroup \
+    --set=k8sServiceHost=localhost \
+    --set=k8sServicePort=7445 > cilium.yaml
+
+kubectl apply -f cilium.yaml
+```
