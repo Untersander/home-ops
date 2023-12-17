@@ -1,6 +1,6 @@
 version: v1alpha1 # Indicates the schema used to decode the contents.
 debug: false # Enable verbose logging to the console.
-persist: true # description: |
+persist: true
 # Provides machine specific configuration options.
 machine:
     type: controlplane # Defines the role of the machine within the cluster.
@@ -18,7 +18,7 @@ machine:
 
     # Used to provide additional options to the kubelet.
     kubelet:
-        image: ghcr.io/siderolabs/kubelet:v1.28.2 # The `image` field is an optional reference to an alternative kubelet image.
+        image: ghcr.io/siderolabs/kubelet:v1.29.0 # The `image` field is an optional reference to an alternative kubelet image.
         defaultRuntimeSeccompProfileEnabled: true # Enable container runtime default Seccomp profile.
         disableManifestsDirectory: true # The `disableManifestsDirectory` field configures the kubelet to get static pod manifests from the /etc/kubernetes/manifests directory.
 
@@ -33,9 +33,10 @@ machine:
 
         # # The `extraMounts` field is used to add additional mounts to the kubelet container.
         # extraMounts:
-        #     - destination: /var/lib/example
-        #       type: bind
-        #       source: /var/lib/example
+        #     - destination: /var/lib/example # Destination is the absolute path where the mount will be placed in the container.
+        #       type: bind # Type specifies the mount kind.
+        #       source: /var/lib/example # Source specifies the source path of the mount.
+        #       # Options are fstab style mount options.
         #       options:
         #         - bind
         #         - rshared
@@ -44,6 +45,21 @@ machine:
         # # The `extraConfig` field is used to provide kubelet configuration overrides.
         # extraConfig:
         #     serverTLSBootstrap: true
+
+        # # The `KubeletCredentialProviderConfig` field is used to provide kubelet credential configuration.
+        # credentialProviderConfig:
+        #     apiVersion: kubelet.config.k8s.io/v1
+        #     kind: CredentialProviderConfig
+        #     providers:
+        #         - apiVersion: credentialprovider.kubelet.k8s.io/v1
+        #           defaultCacheDuration: 12h
+        #           matchImages:
+        #             - '*.dkr.ecr.*.amazonaws.com'
+        #             - '*.dkr.ecr.*.amazonaws.com.cn'
+        #             - '*.dkr.ecr-fips.*.amazonaws.com'
+        #             - '*.dkr.ecr.us-iso-east-1.c2s.ic.gov'
+        #             - '*.dkr.ecr.us-isob-east-1.sc2s.sgov.gov'
+        #           name: ecr-credential-provider
 
         # # The `nodeIP` field is used to configure `--node-ip` flag for the kubelet.
         # nodeIP:
@@ -318,6 +334,7 @@ machine:
         net.core.bpf_jit_harden: 1
     #     kernel.domainname: talos.dev
     #     net.ipv4.ip_forward: "0"
+    #     net/ipv6/conf/eth0.100/disable_ipv6: "1"
 
     # # Used to configure the machine's sysfs.
 
@@ -386,6 +403,12 @@ machine:
     # # node labels example.
     # nodeLabels:
     #     exampleLabel: exampleLabelValue
+
+    # # Configures the node taints for the machine. Effect is optional.
+
+    # # node taints example.
+    # nodeTaints:
+    #     exampleTaint: exampleTaintValue:NoSchedule
 # Provides cluster specific configuration options.
 cluster:
     id: tpW0Zi6H2dD-RnoCPZx8WBZXWdnBpIRemmMkI9qdgAU= # Globally unique identifier for this cluster (base64 encoded random 32 bytes).
@@ -425,7 +448,7 @@ cluster:
         key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUN1QUNlVXIwMk84aVpod1g5VjBhWjhkMzNVOUI4Y3F6NUZ4NVJhYkRjQXNvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFNXlyQlpabm9WRTBDdUJxWllSUkdTNE55TFBEakRiSmhBcVdQUUpFYU83cmMrbXFjSUgvdQpIZ1IwTHhlZFR4b3cvWUs4aG4wMlpFdlhoZ1NmRmViUE9BPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
     # API server specific configuration options.
     apiServer:
-        image: registry.k8s.io/kube-apiserver:v1.28.2 # The container image used in the API server manifest.
+        image: registry.k8s.io/kube-apiserver:v1.29.0 # The container image used in the API server manifest.
         # Extra certificate subject alternative names for the API server's certificate.
         certSANs:
             - 10.0.0.4
@@ -457,16 +480,16 @@ cluster:
                 - level: Metadata
     # Controller manager server specific configuration options.
     controllerManager:
-        image: registry.k8s.io/kube-controller-manager:v1.28.2 # The container image used in the controller manager manifest.
+        image: registry.k8s.io/kube-controller-manager:v1.29.0 # The container image used in the controller manager manifest.
     # Kube-proxy server-specific configuration options
     proxy:
-        # image: registry.k8s.io/kube-proxy:v1.28.2 # The container image used in the kube-proxy manifest.
+        image: registry.k8s.io/kube-proxy:v1.29.0 # The container image used in the kube-proxy manifest.
 
         # # Disable kube-proxy deployment on cluster bootstrap.
         disabled: true
     # Scheduler server specific configuration options.
     scheduler:
-        image: registry.k8s.io/kube-scheduler:v1.28.2 # The container image used in the scheduler manifest.
+        image: registry.k8s.io/kube-scheduler:v1.29.0 # The container image used in the scheduler manifest.
     # Configures cluster member discovery.
     discovery:
         enabled: true # Enable the cluster membership discovery feature.
@@ -487,7 +510,7 @@ cluster:
             key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUYzY1BjMmpMRGsxdDRiZGw3ancxcEkrL2k5U1dMc3AzdytyTnZoWmloYVJvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFZ3VxOUx1ZmtuaFkxd0l4WE1iTUU3N3VoT2p2NTNPV2xoRk5OQkVqZDRzVFFBNlFvK2NSOApYTnYyaDBCb3RLektkWjNYTjJEdVJ5UjgyWEhvamhDU1hnPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
 
         # # The container image used to create the etcd service.
-        # image: gcr.io/etcd-development/etcd:v3.5.9
+        # image: gcr.io/etcd-development/etcd:v3.5.11
 
         # # The `advertisedSubnets` field configures the networks to pick etcd advertised IP from.
         # advertisedSubnets:
@@ -514,7 +537,7 @@ cluster:
 
     # # Core DNS specific configuration options.
     # coreDNS:
-    #     image: registry.k8s.io/coredns/coredns:v1.10.1 # The `image` field is an override to the default coredns image.
+    #     image: registry.k8s.io/coredns/coredns:v1.11.1 # The `image` field is an override to the default coredns image.
 
     # # External cloud provider configuration.
     # externalCloudProvider:

@@ -1,0 +1,40 @@
+machine:
+    network:
+        hostname: rock-cp-1
+    install:
+        # Allows for supplying the image used to perform the installation.
+        # https://factory.talos.dev/ used to generate the image.
+        # customization:
+        #   systemExtensions:
+        #     officialExtensions:
+        #         - siderolabs/btrfs
+        #         - siderolabs/nvidia-container-toolkit
+        #         - siderolabs/nvidia-open-gpu-kernel-modules
+        image: factory.talos.dev/installer/3c5ebf9e0f045294b8d8704c5fef93d319e914d24c27596be60a386444ce3b97:v1.6.0
+        wipe: true
+        diskSelector:
+            # size: 256GB # Disk size.
+            model: Samsung SSD* # Disk model `/sys/block/<dev>/device/model`.
+            type: SSD # Disk type (SSD, HDD).
+    sysctls:
+        vm.nr_hugepages: "1024"
+        net.core.bpf_jit_harden: 1
+    # Kernel modules to load.
+    kernel:
+        modules:
+            - name: brtfs
+            - name: nvidia
+            - name: nvidia_uvm
+            - name: nvidia_drm pace.
+            - name: nvidia_modeset
+cluster:
+    controlPlane:
+        endpoint: https://10.0.0.4:6443 # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.
+    clusterName: HomeLab # Configures the cluster's name.
+    network:
+    # Disable for cilium
+        cni:
+            name: none # Name of CNI to use.
+    proxy:
+        # Disable kube-proxy deployment on cluster bootstrap.
+        disabled: true
