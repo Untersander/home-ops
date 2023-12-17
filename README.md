@@ -3,6 +3,12 @@ This repository contains the configuration for my homelab. It is managed by [Tal
 
 See [Documentation](https://www.talos.dev/v1.5/) for more information.
 
+## Single Node Cluster
+Make control plane node schedulable:
+```bash
+kubectl taint nodes --all node-role.kubernetes.io/control-plane:NoSchedule-
+```
+
 ## Cilium Config
 
 It's important that following machineconfig and clusterconfigs are set:
@@ -45,4 +51,12 @@ helm template \
     --set=k8sServicePort=7445 > cilium.yaml
 
 kubectl apply -f cilium.yaml
+```
+
+## Nvidia GPU Support
+
+```bash
+helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
+helm repo update
+helm install nvidia-device-plugin nvdp/nvidia-device-plugin --version=0.14.3 --set=runtimeClassName=nvidia --namespace=nvidia --create-namespace
 ```

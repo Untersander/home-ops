@@ -53,7 +53,8 @@ machine:
         #         - '!10.0.0.3/32'
         #         - fdc7::/16
     # Provides machine specific network configuration options.
-    network: {}
+    network:
+        hostname: rock-cp-1
     # # `interfaces` is used to define the network interface configuration.
     # interfaces:
     #     - interface: enp0s1 # The interface name.
@@ -164,7 +165,15 @@ machine:
     # Used to provide instructions for installations.
     install:
         # disk: /dev/sdd # The disk used for installations.
-        image: ghcr.io/siderolabs/installer:v1.5.4 # Allows for supplying the image used to perform the installation.
+        # Allows for supplying the image used to perform the installation.
+        # https://factory.talos.dev/ used to generate the image.
+        # customization:
+        #   systemExtensions:
+        #     officialExtensions:
+        #         - siderolabs/btrfs
+        #         - siderolabs/nvidia-container-toolkit
+        #         - siderolabs/nvidia-open-gpu-kernel-modules
+        image: factory.talos.dev/installer/3c5ebf9e0f045294b8d8704c5fef93d319e914d24c27596be60a386444ce3b97:v1.6.0
         wipe: false # Indicates if the installation disk should be wiped at installation time.
 
         # # Look up disk using disk attributes like model, size, serial and others.
@@ -306,6 +315,7 @@ machine:
     # # MachineSysctls usage example.
     sysctls:
         vm.nr_hugepages: "1024"
+        net.core.bpf_jit_harden: 1
     #     kernel.domainname: talos.dev
     #     net.ipv4.ip_forward: "0"
 
@@ -355,10 +365,14 @@ machine:
     #           format: json_lines # Logs format.
 
     # # Configures the kernel.
-    # kernel:
-    #     # Kernel modules to load.
-    #     modules:
-    #         - name: brtfs # Module name.
+    kernel:
+        # Kernel modules to load.
+        modules:
+            - name: brtfs # Module name.
+            - name: nvidia # Module name.
+            - name: nvidia_uvm # Module name.
+            - name: nvidia_drm # Module namespace.
+            - name: nvidia_modeset # Module name.
 
     # # Configures the seccomp profiles for the machine.
     # seccompProfiles:
@@ -370,8 +384,7 @@ machine:
     # # Configures the node labels for the machine.
 
     # # node labels example.
-    nodeLabels:
-        openebs.io/engine: mayastor
+    # nodeLabels:
     #     exampleLabel: exampleLabelValue
 # Provides cluster specific configuration options.
 cluster:
