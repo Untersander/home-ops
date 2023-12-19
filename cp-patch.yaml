@@ -5,12 +5,14 @@ machine:
         # Allows for supplying the image used to perform the installation.
         # https://factory.talos.dev/ used to generate the image.
         # customization:
-        #   systemExtensions:
-        #     officialExtensions:
-        #         - siderolabs/btrfs
-        #         - siderolabs/nvidia-container-toolkit
-        #         - siderolabs/nvidia-open-gpu-kernel-modules
-        image: factory.talos.dev/installer/3c5ebf9e0f045294b8d8704c5fef93d319e914d24c27596be60a386444ce3b97:v1.6.0
+        #     systemExtensions:
+        #         officialExtensions:
+        #             - siderolabs/btrfs
+        #             - siderolabs/nvidia-container-toolkit
+        #             - siderolabs/nonfree-kmod-nvidia
+        # image: factory.talos.dev/installer/dc1f3867d3cf4ed2c5a662be3e054250324820b748b8573e720f7a196604ddbd:v1.6.0
+        # Only btrfs
+        image: factory.talos.dev/installer/ee645b8460c0cfba143e861fe6d9a2cfe868a26e384618381fbd499724de2f4e:v1.6.0
         wipe: true
         diskSelector:
             # size: 256GB # Disk size.
@@ -22,11 +24,11 @@ machine:
     # Kernel modules to load.
     kernel:
         modules:
-            - name: brtfs
-            - name: nvidia
-            - name: nvidia_uvm
-            - name: nvidia_drm pace.
-            - name: nvidia_modeset
+            - name: btrfs
+            # - name: nvidia
+            # - name: nvidia_uvm
+            # - name: nvidia_drm pace.
+            # - name: nvidia_modeset
 cluster:
     controlPlane:
         endpoint: https://10.0.0.4:6443 # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.

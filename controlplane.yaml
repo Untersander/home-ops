@@ -189,7 +189,9 @@ machine:
         #         - siderolabs/btrfs
         #         - siderolabs/nvidia-container-toolkit
         #         - siderolabs/nvidia-open-gpu-kernel-modules
-        image: factory.talos.dev/installer/3c5ebf9e0f045294b8d8704c5fef93d319e914d24c27596be60a386444ce3b97:v1.6.0
+        # image: factory.talos.dev/installer/dc1f3867d3cf4ed2c5a662be3e054250324820b748b8573e720f7a196604ddbd:v1.6.0
+        # Only btrfs
+        image: factory.talos.dev/installer/ee645b8460c0cfba143e861fe6d9a2cfe868a26e384618381fbd499724de2f4e:v1.6.0
         wipe: false # Indicates if the installation disk should be wiped at installation time.
 
         # # Look up disk using disk attributes like model, size, serial and others.
@@ -385,11 +387,11 @@ machine:
     kernel:
         # Kernel modules to load.
         modules:
-            - name: brtfs # Module name.
-            - name: nvidia # Module name.
-            - name: nvidia_uvm # Module name.
-            - name: nvidia_drm # Module namespace.
-            - name: nvidia_modeset # Module name.
+            - name: btrfs # Module name.
+            # - name: nvidia # Module name.
+            # - name: nvidia_uvm # Module name.
+            # - name: nvidia_drm # Module namespace.
+            # - name: nvidia_modeset # Module name.
 
     # # Configures the seccomp profiles for the machine.
     # seccompProfiles:
