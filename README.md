@@ -59,6 +59,8 @@ helm install \
 
 ## Nvidia GPU Support
 
+Nvidia GTX 760 is not supported by provided drivers. I need to use legacy 470.XX drivers.
+
 ```bash
 helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
 helm repo update
