@@ -1,0 +1,45 @@
+machine:
+  features:
+    kubePrism:
+      enabled: true
+      port: 7445
+  certSANs:
+    - rock-cp-0.k8s.garden
+    - rock-cp-0.local
+    - rock-cp-0
+  install:
+    wipe: true
+    diskSelector:
+      size: <= 256GB # Disk size.
+      model: Samsung SSD* # Disk model `/sys/block/<dev>/device/model`.
+      type: SSD # Disk type (SSD, HDD).
+  sysctls:
+    net.core.bpf_jit_harden: 1
+  kubelet:
+    extraArgs:
+      rotate-server-certificates: true
+  network:
+    hostname: rock-cp-0
+    interfaces:
+    # TODO
+      - interface: eno1
+        addresses:
+          - 10.0.0.4/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.8.1.1
+            metric: 150
+        dhcp: false
+cluster:
+  allowSchedulingOnControlPlanes: true
+  controlPlane:
+    # TODO endpoint
+    endpoint: https://10.0.0.4:6443 # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.
+  clusterName: RockLab # Configures the cluster's name.
+  network:
+    # Disable for cilium
+    cni:
+      name: none # Name of CNI to use.
+  proxy:
+    # Disable kube-proxy deployment on cluster bootstrap.
+    disabled: true
