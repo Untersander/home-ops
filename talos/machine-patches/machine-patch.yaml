@@ -10,9 +10,8 @@ machine:
   install:
     wipe: true
     diskSelector:
-      size: <= 256GB # Disk size.
+      size: '<= 300GB' # Disk size.
       model: Samsung SSD* # Disk model `/sys/block/<dev>/device/model`.
-      type: SSD # Disk type (SSD, HDD).
   sysctls:
     net.core.bpf_jit_harden: 1
   kubelet:
@@ -27,7 +26,7 @@ machine:
           - 10.0.0.4/24
         routes:
           - network: 0.0.0.0/0
-            gateway: 10.8.1.1
+            gateway: 10.0.0.1
             metric: 150
         dhcp: false
 cluster:
