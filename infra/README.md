@@ -15,7 +15,7 @@ Flux:
 ```bash
 
 flux bootstrap git \
-  --url=ssh://git@github.com:Untersander/home-ops.git \
+  --url=ssh://git@github.com/Untersander/home-ops.git \
   --branch=main \
   --path=infra
 
