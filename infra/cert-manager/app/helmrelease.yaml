@@ -24,5 +24,3 @@ spec:
       enabled: true
     prometheus:
       enabled: true
-      servicemonitor:
-        enabled: true
