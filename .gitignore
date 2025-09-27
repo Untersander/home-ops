@@ -1,5 +1,6 @@
 talos/secrets.yaml
 talos/talosconfig*
+talos/machine-configs
 talos/metal-config
 talos/config.iso
 ### MacOS ###

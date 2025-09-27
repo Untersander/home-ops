@@ -1,0 +1,11 @@
+# Flux ignore
+# https://fluxcd.io/flux/components/source/gitrepositories/#excluding-files
+
+# Exclude all
+/*
+
+# Include manifest directories
+!/infra/
+!/apps/
+
+**/*.md
