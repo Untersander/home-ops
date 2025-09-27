@@ -9,7 +9,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./infra/kubelet-csr-approver
+  path: ./infra/kubelet-csr-approver/app
   targetNamespace: kube-system
   prune: true
   interval: 3m
