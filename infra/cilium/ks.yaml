@@ -22,6 +22,8 @@ metadata:
   namespace: kube-system
 spec:
   dependsOn:
+    - name: repos
+      namespace: flux-system
     - name: cilium-crd
   sourceRef:
     kind: GitRepository
