@@ -1,0 +1,25 @@
+machine:
+  certSANs:
+    - cp-0.k8s.garden
+    - cp-0.local
+    - cp-0
+  install:
+    wipe: true
+    diskSelector:
+      size: '<= 300GB' # Disk size.
+  network:
+    hostname: cp-0
+    interfaces:
+      # Internal network interface
+      - interface: enp0s1
+        addresses:
+          - 10.0.0.4/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.0.0.1
+            metric: 150
+        dhcp: false
+cluster:
+  allowSchedulingOnControlPlanes: true
+  controlPlane:
+    endpoint: https://10.0.0.4:6443 # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.

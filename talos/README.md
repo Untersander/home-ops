@@ -7,18 +7,15 @@ Download to ISO from the [Talos Image Factory](https://factory.talos.dev/) and w
 dd if=path/to/talos.iso of=/dev/sdX bs=4M status=progress conv=fsync
 ```
 
-Current used ISO:
+Metal ISO Factory URLs:
+- [AMD-Metal-ISO-Secure-Boot-v1.11.2](https://factory.talos.dev/?arch=amd64&cmdline=talos.config%3Dmetal-iso&cmdline-set=true&extensions=-&platform=metal&secureboot=true&target=metal&version=1.11.2)
 ```bash
-https://factory.talos.dev/?arch=amd64&cmdline=talos.config%3Dmetal-iso&cmdline-set=true&extensions=-&extensions=siderolabs%2Frealtek-firmware&extensions=siderolabs%2Fusb-modem-drivers&platform=metal&target=metal&version=1.11.1
-https://factory.talos.dev/image/e210eaa3bf65a7b38690dbf6d6940430777f272004cfb67f2035389b1c906542/v1.11.1/metal-amd64.iso
-factory.talos.dev/metal-installer/e210eaa3bf65a7b38690dbf6d6940430777f272004cfb67f2035389b1c906542:v1.11.1
+export AMD_INSTALLER_IMAGE=factory.talos.dev/metal-installer-secureboot/d0b273850841b13d0193fbfb0597bac2ca30387b8a0797a43238ecafc72ed329:v1.11.2
 ```
-[Metal-Secure Boot](https://factory.talos.dev/image/d8018605477611e194ebc3c2a2c681753d0629f35434acf713d5c4f26f2adaa0/v1.11.1/metal-amd64-secureboot.iso)
-customization:
-    systemExtensions:
-        officialExtensions:
-            - siderolabs/realtek-firmware
-            - siderolabs/usb-modem-drivers
+- [ARM-Metal-ISO-v1.11.2](https://factory.talos.dev/?arch=arm64&cmdline=talos.config%3Dmetal-iso&cmdline-set=true&extensions=-&platform=metal&target=metal&version=1.11.2)
+```bash
+export ARM_INSTALLER_IMAGE=factory.talos.dev/metal-installer/d0b273850841b13d0193fbfb0597bac2ca30387b8a0797a43238ecafc72ed329:v1.11.2
+```
 
 To update just change the version in the URL.
 
@@ -40,24 +37,43 @@ These secrets are stored in 1Password.
 Set environment variables for the Talos CLI:
 ```bash
 export CLUSTER_NAME=k8s-garden
-export K8s_API_ENDPOINT=https://10.0.0.4:6443
-export IP_ADDRESS=10.0.0.4
+export K8s_API_ENDPOINT=https://api.k8s.garden:6443
 ```
 
-Create the machine configurations using the secrets and machine patches:
+Create the machine configurations using the secrets and machine patches.
+AMD node:
 ```bash
+export NODE_NAME=cp-0
 talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
   --with-secrets secrets.yaml \
-  --config-patch @machine-patches/machine-patch.yaml \
+  --config-patch @machine-patches/base-patch.yaml \
+  --config-patch @machine-patches/$NODE_NAME-patch.yaml \
   --output-types controlplane \
-  --install-image factory.talos.dev/metal-installer-secureboot/d8018605477611e194ebc3c2a2c681753d0629f35434acf713d5c4f26f2adaa0:v1.11.1 \
+  --install-image $AMD_INSTALLER_IMAGE \
   --install-disk "" \
   --force \
-  -o metal-config/config.yaml
+  -o machine-configs/cp-0.yaml
+```
+
+ARM node:
+```bash
+export NODE_NAME=vcp-0
+talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
+  --with-secrets secrets.yaml \
+  --config-patch @machine-patches/base-patch.yaml \
+  --config-patch @machine-patches/$NODE_NAME-patch.yaml \
+  --output-types controlplane \
+  --install-image $ARM_INSTALLER_IMAGE \
+  --install-disk "" \
+  --force \
+  -o machine-configs/vcp-0.yaml
 ```
 
 Generate a `metal-iso` ISO with the new config and burn to additional USB stick:
 ```bash
+NODE_NAME=cp-0
+cp machine-configs/$NODE_NAME.yaml metal-config/config.yaml
+
 mkisofs -joliet -rock -volid 'metal-iso' -output metal-config.iso metal-config/
 # Or if you don't have mkisofs
 docker run --rm -v $(pwd)/:/data alpine:latest sh -c "apk add cdrkit && mkisofs -joliet -rock -volid 'metal-iso' -output /data/metal-config.iso /data/metal-config/"
@@ -65,19 +81,23 @@ docker run --rm -v $(pwd)/:/data alpine:latest sh -c "apk add cdrkit && mkisofs 
 
 Or use talosctl to apply the config remotely:
 ```bash
-talosctl apply-config --insecure -n $IP_ADDRESS --file metal-config/config.yaml
+talosctl apply-config --file machine-configs/$NODE_NAME.yaml --insecure -n <IP_ADDRESS>
+```
+After the first boot you can always re-apply the config using:
+```bash
+talosctl apply-config --file machine-configs/$NODE_NAME.yaml -n <IP_ADDRESS>
 ```
 ## Generate Talosconfig to access the cluster
 ```bash
 talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
   --with-secrets secrets.yaml \
   --output-types talosconfig \
-  --endpoints 10.0.0.4 \
   -o talosconfig.yaml
 ```
 Set the Talos endpoint, as the `--endpoints` flag does not work at the moment.
 You can also set the node so you don't have to provide `-n <IP_ADDRESS>` all the time.
 ```bash
+$IP_ADDRESS=<IP_ADDRESS>
 talosctl config endpoint $IP_ADDRESS
 talosctl config node $IP_ADDRESS
 ```
@@ -140,29 +160,4 @@ machine:
     kubePrism:
       enabled: true
       port: 7445
-```
-Templated cilium config install method:
-```bash
-export KUBERNETES_API_SERVER_ADDRESS=$IP_ADDRESS
-export KUBERNETES_API_SERVER_PORT=6443
-export QPS=30
-export BURST=60
-
-helm install \
-    cilium \
-    cilium/cilium \
-    --version 1.14.5 \
-    --namespace kube-system \
-    --set ipam.mode=kubernetes \
-    --set=kubeProxyReplacement=true \
-    --set l2announcements.enabled=true \
-    --set k8sClientRateLimit.qps=$QPS \
-    --set k8sClientRateLimit.burst=$BURST \
-    --set=securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
-    --set=securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
-    --set=cgroup.autoMount.enabled=false \
-    --set=cgroup.hostRoot=/sys/fs/cgroup \
-    --set=k8sServiceHost=localhost \
-    --set=k8sServicePort=7445 \
-    --set=operator.replicas=1
 ```
