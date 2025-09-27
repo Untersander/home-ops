@@ -27,8 +27,6 @@ k8sClientRateLimit:
 operator:
   prometheus:
     enabled: true
-    serviceMonitor:
-      enabled: true
   dashboards:
     enabled: true
     annotations:
@@ -39,12 +37,8 @@ dashboards:
     grafana_folder: Cilium
 prometheus:
   enabled: true
-  serviceMonitor:
-    enabled: true
 hubble:
   metrics:
-    serviceMonitor:
-      enabled: true
     enableOpenMetrics: true
     # https://docs.cilium.io/en/stable/observability/metrics/#hubble-exported-metrics
     enabled:
@@ -64,5 +58,3 @@ hubble:
     enabled: true
     prometheus:
       enabled: true
-      serviceMonitor:
-        enabled: true
