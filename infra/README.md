@@ -9,12 +9,27 @@ The following infra services are installed via Flux:
 - kubevirt
 
 
-## Flux Bootstrap
+## Flux
+Flux bootstrap:
 ```bash
 flux bootstrap git \
   --url=ssh://git@github.com/Untersander/home-ops.git \
   --branch=main \
-  --path=infra
+  --path=infra \
+  --ssh-key-algorithm=ed25519
+```
+
+To rotate the deploy key, delete the flux-system secret and flux create a new one:
+```bash
+kubectl -n flux-system delete secret flux-system
+flux create secret git flux-system \
+  --url=ssh://git@github.com/Untersander/home-ops.git \
+  --ssh-key-algorithm=ed25519
+```
+
+Upgrade Flux:
+```bash
+flux install --export > ./infra/flux-system/gotk-components.yaml
 ```
 
 ## Secret Management
