@@ -10,13 +10,31 @@ The following infra services are installed via Flux:
 
 
 ## Flux
-Flux bootstrap:
+First initialization repository with Flux:
 ```bash
 flux bootstrap git \
   --url=ssh://git@github.com/Untersander/home-ops.git \
   --branch=main \
   --path=infra \
   --ssh-key-algorithm=ed25519
+```
+
+If git repository already contains the flux bootstrap resources, run:
+```bash
+flux install
+flux create secret git flux-system \
+  --url=ssh://git@github.com/Untersander/home-ops.git \
+  --ssh-key-algorithm=ed25519
+flux create source git flux-system \
+  --url=ssh://git@github.com/Untersander/home-ops.git \
+  --branch=main \
+  --interval=1m \
+  --secret-ref=flux-system
+flux create kustomization flux-system \
+  --source=GitRepository/flux-system \
+  --path=./infra \
+  --prune=true \
+  --interval=10m
 ```
 
 To rotate the deploy key, delete the flux-system secret and flux create a new one:
