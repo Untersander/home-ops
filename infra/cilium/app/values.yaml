@@ -25,12 +25,13 @@ k8sClientRateLimit:
 
 # Observability
 operator:
-  prometheus:
-    enabled: true
   dashboards:
     enabled: true
     annotations:
       grafana_folder: Cilium
+  prometheus:
+    enabled: true
+  replicas: 1
 dashboards:
   enabled: true
   annotations:
