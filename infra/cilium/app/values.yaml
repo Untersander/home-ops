@@ -1,5 +1,21 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/cilium/cilium/refs/heads/main/install/kubernetes/cilium/values.schema.json
 # Talos Guide Settings: https://www.talos.dev/v1.9/kubernetes-guides/network/deploying-cilium/
+# Performance Tuning: https://docs.cilium.io/en/stable/operations/performance/tuning/
+bpf:
+  datapathMode: netkit
+  masquerade: true
+  distributedLRU:
+    enabled: true
+  mapDynamicSizeRatio: 0.08
+bpfClockProbe: true
+ipv4:
+  enabled: true
+enableIPv4BIGTCP: true
+ipv6:
+  enabled: false
+enableIPv6BIGTCP: false
+routingMode: native
+
 ipam:
   mode: kubernetes
 kubeProxyReplacement: true
@@ -22,7 +38,6 @@ l2announcements:
 k8sClientRateLimit:
   burst: 60
   qps: 30
-
 # Observability
 operator:
   dashboards:
