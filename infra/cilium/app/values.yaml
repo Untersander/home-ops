@@ -12,10 +12,14 @@ ipv4:
   enabled: true
 enableIPv4BIGTCP: true
 ipv4NativeRoutingCIDR: 10.244.0.0/24
+enableIPv4Masquerade: true
+enableIPmasqAgent: true
 ipv6:
   enabled: false
 enableIPv6BIGTCP: false
 ipv6NativeRoutingCIDR: fd00::/64
+enableIPv6Masquerade: true
+enableIPv6masqAgent: true
 routingMode: native
 
 ipam:
