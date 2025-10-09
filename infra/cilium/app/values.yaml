@@ -11,9 +11,11 @@ bpfClockProbe: true
 ipv4:
   enabled: true
 enableIPv4BIGTCP: true
+ipv4NativeRoutingCIDR: 10.244.0.0/24
 ipv6:
   enabled: false
 enableIPv6BIGTCP: false
+ipv6NativeRoutingCIDR: fd00::/64
 routingMode: native
 
 ipam:
