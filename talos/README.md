@@ -19,14 +19,6 @@ export ARM_INSTALLER_IMAGE=factory.talos.dev/metal-installer/d0b273850841b13d019
 
 To update just change the version in the URL.
 
-## Initial config on first boot provided via ISO
-Add `config.yaml` to `metal-iso/` folder and create new ISO:
-```bash
-mkisofs -joliet -rock -volid 'metal-iso' -output config.iso metal-iso/
-```
-Write new ISO to USB stick.
-
-See [Metal ISO](https://www.talos.dev/v1.11/reference/kernel/#metal-iso) for more details.
 
 Generate secrets bundle:
 ```bash
@@ -69,6 +61,7 @@ talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
   -o machine-configs/vcp-0.yaml
 ```
 
+## Initial config on first boot provided via ISO
 Generate a `metal-iso` ISO with the new config and burn to additional USB stick:
 ```bash
 NODE_NAME=cp-0
@@ -78,6 +71,10 @@ mkisofs -joliet -rock -volid 'metal-iso' -output metal-config.iso metal-config/
 # Or if you don't have mkisofs
 docker run --rm -v $(pwd)/:/data alpine:latest sh -c "apk add cdrkit && mkisofs -joliet -rock -volid 'metal-iso' -output /data/metal-config.iso /data/metal-config/"
 ```
+
+Write new ISO to USB stick.
+
+See [Metal ISO](https://www.talos.dev/v1.11/reference/kernel/#metal-iso) for more details.
 
 Or use talosctl to apply the config remotely:
 ```bash
@@ -92,12 +89,14 @@ talosctl apply-config --file machine-configs/$NODE_NAME.yaml -n <IP_ADDRESS>
 talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
   --with-secrets secrets.yaml \
   --output-types talosconfig \
+  --force \
   -o talosconfig.yaml
 ```
 Set the Talos endpoint, as the `--endpoints` flag does not work at the moment.
 You can also set the node so you don't have to provide `-n <IP_ADDRESS>` all the time.
 ```bash
-$IP_ADDRESS=<IP_ADDRESS>
+talosctl config merge talosconfig.yaml
+export IP_ADDRESS=10.0.0.4
 talosctl config endpoint $IP_ADDRESS
 talosctl config node $IP_ADDRESS
 ```
@@ -121,21 +120,17 @@ helm repo update
 helm upgrade --install cilium cilium/cilium \
  --version 1.18.2 \
  --namespace kube-system \
- --values - <<'EOF'
-ipam:
- mode: kubernetes
-kubeProxyReplacement: true
-securityContext:
- capabilities:
-   ciliumAgent: [CHOWN, KILL, NET_ADMIN, NET_RAW, IPC_LOCK, SYS_ADMIN, SYS_RESOURCE, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
-   cleanCiliumState: [NET_ADMIN, SYS_ADMIN, SYS_RESOURCE]
-cgroup:
- autoMount:
-   enabled: false
- hostRoot: /sys/fs/cgroup
-k8sServiceHost: localhost
-k8sServicePort: 7445
-EOF
+ --values ../infra/cilium/app/values.yaml
+```
+
+## Base CSR Approver setup
+```bash
+helm repo add kubelet-csr-approver https://postfinance.github.io/kubelet-csr-approver
+helm repo update
+helm upgrade --install kubelet-csr-approver kubelet-csr-approver/kubelet-csr-approver \
+ --version 1.2.11 \
+ --namespace kube-system \
+ --values ../infra/kubelet-csr-approver/app/values.yaml
 ```
 
 ## Single Node Cluster
@@ -161,3 +156,15 @@ machine:
       enabled: true
       port: 7445
 ```
+
+## Home "Router" Setup
+Connect local network ports to br0 interface on the Talos node.
+Provide a DHCP/DNS server via Pi-hole container through Multus with bridge interface or without Multus and host network. (host DNS caching probably needs to be disabled in Talos config, if using host network, check open listening ports on Talos with `ss -tuln`)
+```yaml
+machine:
+  features:
+    hostDNS:
+      enabled: true
+```
+Alternatively run a DHCP/DNS server on old router and just use Talos as a firewall/router.
+Enable IP forwarding and masquerading(at least for IPv4) in Cilium?

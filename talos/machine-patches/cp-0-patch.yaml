@@ -8,18 +8,46 @@ machine:
     diskSelector:
       size: '<= 300GB' # Disk size.
       model: Samsung SSD* # Disk model `/sys/block/<dev>/device/model`.
+  kubelet:
+    nodeIP:
+        # The `validSubnets` field configures the networks to pick kubelet node IP from.
+        validSubnets:
+            - 10.0.0.0/24
+            # - 2a02:0169:4caa::/64
   network:
     hostname: cp-0
     interfaces:
-      # Internal network interface
-      - interface: eno1
+      # LAN
+      - interface: lo1
+        dummy: true
+      - interface: br0
         addresses:
           - 10.0.0.4/24
+          # - 2a02:0169:4caa::4/64
+        bridge:
+          stp:
+            enabled: false
+          interfaces:
+            - lo1
+            - eno1
+            - enp7s0
+            - enp8s0
+            - enp9s0
+            - enp10s0
+            - enp2s0f1np1
+        routes:
+          - network: 10.0.0.0/24
+        dhcp: false
+      # WAN
+      - interface: enp2s0f0np0
+        dhcp: true
         routes:
           - network: 0.0.0.0/0
-            gateway: 10.0.0.1
-            metric: 150
-        dhcp: false
+            metric: 100
 cluster:
   controlPlane:
     endpoint: https://10.0.0.4:6443 # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.
+  etcd:
+    advertisedSubnets: # listenSubnets defaults to advertisedSubnets if not set explicitly
+      - 10.0.0.0/24
+      # - 2a02:0169:4caa::/64

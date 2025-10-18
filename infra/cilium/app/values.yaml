@@ -1,5 +1,25 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/cilium/cilium/refs/heads/main/install/kubernetes/cilium/values.schema.json
-# Talos Guide Settings: https://www.talos.dev/v1.9/kubernetes-guides/network/deploying-cilium/
+# Talos Guide Settings: https://docs.siderolabs.com/kubernetes-guides/cni/deploying-cilium
+ipam:
+  mode: kubernetes
+kubeProxyReplacement: true
+securityContext:
+  capabilities:
+    ciliumAgent: [CHOWN, KILL, NET_ADMIN, NET_RAW, IPC_LOCK, SYS_ADMIN, SYS_RESOURCE, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    cleanCiliumState: [NET_ADMIN, SYS_ADMIN, SYS_RESOURCE]
+cgroup:
+  autoMount:
+    enabled: false
+  hostRoot: /sys/fs/cgroup
+k8sServiceHost: localhost
+k8sServicePort: 7445
+
+# Gateway API support
+gatewayAPI:
+  enabled: true
+  enableAlpn: true
+  enableAppProtocol: true
+
 # Performance Tuning: https://docs.cilium.io/en/stable/operations/performance/tuning/
 bpf:
   datapathMode: netkit
@@ -22,28 +42,13 @@ enableIPv6Masquerade: true
 enableIPv6masqAgent: true
 routingMode: native
 
-ipam:
-  mode: kubernetes
-kubeProxyReplacement: true
-gatewayAPI:
-  enabled: true
-securityContext:
-  capabilities:
-    ciliumAgent: [CHOWN, KILL, NET_ADMIN, NET_RAW, IPC_LOCK, SYS_ADMIN, SYS_RESOURCE, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
-    cleanCiliumState: [NET_ADMIN, SYS_ADMIN, SYS_RESOURCE]
-cgroup:
-  autoMount:
-    enabled: false
-  hostRoot: /sys/fs/cgroup
-k8sServiceHost: localhost
-k8sServicePort: 7445
-
-# Options
+# L2 external load balancer support
 l2announcements:
   enabled: true
 k8sClientRateLimit:
   burst: 60
   qps: 30
+
 # Observability
 operator:
   dashboards:
