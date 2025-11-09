@@ -1,0 +1,14 @@
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: pihole-l2-announcement
+spec:
+  serviceSelector:
+    matchLabels:
+      io.kubernetes.service.namespace: pihole
+  interfaces:
+    - ^br.*
+    # - ^enp.*s0
+    # - ^enp2s0f1np1
+  externalIPs: false
+  loadBalancerIPs: true
