@@ -2,7 +2,8 @@ talos/secrets.yaml
 talos/talosconfig*
 talos/machine-configs
 talos/metal-config
-talos/config.iso
+talos/metal-config.iso
+/tmp
 ### MacOS ###
 # General
 .DS_Store

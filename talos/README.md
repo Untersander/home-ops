@@ -10,11 +10,9 @@ dd if=path/to/talos.iso of=/dev/sdX bs=4M status=progress conv=fsync
 Metal ISO Factory URLs:
 - [AMD-Metal-ISO-Secure-Boot-v1.11.2](https://factory.talos.dev/?arch=amd64&cmdline=talos.config%3Dmetal-iso&cmdline-set=true&extensions=-&platform=metal&secureboot=true&target=metal&version=1.11.2)
 ```bash
-export AMD_INSTALLER_IMAGE=factory.talos.dev/metal-installer-secureboot/d0b273850841b13d0193fbfb0597bac2ca30387b8a0797a43238ecafc72ed329:v1.11.2
 ```
 - [ARM-Metal-ISO-v1.11.2](https://factory.talos.dev/?arch=arm64&cmdline=talos.config%3Dmetal-iso&cmdline-set=true&extensions=-&platform=metal&target=metal&version=1.11.2)
 ```bash
-export ARM_INSTALLER_IMAGE=factory.talos.dev/metal-installer/d0b273850841b13d0193fbfb0597bac2ca30387b8a0797a43238ecafc72ed329:v1.11.2
 ```
 
 To update just change the version in the URL.
@@ -35,6 +33,7 @@ export K8s_API_ENDPOINT=https://api.k8s.garden:6443
 Create the machine configurations using the secrets and machine patches.
 AMD node:
 ```bash
+export AMD_INSTALLER_IMAGE=factory.talos.dev/metal-installer-secureboot/d0b273850841b13d0193fbfb0597bac2ca30387b8a0797a43238ecafc72ed329:v1.11.2
 export NODE_NAME=cp-0
 talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
   --with-secrets secrets.yaml \
@@ -49,6 +48,7 @@ talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
 
 ARM node:
 ```bash
+export ARM_INSTALLER_IMAGE=factory.talos.dev/metal-installer/d0b273850841b13d0193fbfb0597bac2ca30387b8a0797a43238ecafc72ed329:v1.11.2
 export NODE_NAME=vcp-0
 talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
   --with-secrets secrets.yaml \
@@ -117,8 +117,8 @@ talosctl kubeconfig ~/.kube/talos-k8s-garden.config
 ```bash
 helm repo add cilium https://helm.cilium.io
 helm repo update
-helm upgrade --install cilium cilium/cilium \
- --version 1.18.2 \
+helm fetch cilium/cilium --version 1.18.2 --destination /tmp
+helm upgrade --install cilium /tmp/cilium-1.18.2.tgz \
  --namespace kube-system \
  --values ../infra/cilium/app/values.yaml
 ```
@@ -127,7 +127,8 @@ helm upgrade --install cilium cilium/cilium \
 ```bash
 helm repo add kubelet-csr-approver https://postfinance.github.io/kubelet-csr-approver
 helm repo update
-helm upgrade --install kubelet-csr-approver kubelet-csr-approver/kubelet-csr-approver \
+helm fetch kubelet-csr-approver/kubelet-csr-approver --version 1.2.11 --destination /tmp
+helm upgrade --install kubelet-csr-approver /tmp/kubelet-csr-approver-1.2.11.tgz \
  --version 1.2.11 \
  --namespace kube-system \
  --values ../infra/kubelet-csr-approver/app/values.yaml
