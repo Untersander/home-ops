@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nft-config
+  namespace: nftables
+data:
+  lannat.nft: |
+    flush table ip lannat
+    define lan_cidr = 10.0.0.0/16
+    define wan_iface = "enp2s0f0np0"
+    table ip lannat {
+      chain POSTROUTING {
+        type nat hook postrouting priority srcnat; policy accept;
+        oif $wan_iface ip saddr $lan_cidr ip daddr != $lan_cidr masquerade
+      }
+
+      chain OUTPUT {
+        type nat hook output priority dstnat; policy accept;
+      }
+
+      chain PREROUTING {
+        type nat hook prerouting priority dstnat; policy accept;
+      }
+
+    }

@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nftabler
+  namespace: nftables
+spec:
+  selector:
+    matchLabels:
+      app: nftabler
+  template:
+    metadata:
+      labels:
+        app: nftabler
+    spec:
+      hostNetwork: true
+      containers:
+      - name: nft-test-container
+        image: ghcr.io/untersander/nftabler:latest
+        imagePullPolicy: Always
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN"]
+            drop: ["ALL"]
+        volumeMounts:
+        - mountPath: /etc/nftabler
+          name: nft-config
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
+      volumes:
+      - configMap:
+          name: nft-config
+          optional: true
+        name: nft-config
+      - hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
+        name: xtables-lock
