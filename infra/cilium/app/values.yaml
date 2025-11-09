@@ -1,5 +1,8 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/cilium/cilium/refs/heads/main/install/kubernetes/cilium/values.schema.json
 # Talos Guide Settings: https://docs.siderolabs.com/kubernetes-guides/cni/deploying-cilium
+devices: br+,enp+
+nodePort:
+  directRoutingDevice: br+
 ipam:
   mode: kubernetes
 kubeProxyReplacement: true
@@ -15,32 +18,32 @@ k8sServiceHost: localhost
 k8sServicePort: 7445
 
 # Gateway API support
-gatewayAPI:
-  enabled: true
-  enableAlpn: true
-  enableAppProtocol: true
+# gatewayAPI:
+#   enabled: true
+#   enableAlpn: true
+#   enableAppProtocol: true
 
 # Performance Tuning: https://docs.cilium.io/en/stable/operations/performance/tuning/
-bpf:
-  datapathMode: netkit
-  masquerade: true
-  distributedLRU:
-    enabled: true
-  mapDynamicSizeRatio: 0.08
-bpfClockProbe: true
-ipv4:
-  enabled: true
-enableIPv4BIGTCP: true
-ipv4NativeRoutingCIDR: 10.244.0.0/24
-enableIPv4Masquerade: true
-enableIPmasqAgent: true
-ipv6:
-  enabled: false
-enableIPv6BIGTCP: false
-ipv6NativeRoutingCIDR: fd00::/64
-enableIPv6Masquerade: true
-enableIPv6masqAgent: true
-routingMode: native
+# routingMode: native
+# bpf:
+#   datapathMode: netkit
+#   masquerade: true
+#   distributedLRU:
+#     enabled: true
+#   mapDynamicSizeRatio: 0.08
+# bpfClockProbe: true
+# ipv4:
+#   enabled: true
+# ipv4NativeRoutingCIDR: 10.244.0.0/24
+# enableIPv4BIGTCP: true
+# enableIPv4Masquerade: true
+# enableIPmasqAgent: true
+# ipv6:
+#   enabled: true
+# ipv6NativeRoutingCIDR: fd00:10:244::/64
+# enableIPv6BIGTCP: true
+# enableIPv6Masquerade: true
+# enableIPv6masqAgent: true
 
 # L2 external load balancer support
 l2announcements:
