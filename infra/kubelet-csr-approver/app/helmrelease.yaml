@@ -15,7 +15,6 @@ spec:
   driftDetection:
     mode: enabled
   interval: 3m
-  values:
-    providerRegex: '^cp-.*'
-    providerIpPrefixes: '10.0.0.0/24'
-    bypassDnsResolution: 'true'
+  valuesFrom:
+    - kind: ConfigMap
+      name: kubelet-csr-approver-values # Default name, changed using Kustomization
