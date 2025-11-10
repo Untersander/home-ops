@@ -53,8 +53,8 @@ k8sClientRateLimit:
   qps: 30
 
 # Firewall
-hostFirewall:
-  enabled: true
+# hostFirewall:
+#   enabled: true
 # Observability
 operator:
   dashboards:
