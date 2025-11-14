@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: pihole
   namespace: pihole
+  annotations:
+    reloader.stakater.com/auto: "true"
 spec:
   replicas: 1
   strategy:
