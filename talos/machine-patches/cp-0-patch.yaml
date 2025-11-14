@@ -6,14 +6,14 @@ machine:
   install:
     wipe: true
     diskSelector:
-      size: '<= 300GB' # Disk size.
+      size: "<= 300GB" # Disk size.
       model: Samsung SSD* # Disk model `/sys/block/<dev>/device/model`.
   kubelet:
     nodeIP:
-        # The `validSubnets` field configures the networks to pick kubelet node IP from.
-        validSubnets:
-            - 10.0.0.0/24
-            # - 2a02:0169:4caa::/64
+      # The `validSubnets` field configures the networks to pick kubelet node IP from.
+      validSubnets:
+        - 10.0.0.0/24
+        # - 2a02:0169:4caa::/64
   network:
     hostname: cp-0
     interfaces:
