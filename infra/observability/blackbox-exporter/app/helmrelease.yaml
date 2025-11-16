@@ -1,0 +1,115 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: blackbox-exporter
+spec:
+  chart:
+    spec:
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+      chart: prometheus-blackbox-exporter
+      version: 9.4.0
+  driftDetection:
+    mode: enabled
+  interval: 3m
+  values:
+    fullnameOverride: blackbox-exporter
+    # podSecurityContext:
+    #   sysctls:
+    #     - name: net.ipv4.ping_group_range
+    #       value: "0 2147483647"
+
+    config:
+      modules:
+        http_2xx:
+          prober: http
+          timeout: 5s
+          http:
+            valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+            follow_redirects: true
+            preferred_ip_protocol: "ip4"
+            # icmp:
+            #   prober: icmp
+            #   timeout: 30s
+            #   icmp:
+            #     preferred_ip_protocol: "ip4"
+
+    # prometheusRule:
+    #   enabled: true
+    #   additionalLabels:
+    #     app: prometheus-operator
+    #     release: prometheus
+    #   rules:
+    #     - alert: BlackboxSslCertificateWillExpireSoon
+    #       expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 3
+    #       for: 15m
+    #       labels:
+    #         severity: critical
+    #       annotations:
+    #         summary: |-
+    #           The SSL certificate for {{ $labels.target }} will expire in less than 3 days
+    #     - alert: BlackboxSslCertificateExpired
+    #       expr: probe_ssl_earliest_cert_expiry - time() <= 0
+    #       for: 15m
+    #       labels:
+    #         severity: critical
+    #       annotations:
+    #         summary: |-
+    #           The SSL certificate for {{ $labels.target }} has expired
+    #     - alert: BlackboxProbeFailed
+    #       expr: probe_success == 0
+    #       for: 15m
+    #       labels:
+    #         severity: critical
+    #       annotations:
+    #         summary: |-
+    #           The host {{ $labels.instance }} is currently unreachable
+
+    securityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      # capabilities:
+      #   add: ["NET_RAW"]
+
+    serviceMonitor:
+      enabled: true
+      defaults:
+        labels:
+          release: prometheus
+        interval: 1m
+        scrapeTimeout: 30s
+      targets:
+        # - module: icmp
+        #   name: ping-cloudflare
+        #   url: 1.1.1.1
+        #   scrape_interval: 30s
+        - module: http_2xx
+          name: infra-ins-work-http
+          url: https://infra.ins.work/healthz
+        - module: http_2xx
+          name: lab-network-garden-http
+          url: https://lab.network.garden/healthz
+        - module: http_2xx
+          name: lab-stud-network-garden-http
+          url: https://lab.stud.network.garden
+        - module: http_2xx
+          name: cheatsheet-stud-network-garden-http
+          url: https://cheatsheet.stud.network.garden
+        - module: http_2xx
+          name: ltb2-network-garden-http
+          url: https://ltb2.network.garden
+        - module: http_2xx
+          name: ltb3-network-garden-http
+          url: https://ltb3.network.garden
+        - module: http_2xx
+          name: netbox-ins-work-http
+          url: https://netbox.ins.work
+        - module: http_2xx
+          name: auth-ins-work-http
+          url: https://auth.ins.work
+        - module: http_2xx
+          name: eprints-ost-ch-http
+          url: https://eprints.ost.ch

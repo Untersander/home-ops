@@ -1,0 +1,117 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+spec:
+  chart:
+    spec:
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+      chart: kube-prometheus-stack
+      version: 70.4.2
+  driftDetection:
+    mode: enabled
+  interval: 3m
+  values:
+    # Disable externally managed resources
+    crds:
+      enabled: false
+    alertmanager:
+      enabled: false
+    grafana:
+      enabled: false
+
+    # No rules are created by default
+    defaultRules:
+      create: false
+
+    # Kubernetes Component Scrapers
+    kubeApiServer:
+      enabled: true
+    kubelet:
+      enabled: true
+    kubeControllerManager:
+      enabled: false
+    kubeEtcd:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    kubeProxy:
+      enabled: false
+    kubeStateMetrics: # Managed externally
+      enabled: false
+    nodeExporter: # Managed externally
+      enabled: false
+    coreDns:
+      enabled: false
+
+    # Prometheus Operator
+    prometheusOperator:
+      enabled: true
+    serviceMonitor:
+      selfMonitor: true
+    # Setting to true produces cleaner resource names, but requires a data migration because the name of the persistent volume changes.
+    # Therefore this should only be set once on initial installation.
+    cleanPrometheusOperatorObjectNames: true
+
+    # Operator Instance Configuration
+    prometheus:
+      enabled: true
+      serviceMonitor:
+        selfMonitor: true
+
+        # Enable persistent storage
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: local-path
+              resources:
+                requests:
+                  storage: 10Gi
+        retention: 7d
+        retentionSize: 9GiB
+
+        # TODO: Find permanent solution for Prometheus permissions error.
+        # Workaround: https://github.com/prometheus-community/helm-charts/issues/1162#issuecomment-1267895698
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          fsGroup: 0
+          runAsNonRoot: false
+
+        # Alternative workaround: Contra: The volumeMounts name and subPath might change, so this won't work reliably.
+        # initContainers:
+        #   - name: update-permissions
+        #     image: docker.io/library/busybox:1.31.1
+        #     command: ["chown", "-R", "1000:2000", "/prometheus"]
+        #     securityContext:
+        #       readOnlyRootFilesystem: true
+        #       capabilities:
+        #         drop: ["all"]
+        #         add: ["CHOWN"]
+        #       runAsUser: 0
+        #       runAsNonRoot: false
+        #     volumeMounts:
+        #       - mountPath: /prometheus
+        #         name: prometheus-kube-prometheus-stack-db
+        #         subPath: prometheus-db
+
+        # Select all PrometheusRule, ServiceMonitor, PodMonitor, Probe, and ScrapeConfig resources found.
+        ruleSelectorNilUsesHelmValues: false
+        ruleNamespaceSelector: {}
+        ruleSelector: {}
+        serviceMonitorSelectorNilUsesHelmValues: false
+        serviceMonitorNamespaceSelector: {}
+        serviceMonitorSelector: {}
+        podMonitorSelectorNilUsesHelmValues: false
+        podMonitorNamespaceSelector: {}
+        podMonitorSelector: {}
+        probeSelectorNilUsesHelmValues: false
+        probeNamespaceSelector: {}
+        probeSelector: {}
+        scrapeConfigSelectorNilUsesHelmValues: false
+        scrapeConfigNamespaceSelector: {}
+        scrapeConfigSelector: {}
