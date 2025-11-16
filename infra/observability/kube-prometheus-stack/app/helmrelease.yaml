@@ -43,8 +43,8 @@ spec:
       enabled: false
     kubeStateMetrics: # Managed externally
       enabled: false
-    nodeExporter: # Managed externally
-      enabled: false
+    nodeExporter:
+      enabled: true
     coreDns:
       enabled: false
 
