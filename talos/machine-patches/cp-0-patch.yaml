@@ -41,6 +41,9 @@ machine:
       # WAN
       - interface: enp2s0f0np0
         dhcp: true
+        dhcpOptions:
+          ipv4: true
+          ipv6: false
         routes:
           - network: 0.0.0.0/0
             metric: 100
