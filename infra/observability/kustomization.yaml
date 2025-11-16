@@ -7,5 +7,4 @@ resources:
   - ./kube-prometheus-stack/ks.yaml
   - ./grafana/ks.yaml
   - ./kube-state-metrics/ks.yaml
-  - ./node-exporter/ks.yaml
   - ./blackbox-exporter/ks.yaml
