@@ -155,7 +155,7 @@ spec:
 
     persistence:
       enabled: true
-      storageClassName: vmware-fcd-retain
+      storageClassName: local-path
       size: 10Gi
 
     rbac:
