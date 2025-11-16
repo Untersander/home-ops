@@ -119,9 +119,6 @@ spec:
       GF_AUTH_ANONYMOUS_ENABLED: false
       GF_AUTH_BASIC_ENABLED: false
 
-    envFromSecrets:
-      - name: grafana-oauth-client-secret
-
     grafana.ini:
       analytics:
         check_for_updates: true
@@ -136,19 +133,6 @@ spec:
         provisioning: /etc/grafana/provisioning
       server:
         root_url: https://grafana.k8s.garden
-      auth.generic_oauth:
-        enabled: true
-        name: Keycloak
-        allow_sign_up: true
-        client_id: grafana
-        scopes: openid email profile offline_access roles
-        email_attribute_path: email
-        login_attribute_path: username
-        name_attribute_path: full_name
-        auth_url: https://auth.ins.work/auth/realms/INS-INFRA/protocol/openid-connect/auth
-        token_url: https://auth.ins.work/auth/realms/INS-INFRA/protocol/openid-connect/token
-        api_url: https://auth.ins.work/auth/realms/INS-INFRA/protocol/openid-connect/userinfo
-        role_attribute_path: contains(resource_access.grafana.roles[*], 'admin') && 'Admin' || contains(resource_access.grafana.roles[*], 'editor') && 'Editor' || 'Viewer'
 
     imageRenderer:
       enabled: false
