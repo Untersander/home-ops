@@ -1,0 +1,97 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: dhcpcd-config
+    namespace: dhcpv6-pd
+data:
+  dhcpcd.conf: |
+    # A sample configuration for dhcpcd.
+    # See dhcpcd.conf(5) for details.
+    # Default location /etc/dhcpcd.conf
+
+    # Allow users of this group to interact with dhcpcd via the control socket.
+    #controlgroup wheel
+
+    # Inform the DHCP server of our hostname for DDNS.
+    #hostname
+
+    # Use the hardware address of the interface for the Client ID.
+    #clientid
+    # or
+    # Use the same DUID + IAID as set in DHCPv6 for DHCPv4 ClientID as per RFC4361.
+    # Some non-RFC compliant DHCP servers do not reply with this set.
+    # In this case, comment out duid and enable clientid above.
+    duid
+
+    # Persist interface configuration when dhcpcd exits.
+    persistent
+
+    # vendorclassid is set to blank to avoid sending the default of
+    # dhcpcd-<version>:<os>:<machine>:<platform>
+    vendorclassid
+
+    # A list of options to request from the DHCP server.
+    option domain_name_servers, domain_name, domain_search
+    option classless_static_routes
+    # Respect the network MTU. This is applied to DHCP routes.
+    option interface_mtu
+
+    # Request a hostname from the network
+    option host_name
+
+    # Most distributions have NTP support.
+    #option ntp_servers
+
+    # A ServerID is required by RFC2131.
+    require dhcp_server_identifier
+
+    # Generate SLAAC address using the Hardware Address of the interface
+    #slaac hwaddr
+    # OR generate Stable Private IPv6 Addresses based from the DUID
+    slaac private
+
+    # IPv6 only
+    ipv6only
+
+    # Disable solicitations on all interfaces
+    noipv6rs
+
+    # Wait for IP before forking to background
+    waitip 6
+
+    # Don't touch DNS
+    nohook resolv.conf
+
+    # A hook script is provided to lookup the hostname if not set by the
+    # DHCP server, but it should not be run by default.
+    nohook lookup-hostname
+
+    # Configure WAN interface
+    interface enp2s0f0np0
+        #ipv6rs # enable routing solicitation get the default IPv6 route
+        iaid 1
+        ia_pd 1/::/48 br0/2/64
+
+    ########### OPEN-RC init script ##############
+    # TODO use as base to run my own
+    # #!/sbin/openrc-run
+
+    # description="DHCP Client Daemon"
+
+    # command="/sbin/dhcpcd"
+    # command_args="-q -B ${command_args:-}"
+    # command_background="true"
+    # pidfile="/run/dhcpcd/pid"
+
+    # depend() {
+    # 	provide net
+    # 	need localmount
+    # 	use logger network
+    # 	after bootmisc modules
+    # 	before dns
+    # }
+
+    # start_pre() {
+    # 	checkpath -d /run/dhcpcd
+    # }
