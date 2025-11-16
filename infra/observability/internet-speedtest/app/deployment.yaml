@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: speedtest-exporter
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: speedtest-exporter
+  template:
+    metadata:
+      labels:
+        app: speedtest-exporter
+    spec:
+      containers:
+      - name: speedtest-exporter
+        image: miguelndecarvalho/speedtest-exporter:v3.5.3
+        ports:
+        - name: metrics
+          containerPort: 9798
+        env:
+        - name: SPEEDTEST_SERVER
+          value: "70609"

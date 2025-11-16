@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: speedtest-exporter
+  namespace: observability
+  labels:
+    app: speedtest-exporter
+spec:
+  selector:
+    app: speedtest-exporter
+  ports:
+  - port: 9798
+    targetPort: metrics
+    protocol: TCP
+    name: metrics

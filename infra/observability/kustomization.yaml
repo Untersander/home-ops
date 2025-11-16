@@ -8,3 +8,4 @@ resources:
   - ./grafana/ks.yaml
   - ./kube-state-metrics/ks.yaml
   - ./blackbox-exporter/ks.yaml
+  - ./internet-speedtest/ks.yaml
