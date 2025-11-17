@@ -4,6 +4,8 @@ kind: DaemonSet
 metadata:
   name: nftabler
   namespace: nftables
+  annotations:
+    reloader.stakater.com/auto: "true"
 spec:
   selector:
     matchLabels:
