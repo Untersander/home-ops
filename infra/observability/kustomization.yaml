@@ -7,5 +7,6 @@ resources:
   - ./kube-prometheus-stack/ks.yaml
   - ./grafana/ks.yaml
   - ./kube-state-metrics/ks.yaml
+  - ./metrics-server/ks.yaml
   - ./blackbox-exporter/ks.yaml
   - ./internet-speedtest/ks.yaml
