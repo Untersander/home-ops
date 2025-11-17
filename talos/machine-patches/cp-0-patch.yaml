@@ -3,6 +3,13 @@ machine:
     - cp-0.k8s.garden
     - cp-0.local
     - cp-0
+  features:
+    kubernetesTalosAPIAccess:
+      allowedKubernetesNamespaces:
+        - system-upgrade # tuppr
+      allowedRoles:
+        - os:admin
+      enabled: true
   install:
     wipe: true
     diskSelector:
