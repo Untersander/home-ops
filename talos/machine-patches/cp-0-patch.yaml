@@ -44,9 +44,9 @@ machine:
         dhcpOptions:
           ipv4: true
           ipv6: false
-        routes:
-          - network: 0.0.0.0/0
-            metric: 100
+        # routes:
+        #   - network: 0.0.0.0/0
+        #     metric: 100
 cluster:
   controlPlane:
     endpoint: https://10.0.0.4:6443 # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.
