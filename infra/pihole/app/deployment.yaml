@@ -40,7 +40,7 @@ spec:
             - name: FTLCONF_dhcp_end
               value: "10.0.0.200"
             - name: FTLCONF_dhcp_router
-              value: "10.0.0.5"
+              value: "10.0.0.1"
             - name: FTLCONF_dhcp_netmask
               value: "255.255.255.0"
             - name: FTLCONF_dhcp_ipv6
