@@ -10,3 +10,4 @@ resources:
   - ./metrics-server/ks.yaml
   - ./blackbox-exporter/ks.yaml
   - ./internet-speedtest/ks.yaml
+  - ./iperf3-server/ks.yaml

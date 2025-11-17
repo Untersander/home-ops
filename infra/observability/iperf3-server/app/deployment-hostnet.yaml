@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iperf3-server-hostnet
+  namespace: observability
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      service: iperf3-server-hostnet
+  template:
+    metadata:
+      labels:
+        service: iperf3-server-hostnet
+    spec:
+      hostNetwork: true
+      containers:
+        - image: networkstatic/iperf3:latest
+          name: iperf3-server-hostnet
+          args: ["-s"]
+          ports:
+            - containerPort: 5201
+              protocol: TCP
+            - containerPort: 5201
+              protocol: UDP
+      restartPolicy: Always

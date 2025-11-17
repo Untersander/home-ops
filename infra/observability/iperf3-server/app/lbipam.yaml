@@ -1,0 +1,11 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "iperf3-pool"
+spec:
+  blocks:
+  - cidr: "10.0.0.6/32"
+  serviceSelector:
+    matchLabels:
+      io.kubernetes.service.namespace: observability
+      io.kubernetes.service.name: iperf3-server
