@@ -89,3 +89,4 @@ spec:
         - module: http_2xx
           name: eprints-ost-ch-http
           url: https://eprints.ost.ch
+          scrape_interval: 15m
