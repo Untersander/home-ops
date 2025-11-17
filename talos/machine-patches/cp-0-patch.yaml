@@ -50,7 +50,7 @@ machine:
         dhcp: true
         dhcpOptions:
           ipv4: true
-          ipv6: false
+          ipv6: true
 cluster:
   controlPlane:
     endpoint: https://10.0.0.4:6443 # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.

@@ -23,16 +23,17 @@ spec:
         image: linuxkit/dhcpcd:b87e9ececac55a65eaa592f4dd8b4e0c3009afdb-amd64
         imagePullPolicy: Always
         securityContext:
-          capabilities:
-            add:
-              - NET_ADMIN
-              - NET_BIND_SERVICE
-              - NET_RAW
-              - SYS_CHROOT
-              - SYS_ADMIN
-              - SETGID
-              - SETUID
-            drop: ["ALL"]
+          privileged: true
+          # capabilities:
+          #   add:
+          #     - NET_ADMIN
+          #     - NET_BIND_SERVICE
+          #     - NET_RAW
+          #     - SYS_CHROOT
+          #     - SYS_ADMIN
+          #     - SETGID
+          #     - SETUID
+          #   drop: ["ALL"]
         volumeMounts:
         - mountPath: /etc/dhcpcd.conf
           name: dhcpcd-config
