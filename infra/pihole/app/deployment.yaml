@@ -19,12 +19,12 @@ spec:
     spec:
       containers:
         - env:
+            - name: FTLCONF_dns_listeningMode
+              value: ALL
             - name: FTLCONF_dns_hosts
               value: "10.0.0.5 pihole.home"
             - name: FTLCONF_dns_domain_name
               value: home
-            - name: FTLCONF_dns_listeningMode
-              value: ALL
             - name: FTLCONF_ntp_ipv4_active
               value: "false"
             - name: FTLCONF_ntp_ipv6_active
@@ -58,8 +58,8 @@ spec:
           name: pihole
           ports:
             - containerPort: 53
-              protocol: TCP
-            - containerPort: 53
+              hostPort: 53
+              hostIP: 10.0.0.4
               protocol: UDP
             - containerPort: 67
               protocol: UDP

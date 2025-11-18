@@ -4,6 +4,7 @@ metadata:
   name: pihole
   namespace: pihole
 spec:
+  clusterIP: 10.100.0.5
   ports:
     - name: "53"
       port: 53

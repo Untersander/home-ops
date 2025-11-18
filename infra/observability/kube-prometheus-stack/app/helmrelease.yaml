@@ -92,9 +92,9 @@ spec:
               storageClassName: local-path
               resources:
                 requests:
-                  storage: 10Gi
+                  storage: 20Gi
         retention: 7d
-        retentionSize: 9GiB
+        retentionSize: 19GiB
 
         # TODO: Find permanent solution for Prometheus permissions error.
         # Workaround: https://github.com/prometheus-community/helm-charts/issues/1162#issuecomment-1267895698

@@ -33,7 +33,7 @@ export K8s_API_ENDPOINT=https://api.k8s.garden:6443
 Create the machine configurations using the secrets and machine patches.
 AMD node:
 ```bash
-export INSTALLER_IMAGE=factory.talos.dev/metal-installer-secureboot/d0b273850841b13d0193fbfb0597bac2ca30387b8a0797a43238ecafc72ed329:v1.11.2
+export INSTALLER_IMAGE=factory.talos.dev/metal-installer-secureboot/d0b273850841b13d0193fbfb0597bac2ca30387b8a0797a43238ecafc72ed329:v1.11.5
 export NODE_NAME=cp-0
 talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
   --with-secrets secrets.yaml \
