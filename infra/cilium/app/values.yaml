@@ -18,10 +18,10 @@ k8sServiceHost: localhost
 k8sServicePort: 7445
 
 # Gateway API support
-# gatewayAPI:
-#   enabled: true
-#   enableAlpn: true
-#   enableAppProtocol: true
+gatewayAPI:
+  enabled: true
+  enableAlpn: true
+  enableAppProtocol: true
 
 # Performance Tuning: https://docs.cilium.io/en/stable/operations/performance/tuning/
 # routingMode: native
