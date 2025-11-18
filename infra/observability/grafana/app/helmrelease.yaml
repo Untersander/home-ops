@@ -166,15 +166,15 @@ spec:
     #     - secretName: grafana-tls
     #       hosts:
     #         - grafana.k8s.garden
-    # route:
-    #   main:
-    #     enabled: true
-    #     hostnames:
-    #       - grafana.k8s.garden
-    #     parentRefs:
-    #       - name: internal
-    #         namespace: kube-system
-    #         sectionName: https
+    route:
+      main:
+        enabled: true
+        hostnames:
+          - grafana.k8s.garden
+        parentRefs:
+          - name: gateway-shared
+            namespace: kube-system
+            sectionName: https
 
     serviceAccount:
       create: true
