@@ -4,23 +4,60 @@ metadata:
   name: nft-config
   namespace: nftables
 data:
-  lannat.nft: |
-    add table ip lannat
-    flush table ip lannat
-    define lan_cidr = 10.0.0.0/16
-    define wan_iface = "enp2s0f0np0"
-    table ip lannat {
-      chain POSTROUTING {
-        type nat hook postrouting priority srcnat; policy accept;
-        oif $wan_iface ip saddr $lan_cidr ip daddr != $lan_cidr masquerade
-      }
+  firewall.nft: |
+    add table inet global
+    destroy table inet global
 
-      chain OUTPUT {
-        type nat hook output priority dstnat; policy accept;
-      }
+    define DEV_PRIVATE = br0
+    define DEV_WORLD = enp2s0f0np0
+    define NET_PRIVATE = 10.0.0.0/16
 
-      chain PREROUTING {
-        type nat hook prerouting priority dstnat; policy accept;
-      }
+    table inet global {
 
+        chain inbound_world {
+            # accepting ping (icmp-echo-request) for diagnostic purposes.
+            # However, it also lets probes discover this host is alive.
+            # This sample accepts them within a certain rate limit:
+            #
+            icmp type echo-request limit rate 5/second burst 4 packets accept
+            ip protocol igmp accept
+            icmpv6 type echo-request limit rate 5/second burst 4 packets accept
+            icmpv6 type {mld-listener-query,nd-router-solicit, nd-router-advert,nd-neighbor-solicit,nd-neighbor-advert,nd-redirect,route-renumbering,ind-neighbor-solicit,ind-neighbor-advert} accept
+            # DHCPv6-PD
+            udp dport 546 accept
+
+            # allow 80
+            ip protocol . th dport vmap { udp . 80 : accept, tcp . 80 : accept, udp . 5201 : accept, tcp . 5201 : accept}
+            drop
+        }
+
+        chain inbound {
+            type filter hook input priority filter; policy accept;
+
+            # Allow traffic from established and related packets, drop invalid
+            ct state vmap { established : accept, related : accept, invalid : drop }
+
+            # allow loopback traffic, anything else jump to chain for further evaluation
+            iifname vmap { lo : accept, $DEV_WORLD : jump inbound_world, $DEV_PRIVATE : accept }
+
+        }
+
+        chain forward {
+            type filter hook forward priority filter; policy accept;
+
+            # Allow traffic from established and related packets, drop invalid
+            ct state vmap { established : accept, related : accept, invalid : drop }
+
+            # connections from the internal net to the internet or to other
+            # internal nets are allowed
+            iifname vmap { lo : accept, $DEV_WORLD : jump inbound_world, $DEV_PRIVATE : accept }
+
+            # the rest is dropped by the above policy
+        }
+
+        chain postrouting {
+            type nat hook postrouting priority srcnat; policy accept;
+            # masquerade private IP addresses
+            meta nfproto ipv4 ip saddr $NET_PRIVATE oifname $DEV_WORLD masquerade
+        }
     }
