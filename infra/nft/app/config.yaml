@@ -22,7 +22,7 @@ data:
             icmp type echo-request limit rate 5/second burst 4 packets accept
             ip protocol igmp accept
             icmpv6 type echo-request limit rate 5/second burst 4 packets accept
-            icmpv6 type {mld-listener-query,nd-router-solicit, nd-router-advert,nd-neighbor-solicit,nd-neighbor-advert,nd-redirect,route-renumbering,ind-neighbor-solicit,ind-neighbor-advert} accept
+            icmpv6 type {mld-listener-query,nd-router-solicit, nd-router-advert,nd-neighbor-solicit,nd-neighbor-advert,nd-redirect,router-renumbering,ind-neighbor-solicit,ind-neighbor-advert} accept
             # DHCPv6-PD
             udp dport 546 accept
 
