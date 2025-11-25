@@ -17,14 +17,13 @@ spec:
       labels:
         service: wg-easy
     spec:
-      # hostNetwork: true
       containers:
         - image: ghcr.io/wg-easy/wg-easy:15
           name: wg-easy
           ports:
-            - containerPort: 80
+            - containerPort: 51820
               protocol: UDP
-              hostPort: 80
+              hostPort: 51820
             - containerPort: 51821
               protocol: TCP
           securityContext:

@@ -58,8 +58,6 @@ spec:
           name: pihole
           ports:
             - containerPort: 53
-              hostPort: 53
-              hostIP: 10.0.0.4
               protocol: UDP
             - containerPort: 67
               protocol: UDP
