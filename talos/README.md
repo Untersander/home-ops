@@ -125,18 +125,19 @@ talosctl kubeconfig ~/.kube/talos-k8s-garden.config
 ```bash
 helm repo add cilium https://helm.cilium.io
 helm repo update
-helm fetch cilium/cilium --version 1.18.2 --destination /tmp
-helm upgrade --install cilium /tmp/cilium-1.18.2.tgz \
+helm fetch cilium/cilium --version 1.18.2 --destination ../tmp
+helm upgrade --install cilium ../tmp/cilium-1.18.2.tgz \
  --namespace kube-system \
  --values ../infra/cilium/app/values.yaml
+# Set ServiceMonitor.enabled: false for first apply
 ```
 
 ## Base CSR Approver setup
 ```bash
 helm repo add kubelet-csr-approver https://postfinance.github.io/kubelet-csr-approver
 helm repo update
-helm fetch kubelet-csr-approver/kubelet-csr-approver --version 1.2.11 --destination /tmp
-helm upgrade --install kubelet-csr-approver /tmp/kubelet-csr-approver-1.2.11.tgz \
+helm fetch kubelet-csr-approver/kubelet-csr-approver --version 1.2.11 --destination ../tmp
+helm upgrade --install kubelet-csr-approver ../tmp/kubelet-csr-approver-1.2.11.tgz \
  --version 1.2.11 \
  --namespace kube-system \
  --values ../infra/kubelet-csr-approver/app/values.yaml
