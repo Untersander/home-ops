@@ -33,7 +33,6 @@ machine:
         addresses:
           - 10.0.0.1/24
           - 10.0.0.4/24
-          # - 2a02:0169:4caa::4/64
         bridge:
           stp:
             enabled: false
@@ -61,3 +60,12 @@ cluster:
     advertisedSubnets: # listenSubnets defaults to advertisedSubnets if not set explicitly
       - 10.0.0.0/24
       # - 2a02:0169:4caa::/64
+# ---
+# apiVersion: v1alpha1
+# kind: RawVolumeConfig
+# name: openebs-vol1
+# provisioning:
+#   diskSelector:
+#     match: "!system_disk"
+#   minSize: 2GB
+#   maxSize: 2GB

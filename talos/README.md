@@ -17,6 +17,13 @@ Metal ISO Factory URLs:
 
 To update just change the version in the URL.
 
+Following custimization is added to the Talos image via the factory URL:
+```yaml
+customization:
+    extraKernelArgs:
+        - talos.config=metal-iso
+```
+
 
 Generate secrets bundle:
 ```bash
@@ -67,9 +74,10 @@ Generate a `metal-iso` ISO with the new config and burn to additional USB stick:
 NODE_NAME=cp-0
 cp machine-configs/$NODE_NAME.yaml metal-config/config.yaml
 
-mkisofs -joliet -rock -volid 'metal-iso' -output metal-config.iso metal-config/
+mkisofs -joliet -rock -volid 'metal-iso' -output metal-config.iso metal-config/config.yaml
 # Or if you don't have mkisofs
-docker run --rm -v $(pwd)/:/data alpine:latest sh -c "apk add cdrkit && mkisofs -joliet -rock -volid 'metal-iso' -output /data/metal-config.iso /data/metal-config/"
+docker run --rm -v $(pwd)/:/data alpine:latest \
+ sh -c "apk add cdrkit && mkisofs -joliet -rock -volid 'metal-iso' -output /data/metal-config.iso /data/metal-config/config.yaml"
 ```
 
 Write new ISO to USB stick.
