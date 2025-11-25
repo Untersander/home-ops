@@ -1,0 +1,14 @@
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   labels:
+#     service: wg-easy
+#   name: wg-easy
+#   namespace: wg
+# spec:
+#   ports:
+#     - name: "51821"
+#       port: 51821
+#       targetPort: 51821
+#   selector:
+#     service: wg-easy
