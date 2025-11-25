@@ -23,6 +23,10 @@ gatewayAPI:
   enableAlpn: true
   enableAppProtocol: true
 
+# IPv6 support
+ipv6:
+  enabled: true
+
 # Performance Tuning: https://docs.cilium.io/en/stable/operations/performance/tuning/
 # routingMode: native
 # bpf:
@@ -38,8 +42,6 @@ gatewayAPI:
 # enableIPv4BIGTCP: true
 # enableIPv4Masquerade: true
 # enableIPmasqAgent: true
-# ipv6:
-#   enabled: true
 # ipv6NativeRoutingCIDR: fd00:10:244::/64
 # enableIPv6BIGTCP: true
 # enableIPv6Masquerade: true

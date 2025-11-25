@@ -15,6 +15,9 @@ machine:
       rotate-server-certificates: true
 cluster:
   allowSchedulingOnControlPlanes: true
+  controllerManager:
+    extraArgs:
+      node-cidr-mask-size-ipv6: 96
   controlPlane:
     endpoint: https://10.0.0.4:6443 # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.
   clusterName: K8s-Garden # Configures the cluster's name.
@@ -22,6 +25,14 @@ cluster:
     # Disable for cilium
     cni:
       name: none # Name of CNI to use.
+    # The pod subnet CIDR.
+    podSubnets:
+      - 10.244.0.0/16
+      - fdee::/80
+    # The service subnet CIDR.
+    serviceSubnets:
+      - 10.96.0.0/12
+      - fdee:1::/108
   proxy:
     # Disable kube-proxy deployment on cluster bootstrap.
     disabled: true

@@ -10,6 +10,6 @@ spec:
     name: flux-system
     namespace: flux-system
   path: ./infra/wg/app
-  targetNamespace: kube-system
+  targetNamespace: wg
   prune: true
   interval: 3m
