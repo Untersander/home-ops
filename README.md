@@ -4,3 +4,7 @@ This repository contains the configuration for my homelab. It is run on [Talos](
 For more information check out the official documentation:
 - [Talos Documentation](https://www.talos.dev/latest/)
 - [Flux Documentation](https://fluxcd.io/flux/)
+
+Networktopology simplified:
+
+![Network Topology](./network-topology.drawio.svg)

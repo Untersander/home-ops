@@ -4,6 +4,9 @@ talos/machine-configs
 talos/metal-config
 talos/metal-config.iso
 /tmp
+
+# Drawio backup files
+.$*.drawio.bkp
 ### MacOS ###
 # General
 .DS_Store
