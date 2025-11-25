@@ -22,7 +22,7 @@ machine:
       # The `validSubnets` field configures the networks to pick kubelet node IP from.
       validSubnets:
         - 10.0.0.0/24
-        # - 2a02:0169:4caa::/64
+        - 2a02:169:4a00::/64
   network:
     hostname: cp-0
     interfaces:
@@ -59,7 +59,7 @@ cluster:
   etcd:
     advertisedSubnets: # listenSubnets defaults to advertisedSubnets if not set explicitly
       - 10.0.0.0/24
-      # - 2a02:0169:4caa::/64
+      - 2a02:169:4a00::/64
 # ---
 # apiVersion: v1alpha1
 # kind: RawVolumeConfig

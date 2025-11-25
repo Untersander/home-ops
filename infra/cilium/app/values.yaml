@@ -27,6 +27,15 @@ gatewayAPI:
 ipv6:
   enabled: true
 
+# Use PodCIDR from Kubernetes node resource
+k8s:
+  # -- requireIPv4PodCIDR enables waiting for Kubernetes to provide the PodCIDR
+  # range via the Kubernetes node resource
+  requireIPv4PodCIDR: true
+  # -- requireIPv6PodCIDR enables waiting for Kubernetes to provide the PodCIDR
+  # range via the Kubernetes node resource
+  requireIPv6PodCIDR: true
+
 # Performance Tuning: https://docs.cilium.io/en/stable/operations/performance/tuning/
 # routingMode: native
 # bpf:
