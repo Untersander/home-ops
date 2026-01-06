@@ -9,6 +9,6 @@ spec:
     name: flux-system
     namespace: flux-system
   targetNamespace: kube-system
-  path: ./infra/observability/metrics-server/app
+  path: ./infra/observability/iperf3-server/app
   prune: true
   interval: 3m
