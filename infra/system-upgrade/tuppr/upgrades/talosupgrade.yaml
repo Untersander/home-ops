@@ -9,6 +9,5 @@ spec:
     # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
     version: v1.12.1
   policy:
-    debug: true
     force: true
   # healthChecks:
