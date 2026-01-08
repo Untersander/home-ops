@@ -1,0 +1,13 @@
+apiVersion: cilium.io/v2alpha1
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: cilium-lb-l2-policy
+  namespace: kube-system
+spec:
+  serviceSelector:
+    matchExpressions:
+      - key: io.kubernetes.service.namespace
+        operator: In
+        values:
+          - kube-system
+  loadBalancerIPs: true

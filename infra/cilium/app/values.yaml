@@ -23,6 +23,11 @@ gatewayAPI:
   enableAlpn: true
   enableAppProtocol: true
 
+# Ingress Support for backward compatibility with older applications
+ingressController:
+  enabled: true
+  loadbalancerMode: shared
+
 # IPv6 support
 ipv6:
   enabled: true
