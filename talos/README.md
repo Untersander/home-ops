@@ -8,12 +8,7 @@ dd if=path/to/talos.iso of=/dev/sdX bs=4M status=progress conv=fsync
 ```
 
 Metal ISO Factory URLs:
-- [AMD-Metal-ISO-Secure-Boot-v1.11.2](https://factory.talos.dev/?arch=amd64&cmdline=talos.config%3Dmetal-iso&cmdline-set=true&extensions=-&platform=metal&secureboot=true&target=metal&version=1.11.2)
-```bash
-```
-- [ARM-Metal-ISO-v1.11.2](https://factory.talos.dev/?arch=arm64&cmdline=talos.config%3Dmetal-iso&cmdline-set=true&extensions=-&platform=metal&target=metal&version=1.11.2)
-```bash
-```
+- [AMD-Metal-ISO-ZFS-Secure-Boot-v1.12.1](https://factory.talos.dev/?arch=amd64&cmdline=talos.config%3Dmetal-iso&cmdline-set=true&extensions=siderolabs%2Fzfs&platform=metal&secureboot=true&target=metal&version=1.12.1)
 
 To update just change the version in the URL.
 
@@ -22,50 +17,35 @@ Following custimization is added to the Talos image via the factory URL:
 customization:
     extraKernelArgs:
         - talos.config=metal-iso
+    systemExtensions:
+        officialExtensions:
+            - siderolabs/zfs
 ```
-
-
+## Generate Machine Configs
 Generate secrets bundle:
 ```bash
 talosctl gen secrets -o secrets.yaml
 ```
 These secrets are stored in 1Password.
 
-Set environment variables for the Talos CLI:
+Set environment variables for the Talos CLI and create the machine configurations using the secrets and machine patches.
+AMD node:
 ```bash
 export CLUSTER_NAME=k8s-garden
 export K8s_API_ENDPOINT=https://api.k8s.garden:6443
-```
-
-Create the machine configurations using the secrets and machine patches.
-AMD node:
-```bash
-export INSTALLER_IMAGE=factory.talos.dev/metal-installer-secureboot/d0b273850841b13d0193fbfb0597bac2ca30387b8a0797a43238ecafc72ed329:v1.11.5
+export INSTALLER_IMAGE=factory.talos.dev/metal-installer-secureboot/53eda813751085f0a61b224c00256666bba00dcf409d5eb50b140ddb64c76c1a:v1.12.1
 export NODE_NAME=cp-0
 talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
   --with-secrets secrets.yaml \
   --config-patch @machine-patches/base-patch.yaml \
+  --config-patch @machine-patches/disk-patch.yaml \
+  --config-patch @machine-patches/openebs-patch.yaml \
   --config-patch @machine-patches/$NODE_NAME-patch.yaml \
   --output-types controlplane \
   --install-image $INSTALLER_IMAGE \
   --install-disk "" \
   --force \
   -o machine-configs/cp-0.yaml
-```
-
-ARM node:
-```bash
-export INSTALLER_IMAGE=factory.talos.dev/metal-installer/d0b273850841b13d0193fbfb0597bac2ca30387b8a0797a43238ecafc72ed329:v1.11.2
-export NODE_NAME=vcp-0
-talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
-  --with-secrets secrets.yaml \
-  --config-patch @machine-patches/base-patch.yaml \
-  --config-patch @machine-patches/$NODE_NAME-patch.yaml \
-  --output-types controlplane \
-  --install-image $INSTALLER_IMAGE \
-  --install-disk "" \
-  --force \
-  -o machine-configs/vcp-0.yaml
 ```
 
 ## Initial config on first boot provided via ISO
@@ -128,8 +108,11 @@ helm repo update
 helm fetch cilium/cilium --version 1.18.2 --destination ../tmp
 helm upgrade --install cilium ../tmp/cilium-1.18.2.tgz \
  --namespace kube-system \
- --values ../infra/cilium/app/values.yaml
-# Set ServiceMonitor.enabled: false for first apply
+ --values ../infra/cilium/app/values.yaml \
+ --set operator.prometheus.serviceMonitor.enabled=false \
+ --set prometheus.serviceMonitor.enabled=false \
+ --set hubble.metrics.serviceMonitor.enabled=false \
+ --set hubble.relay.prometheus.serviceMonitor.enabled=false
 ```
 
 ## Base CSR Approver setup
@@ -141,12 +124,6 @@ helm upgrade --install kubelet-csr-approver ../tmp/kubelet-csr-approver-1.2.11.t
  --version 1.2.11 \
  --namespace kube-system \
  --values ../infra/kubelet-csr-approver/app/values.yaml
-```
-
-## Single Node Cluster
-Make control plane node schedulable:
-```bash
-kubectl taint nodes --all node-role.kubernetes.io/control-plane:NoSchedule-
 ```
 
 ## Cilium Config
@@ -176,5 +153,3 @@ machine:
     hostDNS:
       enabled: true
 ```
-Alternatively run a DHCP/DNS server on old router and just use Talos as a firewall/router.
-Enable IP forwarding and masquerading(at least for IPv4) in Cilium?
