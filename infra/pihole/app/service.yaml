@@ -4,10 +4,14 @@ metadata:
   name: pihole
   namespace: pihole
   annotations:
-    "lbipam.cilium.io/ips": "10.0.0.5"
+    "lbipam.cilium.io/ips": "10.0.0.5,fd00::5"
 spec:
   clusterIP: 10.100.0.5
-  loadBalancerIP: 10.0.0.5 # deprecated since k8s 1.24, but kept for reference
+  # loadBalancerIP: 10.0.0.5 # deprecated since k8s 1.24, but kept for reference
+  ipFamilies:
+    - IPv4
+    - IPv6
+  ipFamilyPolicy: "RequireDualStack"
   ports:
     - name: "53"
       port: 53

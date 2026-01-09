@@ -5,6 +5,7 @@ metadata:
 spec:
   blocks:
   - cidr: "10.0.0.5/32"
+  - cidr: "fd00::5/128"
   serviceSelector:
     matchLabels:
       io.kubernetes.service.namespace: pihole
