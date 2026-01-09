@@ -1,0 +1,18 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-https-default-redirect-k8s-garden
+  namespace: kube-system
+spec:
+  parentRefs:
+    - name: gateway-shared
+      namespace: kube-system
+      sectionName: http
+  hostnames:
+    - "*.k8s.garden"
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
