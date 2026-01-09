@@ -6,7 +6,7 @@ toolbox:
 monitoring:
   # -- Enable Prometheus integration, will also create necessary RBAC rules to allow Operator to create ServiceMonitors.
   # Monitoring requires Prometheus to be pre-installed
-  enabled: true
+  enabled: false
   # -- Whether to create the Prometheus rules for Ceph alerts
   createPrometheusRules: true
   # -- Edit Prometheus rules for Ceph alerts
@@ -39,7 +39,7 @@ cephClusterSpec:
 
   # enable the ceph dashboard for viewing cluster status
   dashboard:
-    enabled: true
+    enabled: false
     # serve the dashboard under a subpath (useful when you are accessing the dashboard via a reverse proxy)
     # urlPrefix: /ceph-dashboard
     # serve the dashboard at the given port.
@@ -64,7 +64,7 @@ cephClusterSpec:
 
   # enable log collector, daemons will log on files and rotate
   logCollector:
-    enabled: true
+    enabled: false
     periodicity: daily # one of: hourly, daily, weekly, monthly
     maxLogSize: 500M # SUFFIX may be 'M' or 'G'. Must be at least 1M.
 
@@ -132,6 +132,68 @@ cephClusterSpec:
     ## to set the ingress class
     # ingressClassName: nginx
 
+  resources:
+    mgr:
+      limits:
+        memory: "1Gi"
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+    mon:
+      limits:
+        memory: "2Gi"
+      requests:
+        cpu: "250m"
+        memory: "1Gi"
+    osd:
+      limits:
+        memory: "4Gi"
+      requests:
+        cpu: "500m"
+        memory: "4Gi"
+    prepareosd:
+      # limits: It is not recommended to set limits on the OSD prepare job
+      #         since it's a one-time burst for memory that must be allowed to
+      #         complete without an OOM kill.  Note however that if a k8s
+      #         limitRange guardrail is defined external to Rook, the lack of
+      #         a limit here may result in a sync failure, in which case a
+      #         limit should be added.  1200Mi may suffice for up to 15Ti
+      #         OSDs ; for larger devices 2Gi may be required.
+      #         cf. https://github.com/rook/rook/pull/11103
+      requests:
+        cpu: "500m"
+        memory: "50Mi"
+    mgr-sidecar:
+      limits:
+        memory: "100Mi"
+      requests:
+        cpu: "10m"
+        memory: "40Mi"
+    crashcollector:
+      limits:
+        memory: "60Mi"
+      requests:
+        cpu: "10m"
+        memory: "60Mi"
+    logcollector:
+      limits:
+        memory: "1Gi"
+      requests:
+        cpu: "10m"
+        memory: "100Mi"
+    cleanup:
+      limits:
+        memory: "1Gi"
+      requests:
+        cpu: "50m"
+        memory: "100Mi"
+    exporter:
+      limits:
+        memory: "128Mi"
+      requests:
+        cpu: "50m"
+        memory: "50Mi"
+
 route:
   # -- Enable an HTTPRoute for the ceph-dashboard
   dashboard:
@@ -152,12 +214,12 @@ route:
 # -- A list of CephBlockPool configurations to deploy
 # @default -- See [below](#ceph-block-pools)
 cephBlockPools:
-  - name: ceph-blockpool-single
+  - name: ceph-blockpool
     # see https://github.com/rook/rook/blob/master/Documentation/CRDs/Block-Storage/ceph-block-pool-crd.md#spec for available configuration
     spec:
       failureDomain: osd
       replicated:
-        size: 1
+        size: 2
       # Enables collecting RBD per-image IO statistics by enabling dynamic OSD performance counters. Defaults to false.
       # For reference: https://docs.ceph.com/docs/latest/mgr/prometheus/#rbd-io-statistics
       # enableRBDStats: true
@@ -270,51 +332,52 @@ cephObjectStores:
 ## cephECBlockPools are disabled by default, please remove the comments and set desired values to enable it
 ## For erasure coded a replicated metadata pool is required.
 ## https://rook.io/docs/rook/latest/CRDs/Shared-Filesystem/ceph-filesystem-crd/#erasure-coded
-cephECBlockPools:
-  - name: ec-pool
-    spec:
-      metadataPool:
-        replicated:
-          size: 2
-      dataPool:
-        failureDomain: osd
-        erasureCoded:
-          dataChunks: 2
-          codingChunks: 1
-        deviceClass: hdd
+# cephECBlockPools:
+#   - name: ec-pool
+#     spec:
+#       metadataPool:
+#         failureDomain: osd
+#         replicated:
+#           size: 2
+#       dataPool:
+#         failureDomain: osd
+#         erasureCoded:
+#           dataChunks: 2
+#           codingChunks: 1
+#         deviceClass: hdd
 
-    parameters:
-      # clusterID is the namespace where the rook cluster is running
-      # If you change this namespace, also change the namespace below where the secret namespaces are defined
-      clusterID: rook-ceph # namespace:cluster
-      # (optional) mapOptions is a comma-separated list of map options.
-      # For krbd options refer
-      # https://docs.ceph.com/docs/latest/man/8/rbd/#kernel-rbd-krbd-options
-      # For nbd options refer
-      # https://docs.ceph.com/docs/latest/man/8/rbd-nbd/#options
-      # mapOptions: lock_on_read,queue_depth=1024
+#     parameters:
+#       # clusterID is the namespace where the rook cluster is running
+#       # If you change this namespace, also change the namespace below where the secret namespaces are defined
+#       clusterID: rook-ceph # namespace:cluster
+#       # (optional) mapOptions is a comma-separated list of map options.
+#       # For krbd options refer
+#       # https://docs.ceph.com/docs/latest/man/8/rbd/#kernel-rbd-krbd-options
+#       # For nbd options refer
+#       # https://docs.ceph.com/docs/latest/man/8/rbd-nbd/#options
+#       # mapOptions: lock_on_read,queue_depth=1024
 
-      # (optional) unmapOptions is a comma-separated list of unmap options.
-      # For krbd options refer
-      # https://docs.ceph.com/docs/latest/man/8/rbd/#kernel-rbd-krbd-options
-      # For nbd options refer
-      # https://docs.ceph.com/docs/latest/man/8/rbd-nbd/#options
-      # unmapOptions: force
+#       # (optional) unmapOptions is a comma-separated list of unmap options.
+#       # For krbd options refer
+#       # https://docs.ceph.com/docs/latest/man/8/rbd/#kernel-rbd-krbd-options
+#       # For nbd options refer
+#       # https://docs.ceph.com/docs/latest/man/8/rbd-nbd/#options
+#       # unmapOptions: force
 
-      # RBD image format. Defaults to "2".
-      imageFormat: "2"
+#       # RBD image format. Defaults to "2".
+#       imageFormat: "2"
 
-      # RBD image features, equivalent to OR'd bitfield value: 63
-      # Available for imageFormat: "2". Older releases of CSI RBD
-      # support only the `layering` feature. The Linux kernel (KRBD) supports the
-      # full feature complement as of 5.4
-      # imageFeatures: layering,fast-diff,object-map,deep-flatten,exclusive-lock
-      imageFeatures: layering
+#       # RBD image features, equivalent to OR'd bitfield value: 63
+#       # Available for imageFormat: "2". Older releases of CSI RBD
+#       # support only the `layering` feature. The Linux kernel (KRBD) supports the
+#       # full feature complement as of 5.4
+#       # imageFeatures: layering,fast-diff,object-map,deep-flatten,exclusive-lock
+#       imageFeatures: layering
 
-    storageClass:
-      provisioner: rook-ceph.rbd.csi.ceph.com # csi-provisioner-name
-      enabled: true
-      name: rook-ceph-block
-      isDefault: false
-      allowVolumeExpansion: true
-      reclaimPolicy: Delete
+#     storageClass:
+#       provisioner: rook-ceph.rbd.csi.ceph.com # csi-provisioner-name
+#       enabled: true
+#       name: rook-ceph-ec-block
+#       isDefault: false
+#       allowVolumeExpansion: true
+#       reclaimPolicy: Delete
