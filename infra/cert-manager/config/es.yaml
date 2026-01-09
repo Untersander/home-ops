@@ -1,0 +1,18 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: cloudflare-api-token-secret
+  namespace: cert-manager
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  target:
+    template:
+      data:
+        api-token: "{{ .token }}"
+  data:
+    - secretKey: token
+      remoteRef:
+        key: "Cloudflare Edit all Zones Token/credential"
