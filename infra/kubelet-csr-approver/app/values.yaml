@@ -1,5 +1,5 @@
 providerRegex: '^cp-.*'
-providerIpPrefixes: '10.0.0.0/24'
+providerIpPrefixes: '10.0.0.0/24,fd00::/64'
 bypassDnsResolution: 'true'
 
 leaderElection: true
