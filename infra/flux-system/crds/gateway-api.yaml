@@ -3,11 +3,11 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
   name: gateway-api
-  namespace: kube-system
+  namespace: flux-system
 spec:
   url: https://github.com/kubernetes-sigs/gateway-api
   ref:
-    tag: v1.4.1
+    tag: v1.2.0
   ignore: |-
     /*
     !/config/crd/
@@ -17,12 +17,26 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: gateway-api
-  namespace: kube-system
+  name: gateway-api-standard
+  namespace: flux-system
 spec:
   sourceRef:
     kind: GitRepository
     name: gateway-api
-  path: ./config/crd
+  path: ./config/crd/
+  prune: true
+  interval: 3m
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: gateway-api-experimental
+  namespace: flux-system
+spec:
+  sourceRef:
+    kind: GitRepository
+    name: gateway-api
+  path: ./config/crd/experimental
   prune: true
   interval: 3m
