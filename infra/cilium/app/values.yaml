@@ -22,6 +22,11 @@ gatewayAPI:
   enabled: true
   enableAlpn: true
   enableAppProtocol: true
+  secretsNamespace:
+    create: true
+    name: "cilium-secrets"
+envoy:
+  enabled: true
 
 # Ingress Support for backward compatibility with older applications
 ingressController:
