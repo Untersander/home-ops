@@ -84,7 +84,7 @@ Set the Talos endpoint, as the `--endpoints` flag does not work at the moment.
 You can also set the node so you don't have to provide `-n <IP_ADDRESS>` all the time.
 ```bash
 talosctl config merge talosconfig.yaml
-export IP_ADDRESS=10.0.0.4
+export IP_ADDRESS=10.0.0.1
 talosctl config endpoint $IP_ADDRESS
 talosctl config node $IP_ADDRESS
 ```
@@ -105,8 +105,8 @@ talosctl kubeconfig ~/.kube/talos-k8s-garden.config
 ```bash
 helm repo add cilium https://helm.cilium.io
 helm repo update
-helm fetch cilium/cilium --version 1.18.2 --destination ../tmp
-helm upgrade --install cilium ../tmp/cilium-1.18.2.tgz \
+helm fetch cilium/cilium --version 1.19.0 --destination ../tmp
+helm upgrade --install cilium ../tmp/cilium-1.19.0.tgz \
  --namespace kube-system \
  --values ../infra/cilium/app/values.yaml \
  --set operator.prometheus.serviceMonitor.enabled=false \

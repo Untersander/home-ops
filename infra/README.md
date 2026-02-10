@@ -30,9 +30,14 @@ flux create source git flux-system \
   --branch=main \
   --interval=1m \
   --secret-ref=flux-system
-flux create kustomization flux-system \
+flux create kustomization infra \
   --source=GitRepository/flux-system \
   --path=./infra \
+  --prune=true \
+  --interval=10m
+flux create kustomization apps \
+  --source=GitRepository/flux-system \
+  --path=./apps \
   --prune=true \
   --interval=10m
 ```

@@ -9,7 +9,6 @@ machine:
   sysctls:
     net.ipv4.ip_forward: 1
     net.ipv6.conf.all.forwarding: 1
-    # net.core.bpf_jit_harden: 1
   kubelet:
     extraArgs:
       rotate-server-certificates: true
@@ -18,8 +17,6 @@ cluster:
   controllerManager:
     extraArgs:
       node-cidr-mask-size-ipv6: 96
-  controlPlane:
-    endpoint: https://10.0.0.4:6443 # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.
   clusterName: K8s-Garden # Configures the cluster's name.
   network:
     # Disable for cilium

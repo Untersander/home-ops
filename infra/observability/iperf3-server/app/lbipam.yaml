@@ -5,6 +5,7 @@ metadata:
 spec:
   blocks:
   - cidr: "10.0.0.6/32"
+  - cidr: "2a02:169:4a00:1::6/128"
   serviceSelector:
     matchLabels:
       io.kubernetes.service.namespace: observability

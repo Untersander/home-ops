@@ -9,7 +9,7 @@ spec:
       io.kubernetes.service.name: iperf3-server
   interfaces:
     - ^br.*
-    # - ^enp.*s0
+    - ^enp.*s0
     # - ^enp2s0f1np1
   externalIPs: false
   loadBalancerIPs: true

@@ -29,12 +29,14 @@ machine:
       # LAN
       - interface: lo1
         dummy: true
+      # - interface: eno1
+      #   addresses:
+      #     - 10.0.0.1/24
+      #     - fd00::1/64
       - interface: br0
         addresses:
           - 10.0.0.1/24
-          - 10.0.0.4/24
           - fd00::1/64
-          - fd00::4/64
         bridge:
           stp:
             enabled: false
@@ -58,7 +60,7 @@ machine:
           ipv6: false
 cluster:
   controlPlane:
-    endpoint: https://10.0.0.4:6443 # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.
+    endpoint: https://10.0.0.1:6443 # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.
   etcd:
     advertisedSubnets: # listenSubnets defaults to advertisedSubnets if not set explicitly
       - 10.0.0.0/24

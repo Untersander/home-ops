@@ -1,8 +1,8 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/cilium/cilium/refs/heads/main/install/kubernetes/cilium/values.schema.json
 # Talos Guide Settings: https://docs.siderolabs.com/kubernetes-guides/cni/deploying-cilium
-devices: br+,enp+
-nodePort:
-  directRoutingDevice: br+
+# devices: br+,enp+
+# nodePort:
+#   directRoutingDevice: br+
 ipam:
   mode: kubernetes
 kubeProxyReplacement: true
@@ -17,22 +17,29 @@ cgroup:
 k8sServiceHost: localhost
 k8sServicePort: 7445
 
+# Debug
+# debug:
+#   enabled: true
+#   verbose: flow
+
 # Gateway API support
 gatewayAPI:
   enabled: true
-  enableAlpn: true
-  enableAppProtocol: true
-  secretsNamespace:
-    create: true
-    name: "cilium-secrets"
-envoy:
-  enabled: true
+  # enableAlpn: true
+  # enableAppProtocol: true
+  # secretsNamespace:
+  #   create: true
+  #   name: "cilium-secrets"
+# envoy:
+#   enabled: true
 
 # Ingress Support for backward compatibility with older applications
-ingressController:
-  enabled: true
-  loadbalancerMode: shared
+# ingressController:
+#   enabled: true
+#   loadbalancerMode: shared
 
+ipv4:
+  enabled: true
 # IPv6 support
 ipv6:
   enabled: true
@@ -55,8 +62,6 @@ k8s:
 #     enabled: true
 #   mapDynamicSizeRatio: 0.08
 # bpfClockProbe: true
-# ipv4:
-#   enabled: true
 # ipv4NativeRoutingCIDR: 10.244.0.0/24
 # enableIPv4BIGTCP: true
 # enableIPv4Masquerade: true
@@ -70,12 +75,12 @@ k8s:
 l2announcements:
   enabled: true
 k8sClientRateLimit:
-  burst: 60
-  qps: 30
+  burst: 90
+  qps: 60
 
 # Multus
-cni:
-  exclusive: false
+# cni:
+#   exclusive: true
 
 # Firewall
 # hostFirewall:

@@ -3,7 +3,10 @@ kind: Service
 metadata:
   name: iperf3-server
   namespace: observability
+  annotations:
+    "lbipam.cilium.io/ips": "10.0.0.6,2a02:169:4a00:1::6"
 spec:
+  ipFamilyPolicy: "RequireDualStack"
   ports:
     - port: 5201
       protocol: TCP
