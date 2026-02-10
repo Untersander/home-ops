@@ -1,8 +1,8 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/cilium/cilium/refs/heads/main/install/kubernetes/cilium/values.schema.json
 # Talos Guide Settings: https://docs.siderolabs.com/kubernetes-guides/cni/deploying-cilium
-# devices: br+,enp+
-# nodePort:
-#   directRoutingDevice: br+
+devices: br+,enp+
+nodePort:
+  directRoutingDevice: br+
 ipam:
   mode: kubernetes
 kubeProxyReplacement: true
