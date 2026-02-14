@@ -172,9 +172,9 @@ spec:
         hostnames:
           - grafana.k8s.garden
         parentRefs:
-          - name: gateway-shared
-            namespace: kube-system
-            sectionName: https
+          - name: traefik-gateway
+            namespace: traefik
+            sectionName: websecure
 
     serviceAccount:
       create: true
