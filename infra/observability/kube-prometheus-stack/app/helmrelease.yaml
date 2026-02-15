@@ -89,7 +89,7 @@ spec:
         storageSpec:
           volumeClaimTemplate:
             spec:
-              storageClassName: local-path
+              storageClassName: openebs-hostpath-ssd
               resources:
                 requests:
                   storage: 20Gi

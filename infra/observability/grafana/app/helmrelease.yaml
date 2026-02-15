@@ -139,7 +139,7 @@ spec:
 
     persistence:
       enabled: true
-      storageClassName: local-path
+      storageClassName: openebs-hostpath-ssd
       size: 10Gi
 
     rbac:
@@ -152,10 +152,9 @@ spec:
     #     cpu: 50m
     #     memory: 128Mi
 
-    # TODO: Expose Grafana ingress or http route
     # ingress:
     #   enabled: true
-    #   ingressClassName: nginx
+    #   ingressClassName: traefik
     #   annotations:
     #     cert-manager.io/issuer: letsencrypt-dns01-prod
     #   path: /
