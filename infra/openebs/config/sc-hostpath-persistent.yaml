@@ -2,13 +2,14 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   annotations:
+    storageclass.kubernetes.io/is-default-class: true
     cas.openebs.io/config: |
       - name: StorageType
         value: "hostpath"
       - name: BasePath
         value: "/var/mnt/local-system-ssd/openebs/local"
     openebs.io/cas-type: local
-  name: openebs-hostpath
+  name: openebs-hostpath-ssd
 provisioner: openebs.io/local
 reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer

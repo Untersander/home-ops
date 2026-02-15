@@ -3,6 +3,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: openebs
+  namespace: openebs
 spec:
   chart:
     spec:
@@ -16,6 +17,9 @@ spec:
     mode: enabled
   interval: 3m
   values:
+    localpv-provisioner:
+      hostpathClass:
+        enabled: false
     zfs-localpv:
       zfsNode:
         encrKeysDir: /var/mnt/local-system-ssd/openebs/keys
