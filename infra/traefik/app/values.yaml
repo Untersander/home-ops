@@ -1,0 +1,69 @@
+# Configure Network Ports and EntryPoints
+# EntryPoints are the network listeners for incoming traffic.
+ports:
+  # Defines the HTTP entry point named 'web'
+  web:
+    port: 80
+    # Instructs this entry point to redirect all traffic to the 'websecure' entry point
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  # Defines the HTTPS entry point named 'websecure'
+  websecure:
+    port: 443
+
+# Enables the dashboard in Secure Mode
+api:
+  dashboard: true
+  insecure: false
+
+ingressRoute:
+  dashboard:
+    enabled: true
+    matchRule: Host(`traefik.k8s.garden`)
+    entryPoints:
+      - websecure
+    middlewares:
+      - name: dashboard-auth
+
+# Creates a BasicAuth Middleware and Secret for the Dashboard Security
+extraObjects:
+  - apiVersion: traefik.io/v1alpha1
+    kind: Middleware
+    metadata:
+      name: dashboard-auth
+    spec:
+      basicAuth:
+        secret: dashboard-auth-secret
+
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+
+# Providers tell Traefik where to find routing configuration.
+providers:
+  kubernetesIngress:
+    enabled: true
+  kubernetesGateway:
+    enabled: true
+
+## Gateway Listeners
+gateway:
+  enabled: false
+
+# Enable Observability
+logs:
+  general:
+    level: INFO
+  # This enables access logs, outputting them to Traefik's standard output by default. The [Access Logs Documentation](https://doc.traefik.io/traefik/observability/access-logs/) covers formatting, filtering, and output options.
+  access:
+    enabled: true
+
+# Enables Prometheus for Metrics
+metrics:
+  prometheus:
+    enabled: true

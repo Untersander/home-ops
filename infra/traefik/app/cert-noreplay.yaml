@@ -1,0 +1,26 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-noreplay-org-tls
+  namespace: traefik
+spec:
+  # Secret names are always required.
+  secretName: wildcard-noreplay-org-tls
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  isCA: false
+  usages:
+    - server auth
+    - client auth
+  subject:
+    organizations:
+      - Untersander
+  # At least one of commonName (possibly through literalSubject), dnsNames, uris, emailAddresses, ipAddresses or otherNames is required.
+  dnsNames:
+    - noreplay.org
+    - "*.noreplay.org"
+  # ipAddresses:
+    # - 192.168.0.5
+  issuerRef:
+    name: letsencrypt-dns01-prod
+    kind: ClusterIssuer

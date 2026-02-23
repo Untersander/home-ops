@@ -1,0 +1,23 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: dashboard-auth-secret
+  namespace: traefik
+spec:
+  refreshInterval: 1h0m0s
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  target:
+    template:
+      type: kubernetes.io/basic-auth
+      data:
+        username: "{{ .username }}"
+        password: "{{ .password }}"
+  data:
+  - secretKey: username
+    remoteRef:
+      key: "Traefik Dashboard/username"
+  - secretKey: password
+    remoteRef:
+      key: "Traefik Dashboard/password"
