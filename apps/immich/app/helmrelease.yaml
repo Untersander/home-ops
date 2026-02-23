@@ -1,0 +1,108 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/common-3.0.1/charts/library/common/values.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: immich
+  namespace: immich
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: immich
+      version: 0.10.3
+      sourceRef:
+        kind: HelmRepository
+        name: immich-charts
+        namespace: flux-system
+      interval: 15m
+  values:
+    # Valkey (Redis replacement)
+    valkey:
+      enabled: true
+    metrics:
+      enabled: true
+
+    # Persistence for photo library
+    immich:
+      persistence:
+        library:
+          existingClaim: immich-media-pvc
+
+    # Server configuration
+    server:
+      enabled: true
+      controllers:
+        main:
+          containers:
+            main:
+              image:
+                # renovate: datasource=github-releases depName=immich-app/immich
+                tag: "v2.5.6"
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 2048M
+              env:
+                # Database connection
+                DB_DATABASE_NAME:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-database-app
+                      key: dbname
+                DB_HOSTNAME: immich-database-rw.immich.svc.cluster.local
+                DB_PORT:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-database-app
+                      key: port
+                DB_USERNAME:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-database-app
+                      key: username
+                DB_PASSWORD:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-database-app
+                      key: password
+      route:
+        main:
+          hostnames: ["photos.k8s.garden"]
+          parentRefs:
+            - name: traefik-gateway
+              namespace: traefik
+              sectionName: websecure
+          rules:
+            - backendRefs:
+                - identifier: main
+                  port: 2283
+      # ingress:
+      #   main:
+      #     enabled: true
+      #     className: traefik
+      #     annotations:
+      #       cert-manager.io/cluster-issuer: letsencrypt-dns01-staging
+      #     hosts:
+      #       - host: &host "photos.k8s.garden"
+      #         paths:
+      #           - path: /
+      #             pathType: Prefix
+      #             service:
+      #               identifier: main
+      #               port: http
+      #     tls:
+      #       - hosts:
+      #           - *host
+      #         secretName: *host
+
+    # Machine Learning configuration
+    machine-learning:
+      enabled: true
+      controllers:
+        main:
+          containers:
+            main:
+              resources:
+                requests:
+                  cpu: 20m
+                  memory: 2048M
