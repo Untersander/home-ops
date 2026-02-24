@@ -8,9 +8,23 @@ spec:
 
   storage:
     size: 5Gi
+    storageClass: openebs-hostpath-ssd-retain
+  # To restore from old pv, use the following configuration:
+    # pvcTemplate:
+    #   accessModes:
+    #     - ReadWriteOnce
+    #   resources:
+    #     requests:
+    #       storage: 5Gi
+    #   volumeMode: Filesystem
+    #   volumeName: pvc-84660cf2-b0c1-4c66-8f00-9bbec45c8158
+    #   storageClassName: openebs-hostpath-ssd-retain
 
-  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:16.9-0.4.3
+  # Switch permissions of immich to superuser to be able to restore with immich, or restore another way
+  # enableSuperuserAccess: true
 
+  imageName: ghcr.io/tensorchord/cloudnative-vectorchord:18.2-1.1.0
+  primaryUpdateMethod: switchover
   postgresql:
     shared_preload_libraries:
       - "vchord.so"
