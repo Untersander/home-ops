@@ -17,3 +17,23 @@ allowedTopologies:
   - key: kubernetes.io/hostname
     values:
       - cp-0
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: openebs-zfs-retain
+parameters:
+  recordsize: "128k"
+  compression: "off"
+  dedup: "off"
+  fstype: "zfs"
+  poolname: "hdd"
+provisioner: zfs.csi.openebs.io
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+allowedTopologies:
+- matchLabelExpressions:
+  - key: kubernetes.io/hostname
+    values:
+      - cp-0
