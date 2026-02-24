@@ -7,3 +7,5 @@ spec:
   blocks:
     - start: 10.0.0.20
       stop: 10.0.0.29
+    - start: fd00::20
+      stop: fd00::29

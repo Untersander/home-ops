@@ -10,4 +10,9 @@ spec:
         operator: In
         values:
           - kube-system
+  interfaces:
+    - ^br.*
+    - ^eno.*
+    - ^enp.*s0
+    - ^enp2s0f1np1
   loadBalancerIPs: true

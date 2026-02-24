@@ -100,6 +100,12 @@ talosctl bootstrap
 talosctl kubeconfig ~/.kube/talos-k8s-garden.config
 ```
 
+## Install Gateway API CRDs
+```bash
+wget -O ../tmp/gateway-api-v1.4.1-standard.yaml https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/standard-install.yaml
+kubectl apply -f ../tmp/gateway-api-v1.4.1-standard.yaml
+```
+
 ## Base cilium setup
 
 ```bash

@@ -29,6 +29,9 @@ machine:
       # LAN
       - interface: lo1
         dummy: true
+        addresses:
+          - 10.0.0.4/24
+          - fd00::4/64
       # - interface: eno1
       #   addresses:
       #     - 10.0.0.1/24
@@ -41,7 +44,6 @@ machine:
           stp:
             enabled: false
           interfaces:
-            - lo1
             - eno1
             - enp7s0
             - enp8s0
