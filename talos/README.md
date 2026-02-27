@@ -37,6 +37,8 @@ export INSTALLER_IMAGE=factory.talos.dev/metal-installer-secureboot/53eda8137510
 export NODE_NAME=cp-0
 talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
   --with-secrets secrets.yaml \
+  --kubernetes-version 1.34.1 \
+  --talos-version v1.12.1 \
   --config-patch @machine-patches/base-patch.yaml \
   --config-patch @machine-patches/disk-patch.yaml \
   --config-patch @machine-patches/openebs-patch.yaml \
