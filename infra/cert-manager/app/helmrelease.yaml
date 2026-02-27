@@ -14,7 +14,7 @@ spec:
       version: 1.18.2
   driftDetection:
     mode: enabled
-  interval: 3m
+  interval: 1h
   values:
     config:
       apiVersion: controller.config.cert-manager.io/v1alpha1

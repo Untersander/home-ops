@@ -14,7 +14,7 @@ spec:
       version: 9.4.0
   driftDetection:
     mode: enabled
-  interval: 3m
+  interval: 1h
   values:
     fullnameOverride: blackbox-exporter
     # podSecurityContext:

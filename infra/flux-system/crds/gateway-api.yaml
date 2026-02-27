@@ -25,4 +25,4 @@ spec:
     name: gateway-api
   path: ./config/crd/
   prune: true
-  interval: 3m
+  interval: 1h

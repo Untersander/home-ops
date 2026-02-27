@@ -14,7 +14,7 @@ spec:
       version: 1.2.11
   driftDetection:
     mode: enabled
-  interval: 3m
+  interval: 1h
   valuesFrom:
     - kind: ConfigMap
       name: kubelet-csr-approver-values # Default name, changed using Kustomization

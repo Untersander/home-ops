@@ -14,7 +14,7 @@ spec:
       version: 8.8.5
   driftDetection:
     mode: enabled
-  interval: 3m
+  interval: 1h
   values:
     replicas: 1
     # Grafana is too dumb for non-failing upgrades: https://github.com/grafana/helm-charts/issues/1184

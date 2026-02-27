@@ -15,7 +15,7 @@ spec:
       version: 39.0.1
   driftDetection:
     mode: enabled
-  interval: 3m
+  interval: 1h
   valuesFrom:
     - kind: ConfigMap
       name: traefik-values # Default name, changed using Kustomization

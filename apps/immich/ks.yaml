@@ -12,4 +12,4 @@ spec:
   path: ./apps/immich/app
   targetNamespace: immich
   prune: true
-  interval: 3m
+  interval: 1h

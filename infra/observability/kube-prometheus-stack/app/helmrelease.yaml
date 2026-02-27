@@ -14,7 +14,7 @@ spec:
       version: 70.4.2
   driftDetection:
     mode: enabled
-  interval: 3m
+  interval: 1h
   values:
     # Disable externally managed resources
     crds:

@@ -14,7 +14,7 @@ spec:
       version: 1.18.6
   driftDetection:
     mode: enabled
-  interval: 3m
+  interval: 1h
   valuesFrom:
     - kind: ConfigMap
       name: cilium-values # Default name, changed using Kustomization

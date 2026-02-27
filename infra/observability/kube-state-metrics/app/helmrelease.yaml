@@ -14,7 +14,7 @@ spec:
       version: 5.32.0
   driftDetection:
     mode: enabled
-  interval: 3m
+  interval: 1h
   values:
     # fullnameOverride: kube-state-metrics
     prometheus:

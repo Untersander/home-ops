@@ -11,4 +11,4 @@ spec:
   targetNamespace: observability
   path: ./infra/observability/grafana/app
   prune: true
-  interval: 3m
+  interval: 1h

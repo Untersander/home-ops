@@ -11,4 +11,4 @@
 #   targetNamespace: observability
 #   path: ./infra/observability/iperf3-server/app
 #   prune: true
-#   interval: 3m
+#   interval: 1h

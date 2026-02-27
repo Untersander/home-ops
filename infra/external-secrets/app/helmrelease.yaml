@@ -14,4 +14,4 @@ spec:
       version: 2.0.0
   driftDetection:
     mode: enabled
-  interval: 3m
+  interval: 1h

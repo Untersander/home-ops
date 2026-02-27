@@ -324,7 +324,7 @@ metrics:
     # -- Labels to add to the ServiceMonitor resource
     labels: {}
     # -- Interval at which metrics should be scraped
-    interval: 30s
+    interval: 30m
     # -- Timeout for scraping metrics
     scrapeTimeout: 30s
     # -- Path to scrape for metrics

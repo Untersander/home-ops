@@ -11,4 +11,4 @@ spec:
   targetNamespace: observability
   path: ./infra/observability/kube-prometheus-stack/app
   prune: true
-  interval: 3m
+  interval: 1h

@@ -12,4 +12,4 @@ spec:
   path: ./infra/flux-system/repos
   targetNamespace: flux-system
   prune: true
-  interval: 3m
+  interval: 1h

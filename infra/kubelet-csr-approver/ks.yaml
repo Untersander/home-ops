@@ -12,4 +12,4 @@ spec:
   path: ./infra/kubelet-csr-approver/app
   targetNamespace: kube-system
   prune: true
-  interval: 3m
+  interval: 1h

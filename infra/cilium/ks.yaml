@@ -17,7 +17,7 @@ spec:
   path: ./infra/cilium/app
   targetNamespace: kube-system
   prune: true
-  interval: 3m
+  interval: 1h
 # ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 # apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -37,4 +37,4 @@ spec:
 #   path: ./infra/cilium/config
 #   targetNamespace: kube-system
 #   prune: true
-#   interval: 3m
+#   interval: 1h
