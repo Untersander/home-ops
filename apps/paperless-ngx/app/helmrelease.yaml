@@ -1,0 +1,101 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: paperless-ngx
+  namespace: paperless-ngx
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  values:
+    controllers:
+      paperless:
+        containers:
+          app:
+            image:
+              repository: ghcr.io/paperless-ngx/paperless-ngx
+              # renovate: datasource=docker depName=ghcr.io/paperless-ngx/paperless-ngx
+              tag: 2.20.8
+            env:
+              TZ: Europe/Zurich
+              PAPERLESS_URL: https://paperless.k8s.garden
+              PAPERLESS_REDIS: redis://paperless-valkey:6379
+              PAPERLESS_DBENGINE: postgresql
+              PAPERLESS_DBHOST: paperless-db-rw.paperless-ngx.svc.cluster.local
+              PAPERLESS_DBPORT: "5432"
+              PAPERLESS_DBNAME:
+                valueFrom:
+                  secretKeyRef:
+                    name: paperless-db-app
+                    key: dbname
+              PAPERLESS_DBUSER:
+                valueFrom:
+                  secretKeyRef:
+                    name: paperless-db-app
+                    key: username
+              PAPERLESS_DBPASS:
+                valueFrom:
+                  secretKeyRef:
+                    name: paperless-db-app
+                    key: password
+              PAPERLESS_SECRET_KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: paperless-ngx-app
+                    key: secret-key
+              PAPERLESS_ADMIN_USER:
+                valueFrom:
+                  secretKeyRef:
+                    name: paperless-ngx-app
+                    key: username
+              PAPERLESS_ADMIN_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: paperless-ngx-app
+                    key: password
+            resources:
+              requests:
+                cpu: 50m
+                memory: 1024M
+
+    defaultPodOptions:
+      securityContext:
+        seccompProfile: { type: RuntimeDefault }
+
+    service:
+      paperless:
+        controller: paperless
+        ports:
+          http:
+            port: 8000
+
+    route:
+      paperless:
+        hostnames: ["paperless.k8s.garden"]
+        parentRefs:
+          - name: traefik-gateway
+            namespace: traefik
+            sectionName: websecure
+        rules:
+          - backendRefs:
+              - identifier: paperless
+                port: 8000
+
+    persistence:
+      media:
+        existingClaim: paperless-media-pvc
+        globalMounts:
+          - path: /usr/src/paperless/media
+          - path: /usr/src/paperless/consume
+            subPath: consume
+          - path: /usr/src/paperless/export
+            subPath: export
+      data:
+        existingClaim: paperless-data-pvc
+        globalMounts:
+          - path: /usr/src/paperless/data

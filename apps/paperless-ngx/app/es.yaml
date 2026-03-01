@@ -1,0 +1,27 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: paperless-ngx-app
+  namespace: paperless-ngx
+spec:
+  refreshInterval: 1h0m0s
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  target:
+    template:
+      type: generic
+      data:
+        username: "{{ .username }}"
+        password: "{{ .password }}"
+        secret-key: "{{ .secretKey }}"
+  data:
+    - secretKey: username
+      remoteRef:
+        key: "Paperless/username"
+    - secretKey: password
+      remoteRef:
+        key: "Paperless/password"
+    - secretKey: secretKey
+      remoteRef:
+        key: "Paperless/secretkey"

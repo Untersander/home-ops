@@ -1,0 +1,14 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: paperless-db
+  namespace: paperless-ngx
+spec:
+  instances: 1
+  storage:
+    size: 10Gi
+    storageClass: openebs-hostpath-ssd-retain
+  bootstrap:
+    initdb:
+      database: paperless
+      owner: paperless
