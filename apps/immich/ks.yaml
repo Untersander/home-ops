@@ -9,7 +9,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./apps/immich/app
+  path: ./apps/immich/immich
   targetNamespace: immich
   prune: true
   interval: 1h
