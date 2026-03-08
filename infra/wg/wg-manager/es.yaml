@@ -1,0 +1,23 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: wg-manager-secrets
+  namespace: wg
+spec:
+  refreshInterval: 1h0m0s
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  target:
+    template:
+      type: generic
+      data:
+        HTTP_PASSWORD: "{{ .password }}"
+        WG_HOST: "{{ .host }}"
+  data:
+    - secretKey: password
+      remoteRef:
+        key: "WG Manager/password"
+    - secretKey: host
+      remoteRef:
+        key: "WG Manager/host"

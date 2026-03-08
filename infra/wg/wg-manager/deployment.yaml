@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: wg-manager
+  name: wg-manager
+  namespace: wg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: wg-manager
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        service: wg-manager
+    spec:
+      containers:
+        - image: ghcr.io/untersander/wg-manager:latest
+          name: wg-manager
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: wireguard
+              containerPort: 51820
+              protocol: UDP
+              hostPort: 51820
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
+                - SYS_MODULE
+          env:
+            - name: HTTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wg-manager-secrets
+                  key: HTTP_PASSWORD
+            - name: WG_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: wg-manager-secrets
+                  key: WG_HOST
+          volumeMounts:
+            - mountPath: /etc/wireguard
+              name: etc-wireguard
+      restartPolicy: Always
+      volumes:
+        - name: etc-wireguard
+          persistentVolumeClaim:
+            claimName: etc-wireguard
