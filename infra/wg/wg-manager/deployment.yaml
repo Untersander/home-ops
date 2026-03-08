@@ -18,7 +18,7 @@ spec:
         service: wg-manager
     spec:
       containers:
-        - image: ghcr.io/untersander/wg-manager:latest
+        - image: ghcr.io/untersander/wg-manager:0.1.1
           name: wg-manager
           ports:
             - name: http
