@@ -9,7 +9,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./apps/db/cnpg
+  path: ./infra/db/cnpg
   targetNamespace: db
   prune: true
   interval: 1h

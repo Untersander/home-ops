@@ -1,0 +1,31 @@
+apiVersion: external-secrets.io/v1alpha1
+kind: PushSecret
+metadata:
+  name: pushsecret-nextcloud-db # Customisable
+  namespace: db
+spec:
+  updatePolicy: Replace
+  deletionPolicy: None
+  refreshInterval: 1h0m0s
+  secretStoreRefs:
+    - name: 1password-sdk
+      kind: ClusterSecretStore
+  selector:
+    secret:
+      name: pg-cluster-pguser-nextcloud # Source Kubernetes secret
+  data:
+    - match:
+        secretKey: password # Source Kubernetes secret key to be pushed
+        remoteRef:
+          remoteKey: nextcloud-db # 1Password item/secret name
+          property: password # (Optional) 1Password field type, default password
+
+# dbname: bmV4dGNsb3Vk
+#   host: cGctY2x1c3Rlci1wcmltYXJ5LmRiLnN2Yw==
+#   jdbc-uri: amRiYzpwb3N0Z3Jlc3FsOi8vcGctY2x1c3Rlci1wcmltYXJ5LmRiLnN2Yzo1NDMyL25leHRjbG91ZD9wYXNzd29yZD1scnJEVVktTDUlM0R3STkxJTI5ajBQSzF2TCUzRHYmdXNlcj1uZXh0Y2xvdWQ=
+#   password: bHJyRFVZLUw1PXdJOTEpajBQSzF2TD12
+#   port: NTQzMg==
+#   uri: cG9zdGdyZXNxbDovL25leHRjbG91ZDpscnJEVVktTDU9d0k5MSUyOWowUEsxdkw9dkBwZy1jbHVzdGVyLXByaW1hcnkuZGIuc3ZjOjU0MzIvbmV4dGNsb3Vk
+#   user: bmV4dGNsb3Vk
+#   verifier: U0NSQU0tU0hBLTI1NiQ0MDk2OjdVMGdZUXkrRjFuYm56V1hvWXFFSVE9PSQrWlFLVjJqQ0luSCtwUFU5YTUvWVZRZ0FnVExOcU9LTkJ4VnQvV2s5MENvPTo1VlNTZEVidkNFTE5UekhLbXNhUC9aTWcwbGwyeTVoa1FjRERlTjB2bVBnPQ==
+# kind: Secret
