@@ -18,7 +18,7 @@ spec:
         service: wg-manager
     spec:
       containers:
-        - image: ghcr.io/untersander/wg-manager:0.1.1
+        - image: ghcr.io/untersander/wg-manager:0.1.2
           name: wg-manager
           ports:
             - name: http
@@ -48,6 +48,13 @@ spec:
           volumeMounts:
             - mountPath: /etc/wireguard
               name: etc-wireguard
+      resources:
+        limits:
+          cpu: 100m
+          memory: 64Mi
+        requests:
+          cpu: 100m
+          memory: 64Mi
       restartPolicy: Always
       volumes:
         - name: etc-wireguard
