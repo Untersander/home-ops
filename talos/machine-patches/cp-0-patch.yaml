@@ -23,47 +23,48 @@ machine:
       validSubnets:
         - 10.0.0.0/24
         - fd00::/64
-  network:
-    hostname: cp-0
-    interfaces:
-      # LAN
-      - interface: lo1
-        dummy: true
-        addresses:
-          - 10.0.0.4/24
-          - fd00::4/64
-      # - interface: eno1
-      #   addresses:
-      #     - 10.0.0.1/24
-      #     - fd00::1/64
-      - interface: br0
-        addresses:
-          - 10.0.0.1/24
-          - fd00::1/64
-        bridge:
-          stp:
-            enabled: false
-          interfaces:
-            - eno1
-            - enp7s0
-            - enp8s0
-            - enp9s0
-            - enp10s0
-            - enp2s0f1np1
-        routes:
-          - network: 10.0.0.0/24
-          - network: fd00::/64
-        dhcp: false
-      # WAN
-      - interface: enp2s0f0np0
-        dhcp: true
-        dhcpOptions:
-          ipv4: true
-          ipv6: false
 cluster:
   controlPlane:
-    endpoint: https://10.0.0.1:6443 # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.
+    # Endpoint is the canonical controlplane endpoint, which can be an IP address or a DNS hostname.
+    endpoint: https://10.0.0.1:6443
   etcd:
-    advertisedSubnets: # listenSubnets defaults to advertisedSubnets if not set explicitly
+    # listenSubnets defaults to advertisedSubnets if not set explicitly
+    advertisedSubnets:
       - 10.0.0.0/24
       - fd00::/64
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+auto: off
+hostname: cp-0
+---
+apiVersion: v1alpha1
+kind: LinkConfig
+name: enp2s0f0np0
+up: true
+---
+apiVersion: v1alpha1
+kind: DHCPv4Config
+name: enp2s0f0np0
+ignoreHostname: true
+---
+apiVersion: v1alpha1
+kind: BridgeConfig
+name: br0
+links:
+  - eno1
+  - enp7s0
+  - enp8s0
+  - enp9s0
+  - enp10s0
+  - enp2s0f1np1
+stp:
+  enabled: false
+vlan:
+  filtering: false
+up: true
+addresses:
+  - address: 10.0.0.1/24
+  - address: fd00::1/64
+routes:
+  - destination: 10.0.0.0/24
