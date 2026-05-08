@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/traefik/traefik-helm-chart/refs/heads/master/traefik/values.schema.json
 # Configure Network Ports and EntryPoints
 # EntryPoints are the network listeners for incoming traffic.
 ports:
@@ -15,6 +16,12 @@ ports:
   # Defines the HTTPS entry point named 'websecure'
   websecure:
     port: 443
+    transport:
+      # Increase default 60s timeouts for better handling of long-running requests, such as file uploads or downloads needed by e.g. immich
+      respondingTimeouts:
+        readTimeout: 600s # @schema type:[string, integer, null]
+        writeTimeout: 600s # @schema type:[string, integer, null]
+        idleTimeout: 600s # @schema type:[string, integer, null]
 
 # Enables the dashboard in Secure Mode
 api:
