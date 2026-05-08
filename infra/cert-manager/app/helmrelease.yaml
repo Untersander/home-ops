@@ -12,7 +12,7 @@ spec:
         name: jetstack
         namespace: flux-system
       chart: cert-manager
-      version: 1.20.0
+      version: 1.20.2
   driftDetection:
     mode: enabled
   interval: 1h
