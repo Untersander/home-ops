@@ -4,7 +4,7 @@ metadata:
   name: paperless-ngx-app
   namespace: paperless-ngx
 spec:
-  refreshInterval: 1h0m0s
+  refreshInterval: 6h0m0s
   secretStoreRef:
     name: 1password-sdk
     kind: ClusterSecretStore

@@ -4,7 +4,7 @@ metadata:
   name: cloudflare-api-token-secret
   namespace: cert-manager
 spec:
-  refreshInterval: 1h
+  refreshInterval: 6h
   secretStoreRef:
     name: 1password-sdk
     kind: ClusterSecretStore
