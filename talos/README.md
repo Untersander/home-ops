@@ -42,6 +42,7 @@ talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
   --config-patch @machine-patches/base-patch.yaml \
   --config-patch @machine-patches/disk-patch.yaml \
   --config-patch @machine-patches/openebs-patch.yaml \
+  --config-patch @machine-patches/userns-patch.yaml \
   --config-patch @machine-patches/$NODE_NAME-patch.yaml \
   --output-types controlplane \
   --install-image $INSTALLER_IMAGE \
