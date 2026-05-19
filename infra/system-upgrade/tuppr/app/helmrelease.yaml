@@ -8,6 +8,8 @@ spec:
   chartRef:
     kind: OCIRepository
     name: tuppr
+  driftDetection:
+    mode: enabled
   interval: 1h
   values:
     replicaCount: 1

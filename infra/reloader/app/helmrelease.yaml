@@ -9,6 +9,8 @@ spec:
   chartRef:
     kind: OCIRepository
     name: reloader
+  driftDetection:
+    mode: enabled
   interval: 1h
   values:
     fullnameOverride: reloader
