@@ -8,7 +8,7 @@ dd if=path/to/talos.iso of=/dev/sdX bs=4M status=progress conv=fsync
 ```
 
 Metal ISO Factory URLs:
-- [AMD-Metal-ISO-ZFS-Secure-Boot-v1.12.1](https://factory.talos.dev/?arch=amd64&cmdline=talos.config%3Dmetal-iso&cmdline-set=true&extensions=siderolabs%2Fzfs&platform=metal&secureboot=true&target=metal&version=1.12.1)
+- [AMD-Metal-ISO-ZFS-Secure-Boot-v1.13.3](https://factory.talos.dev/?arch=amd64&cmdline=talos.config%3Dmetal-iso&cmdline-set=true&extensions=siderolabs%2Fzfs&platform=metal&secureboot=true&target=metal&version=1.13.3)
 
 To update just change the version in the URL.
 
@@ -33,12 +33,12 @@ AMD node:
 ```bash
 export CLUSTER_NAME=k8s-garden
 export K8s_API_ENDPOINT=https://api.k8s.garden:6443
-export INSTALLER_IMAGE=factory.talos.dev/metal-installer-secureboot/53eda813751085f0a61b224c00256666bba00dcf409d5eb50b140ddb64c76c1a:v1.12.1
+export INSTALLER_IMAGE=factory.talos.dev/metal-installer-secureboot/53eda813751085f0a61b224c00256666bba00dcf409d5eb50b140ddb64c76c1a:v1.13.3
 export NODE_NAME=cp-0
 talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
   --with-secrets secrets.yaml \
-  --kubernetes-version 1.34.1 \
-  --talos-version v1.12.1 \
+  --kubernetes-version 1.36.1 \
+  --talos-version v1.13.3 \
   --config-patch @machine-patches/base-patch.yaml \
   --config-patch @machine-patches/disk-patch.yaml \
   --config-patch @machine-patches/openebs-patch.yaml \
@@ -151,6 +151,17 @@ machine:
     kubePrism:
       enabled: true
       port: 7445
+```
+
+## Upgrade Talos and Kubernetes
+Either use [tuppr](https://github.com/home-operations/tuppr) or manually update using the following commands:
+```bash
+talosctl upgrade --image factory.talos.dev/metal-installer-secureboot/53eda813751085f0a61b224c00256666bba00dcf409d5eb50b140ddb64c76c1a:v1.13.3 -n <IP_ADDRESS>
+talosctl upgrade-k8s --to 1.36.1 -n <IP_ADDRESS>
+```
+If INSTALLER_IMAGE is still set in the environment variables, use the following command to upgrade Talos:
+```bash
+talosctl upgrade --image $INSTALLER_IMAGE -n <IP_ADDRESS>
 ```
 
 ## Home "Router" Setup
