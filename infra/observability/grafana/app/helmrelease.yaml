@@ -8,10 +8,10 @@ spec:
     spec:
       sourceRef:
         kind: HelmRepository
-        name: grafana
+        name: grafana-community
         namespace: flux-system
       chart: grafana
-      version: 8.8.5
+      version: 12.4.1
   driftDetection:
     mode: enabled
   interval: 1h
