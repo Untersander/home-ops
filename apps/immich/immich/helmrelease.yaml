@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: immich
-      version: 0.11.1
+      version: 0.12.1
       sourceRef:
         kind: HelmRepository
         name: immich-charts
@@ -40,7 +40,7 @@ spec:
             main:
               image:
                 # renovate: datasource=github-releases depName=immich-app/immich
-                tag: "v2.7.5"
+                tag: "v3.0.1"
               resources:
                 requests:
                   cpu: 100m
