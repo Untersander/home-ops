@@ -45,8 +45,8 @@ spec:
       # - --cloudflare-regional-services # (optional) enable the regional hostname feature that configure which region can decrypt HTTPS requests
       # - --cloudflare-region-key="eu" # (optional) configure which region can decrypt HTTPS requests
 
-    logLevel: debug
-    interval: 30s
+    logLevel: info
+    interval: 1m
 
     sources:
       - crd
