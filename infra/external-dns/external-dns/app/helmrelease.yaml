@@ -1,0 +1,61 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: external-dns
+spec:
+  chart:
+    spec:
+      sourceRef:
+        kind: HelmRepository
+        name: external-dns
+        namespace: flux-system
+      chart: external-dns
+      version: 1.21.1
+  driftDetection:
+    mode: enabled
+  interval: 3m
+  values:
+    rbac:
+      create: true
+      additionalPermissions:
+        - apiGroups: ["externaldns.k8s.io"]
+          resources: ["dnsendpoints"]
+          verbs: ["get", "watch", "list"]
+        - apiGroups: ["externaldns.k8s.io"]
+          resources: ["dnsendpoints/status"]
+          verbs: ["*"]
+
+    provider:
+      name: cloudflare
+    env:
+      - name: CF_API_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: external-dns-secrets
+            key: external-dns-cloudflare-api-key
+
+    extraArgs:
+      - --managed-record-types=A
+      - --cloudflare-record-comment="provisioned by external-dns" # (optional) configure comments for provisioned records; <=100 chars for free zones; <=500 chars for paid zones
+      - --cloudflare-dns-records-per-page=5000 # (optional) configure how many DNS records to fetch per request
+      - --zone-id-filter=8856c20d357c8da5aa9486131e150279 # (optional) limit to a specific zone.
+      # - --cloudflare-proxied # (optional) enable the proxy feature of Cloudflare (DDOS protection, CDN...)
+      # - --cloudflare-regional-services # (optional) enable the regional hostname feature that configure which region can decrypt HTTPS requests
+      # - --cloudflare-region-key="eu" # (optional) configure which region can decrypt HTTPS requests
+
+    logLevel: debug
+    interval: 30s
+
+    sources:
+      - crd
+      # - gateway-httproute
+
+    domainFilters:
+      - k8s.garden
+
+    policy: sync
+
+    txtOwnerId: external-dns
+
+    serviceMonitor:
+      enabled: true

@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vpnk8sgarden-updater
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vpnk8sgarden-updater
+rules:
+  - apiGroups:
+      - externaldns.k8s.io
+    resources:
+      - dnsendpoints
+    verbs:
+      - get
+      - create
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vpnk8sgarden-updater
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: vpnk8sgarden-updater
+subjects:
+  - kind: ServiceAccount
+    name: vpnk8sgarden-updater
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: vpnk8sgarden-updater
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          serviceAccountName: vpnk8sgarden-updater
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: updater
+              image: curlimages/curl:8.16.0
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                runAsUser: 1000
+                runAsNonRoot: true
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  api_server="https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}"
+                  api_path="/apis/externaldns.k8s.io/v1alpha1/namespaces/${POD_NAMESPACE}/dnsendpoints/${ENDPOINT_NAME}"
+                  token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+                  ca_file=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+                  get_ipv4() {
+                    value=$(curl -4fsS --max-time 10 "$1")
+                    printf '%s' "$value" | awk -F. '
+                      NF == 4 && $1 >= 0 && $1 <= 255 && $2 >= 0 && $2 <= 255 &&
+                      $3 >= 0 && $3 <= 255 && $4 >= 0 && $4 <= 255 { found = 1 }
+                      END { exit found ? 0 : 1 }
+                    '
+                    printf '%s' "$value"
+                  }
+
+                  ip_wtf=$(get_ipv4 https://ip.wtf)
+                  ipify=$(get_ipv4 https://api.ipify.org)
+                  if [ "$ip_wtf" != "$ipify" ]; then
+                    echo "public IP sources disagree: ${ip_wtf} vs ${ipify}" >&2
+                    exit 1
+                  fi
+
+                  auth_header="Authorization: Bearer ${token}"
+                  endpoint_url="${api_server}${api_path}"
+                  endpoint_json=$(printf '{"apiVersion":"externaldns.k8s.io/v1alpha1","kind":"DNSEndpoint","metadata":{"name":"%s","annotations":{"external-dns":"public"}},"spec":{"endpoints":[{"dnsName":"%s","recordType":"A","targets":["%s"]}]}}' "$ENDPOINT_NAME" "$DNS_NAME" "$ip_wtf")
+                  patch_json=$(printf '{"spec":{"endpoints":[{"dnsName":"%s","recordType":"A","targets":["%s"]}]}}' "$DNS_NAME" "$ip_wtf")
+
+                  http_code=$(curl -sS -o /dev/null -w '%{http_code}' --cacert "$ca_file" \
+                    -H "$auth_header" "$endpoint_url")
+                  case "$http_code" in
+                    200)
+                      curl -fsS --cacert "$ca_file" -X PATCH \
+                        -H "$auth_header" -H 'Content-Type: application/merge-patch+json' \
+                        --data "$patch_json" "$endpoint_url" >/dev/null
+                      ;;
+                    404)
+                      curl -fsS --cacert "$ca_file" -X POST \
+                        -H "$auth_header" -H 'Content-Type: application/json' \
+                        --data "$endpoint_json" "${api_server}/apis/externaldns.k8s.io/v1alpha1/namespaces/${POD_NAMESPACE}/dnsendpoints" >/dev/null
+                      ;;
+                    *)
+                      echo "unable to read DNSEndpoint: HTTP ${http_code}" >&2
+                      exit 1
+                      ;;
+                  esac
+              env:
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+                - name: ENDPOINT_NAME
+                  value: vpnk8sgarden
+                - name: DNS_NAME
+                  value: vpn.k8s.garden
