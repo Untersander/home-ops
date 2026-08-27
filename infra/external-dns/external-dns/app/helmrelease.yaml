@@ -36,9 +36,11 @@ spec:
 
     extraArgs:
       - --managed-record-types=A
+      - --managed-record-types=AAAA
       - --cloudflare-record-comment="provisioned by external-dns" # (optional) configure comments for provisioned records; <=100 chars for free zones; <=500 chars for paid zones
       - --cloudflare-dns-records-per-page=5000 # (optional) configure how many DNS records to fetch per request
       - --zone-id-filter=8856c20d357c8da5aa9486131e150279 # (optional) limit to a specific zone.
+      - --zone-id-filter=861ab88868889140b32454885baa16f2
       # - --cloudflare-proxied # (optional) enable the proxy feature of Cloudflare (DDOS protection, CDN...)
       # - --cloudflare-regional-services # (optional) enable the regional hostname feature that configure which region can decrypt HTTPS requests
       # - --cloudflare-region-key="eu" # (optional) configure which region can decrypt HTTPS requests
@@ -49,12 +51,18 @@ spec:
     sources:
       - crd
       # - gateway-httproute
+      # - gateway-grpcroute
+      # - gateway-tlsroute
+      # - gateway-tcproute
+      # - gateway-udproute
 
     domainFilters:
       - k8s.garden
+      - noreplay.org
 
     policy: sync
 
+    registry: noop
     txtOwnerId: external-dns
 
     serviceMonitor:

@@ -1,12 +1,12 @@
 apiVersion: externaldns.k8s.io/v1alpha1
 kind: DNSEndpoint
 metadata:
-  name: vpnk8sgarden
+  name: noreplay-org
   annotations:
     external-dns: public
 spec:
   endpoints:
-  - dnsName: vpn.k8s.garden
+  - dnsName: "*.noreplay.org"
     recordType: A
     targets:
-    - 109.202.197.194
+    - 10.0.0.20
