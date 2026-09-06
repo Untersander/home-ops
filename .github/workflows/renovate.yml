@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: Renovate
 
 on:
@@ -6,7 +7,7 @@ on:
     - cron: "0 */6 * * *"
 
 permissions:
-  contents: read
+  contents: write
   issues: write
   pull-requests: write
 
@@ -24,5 +25,7 @@ jobs:
       - name: Run Renovate
         uses: renovatebot/github-action@v46.1.7
         with:
-          token: ${{ secrets.RENOVATE_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           configurationFile: .renovaterc.json5
+        env:
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
