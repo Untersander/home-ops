@@ -7,38 +7,65 @@
     ':separateMajorReleases',
     ':timezone(Europe/Zurich)',
   ],
-  baseBranches: ['main'],
+  baseBranchPatterns: [
+    'main',
+  ],
   binarySource: 'install',
-  enabledManagers: ['flux', 'helm-values', 'kubernetes', 'regex', 'github-actions'],
+  enabledManagers: [
+    'flux',
+    'helm-values',
+    'kubernetes',
+    'custom.regex',
+    'github-actions',
+  ],
   ignorePaths: [
     '**/tmp/**',
     'infra/flux-system/crds.yaml',
   ],
-  labels: ['dependencies', 'renovate'],
+  labels: [
+    'dependencies',
+    'renovate',
+  ],
   prConcurrentLimit: 5,
   prHourlyLimit: 2,
   rangeStrategy: 'bump',
   packageRules: [
     {
-      matchPackageNames: ['ghcr.io/siderolabs/kubelet', 'ghcr.io/siderolabs/installer'],
+      matchPackageNames: [
+        'ghcr.io/siderolabs/kubelet',
+        'ghcr.io/siderolabs/installer',
+      ],
       groupName: 'system-upgrade',
     },
     {
-      matchFileNames: ['infra/flux-system/gotk-components.yaml'],
-      matchManagers: ['kubernetes'],
+      matchFileNames: [
+        'infra/flux-system/gotk-components.yaml',
+      ],
+      matchManagers: [
+        'kubernetes',
+      ],
       enabled: false,
     },
     {
-      matchManagers: ['flux'],
+      matchManagers: [
+        'flux',
+      ],
       groupName: 'flux-sources-and-charts',
     },
     {
-      matchManagers: ['kubernetes', 'helm-values'],
-      matchUpdateTypes: ['digest'],
+      matchManagers: [
+        'kubernetes',
+        'helm-values',
+      ],
+      matchUpdateTypes: [
+        'digest',
+      ],
       groupName: 'container-image-digests',
     },
     {
-      matchUpdateTypes: ['major'],
+      matchUpdateTypes: [
+        'major',
+      ],
       automerge: false,
     },
   ],
@@ -58,7 +85,9 @@
     {
       customType: 'regex',
       description: 'Track custom Tuppr upgrade versions via inline renovate annotations',
-      managerFilePatterns: ['/infra\\/system-upgrade\\/tuppr\\/upgrades\\/.*\\.ya?ml$/'],
+      managerFilePatterns: [
+        '/infra\\/system-upgrade\\/tuppr\\/upgrades\\/.*\\.ya?ml$/',
+      ],
       matchStrings: [
         'renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s+depName=(?<depName>[^\\s]+)\\s*\\n\\s*version:\\s*(?<currentValue>[^\\s]+)',
       ],
