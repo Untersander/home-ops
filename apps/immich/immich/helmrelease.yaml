@@ -40,7 +40,7 @@ spec:
             main:
               image:
                 # renovate: datasource=github-releases depName=immich-app/immich
-                tag: "v3.0.1"
+                tag: "v3.1.0"
               resources:
                 requests:
                   cpu: 100m
