@@ -342,10 +342,6 @@ metrics:
     # -- Target labels to add to the scraped metrics
     targetLabels: []
 
-# -- DEPRECATED: Use extraInitContainers instead. Will be removed after 2030.
-# @deprecated - This parameter is deprecated, use extraInitContainers instead
-initContainers: []
-
 # -- Additional init containers to run inside the pod.
 # Init containers run before the main application container starts.
 # See: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
