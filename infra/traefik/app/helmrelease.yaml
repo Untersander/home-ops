@@ -12,7 +12,7 @@ spec:
         name: traefik
         namespace: flux-system
       chart: traefik
-      version: 39.0.9
+      version: 41.4.0
   driftDetection:
     mode: enabled
   interval: 1h
