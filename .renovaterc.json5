@@ -11,6 +11,7 @@
   ],
   ignorePaths: [
     '**/tmp/**',
+    '**/*.svg',
     'infra/flux-system/crds.yaml',
   ],
   labels: [
@@ -22,11 +23,12 @@
   rangeStrategy: 'bump',
   packageRules: [
     {
-      matchPackageNames: [
-        'ghcr.io/siderolabs/kubelet',
-        'ghcr.io/siderolabs/installer',
+      description: 'group dependencies by application (first directory under apps/ or infra/)',
+      matchFileNames: [
+        'apps/**',
+        'infra/**',
       ],
-      groupName: 'system-upgrade',
+      groupName: '{{ lookup (split packageFile "/") 1 }}',
     },
     {
       matchFileNames: [
