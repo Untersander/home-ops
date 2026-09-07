@@ -11,7 +11,7 @@ spec:
         name: kubelet-csr-approver
         namespace: flux-system
       chart: kubelet-csr-approver
-      version: 1.2.11
+      version: 1.2.15
   driftDetection:
     mode: enabled
   interval: 1h
