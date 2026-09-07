@@ -11,7 +11,7 @@ spec:
         name: prometheus-community
         namespace: flux-system
       chart: kube-prometheus-stack
-      version: 70.10.0
+      version: 90.0.0
   driftDetection:
     mode: enabled
   interval: 1h
@@ -122,18 +122,18 @@ spec:
         #         subPath: prometheus-db
 
         # Select all PrometheusRule, ServiceMonitor, PodMonitor, Probe, and ScrapeConfig resources found.
-        ruleSelectorNilUsesHelmValues: false
         ruleNamespaceSelector: {}
-        ruleSelector: {}
-        serviceMonitorSelectorNilUsesHelmValues: false
+        ruleSelector:
+          matchLabels: null
         serviceMonitorNamespaceSelector: {}
-        serviceMonitorSelector: {}
-        podMonitorSelectorNilUsesHelmValues: false
+        serviceMonitorSelector:
+          matchLabels: null
         podMonitorNamespaceSelector: {}
-        podMonitorSelector: {}
-        probeSelectorNilUsesHelmValues: false
+        podMonitorSelector:
+          matchLabels: null
         probeNamespaceSelector: {}
-        probeSelector: {}
-        scrapeConfigSelectorNilUsesHelmValues: false
+        probeSelector:
+          matchLabels: null
         scrapeConfigNamespaceSelector: {}
-        scrapeConfigSelector: {}
+        scrapeConfigSelector:
+          matchLabels: null
