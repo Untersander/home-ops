@@ -12,7 +12,7 @@ spec:
         name: jellyfin
         namespace: flux-system
       chart: jellyfin
-      version: 2.7.0
+      version: 3.2.0
   driftDetection:
     mode: enabled
   interval: 1h
