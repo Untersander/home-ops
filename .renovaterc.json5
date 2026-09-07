@@ -10,7 +10,6 @@
   baseBranchPatterns: [
     'main',
   ],
-  binarySource: 'install',
   enabledManagers: [
     'flux',
     'helm-values',
