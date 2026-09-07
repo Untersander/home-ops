@@ -12,7 +12,7 @@ spec:
         name: cnpg
         namespace: flux-system
       chart: cloudnative-pg
-      version: 0.27.1
+      version: 0.29.0
   driftDetection:
     mode: enabled
   interval: 1h
