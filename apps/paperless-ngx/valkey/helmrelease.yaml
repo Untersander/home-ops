@@ -19,7 +19,7 @@ spec:
           app:
             image:
               repository: docker.io/valkey/valkey
-              tag: 9.0.3-alpine3.23
+              tag: 9.1.0-alpine3.23
             args:
               - --save
               - ""
