@@ -19,7 +19,6 @@ spec:
           app:
             image:
               repository: ghcr.io/paperless-ngx/paperless-ngx
-              # renovate: datasource=docker depName=ghcr.io/paperless-ngx/paperless-ngx
               tag: 2.20.8
             env:
               TZ: Europe/Zurich

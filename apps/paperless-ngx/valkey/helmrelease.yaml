@@ -19,7 +19,6 @@ spec:
           app:
             image:
               repository: docker.io/valkey/valkey
-              # renovate: datasource=docker depName=docker.io/valkey/valkey
               tag: 9.0.3-alpine3.23
             args:
               - --save

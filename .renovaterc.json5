@@ -1,21 +1,13 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   extends: [
-    'config:recommended',
-    ':dependencyDashboard',
+    'github>home-operations/renovate-presets#8.1.0',
     ':semanticCommits',
     ':separateMajorReleases',
     ':timezone(Europe/Zurich)',
   ],
   baseBranchPatterns: [
     'main',
-  ],
-  enabledManagers: [
-    'flux',
-    'helm-values',
-    'kubernetes',
-    'custom.regex',
-    'github-actions',
   ],
   ignorePaths: [
     '**/tmp/**',
@@ -46,50 +38,18 @@
       enabled: false,
     },
     {
-      matchManagers: [
-        'flux',
-      ],
-      groupName: 'flux-sources-and-charts',
-    },
-    {
-      matchManagers: [
-        'kubernetes',
-        'helm-values',
-      ],
-      matchUpdateTypes: [
-        'digest',
-      ],
-      groupName: 'container-image-digests',
-    },
-    {
       matchUpdateTypes: [
         'major',
       ],
       automerge: false,
     },
-  ],
-  customManagers: [
     {
-      customType: 'regex',
-      description: 'Track OCIRepository tags used by Flux',
-      managerFilePatterns: [
-        '/(^|/)apps\\/.*\\/ocirepository\\.ya?ml$/',
-        '/(^|/)infra\\/.*\\/ocirepository\\.ya?ml$/',
+      description: 'zer0ver guard: never automerge potentially-breaking 0.x minor bumps',
+      matchUpdateTypes: [
+        'minor',
       ],
-      matchStrings: [
-        'kind:\\s*OCIRepository[\\s\\S]*?ref:\\s*[\\s\\S]*?tag:\\s*(?<currentValue>[^\\s]+)[\\s\\S]*?url:\\s*oci:\\/\\/(?<depName>[^\\s]+)',
-      ],
-      datasourceTemplate: 'docker',
-    },
-    {
-      customType: 'regex',
-      description: 'Track custom Tuppr upgrade versions via inline renovate annotations',
-      managerFilePatterns: [
-        '/infra\\/system-upgrade\\/tuppr\\/upgrades\\/.*\\.ya?ml$/',
-      ],
-      matchStrings: [
-        'renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s+depName=(?<depName>[^\\s]+)\\s*\\n\\s*version:\\s*(?<currentValue>[^\\s]+)',
-      ],
+      matchCurrentVersion: '/^v?0\\./',
+      automerge: false,
     },
   ],
 }
