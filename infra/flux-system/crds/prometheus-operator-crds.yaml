@@ -12,7 +12,7 @@ spec:
         name: prometheus-community
         namespace: flux-system
       chart: prometheus-operator-crds
-      version: 31.0.1
+      version: 32.0.0
   driftDetection:
     mode: enabled
   interval: 1h
