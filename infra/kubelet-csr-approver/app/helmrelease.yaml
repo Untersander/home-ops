@@ -9,7 +9,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: kubelet-csr-approver
-        namespace: flux-system
       chart: kubelet-csr-approver
       version: 1.2.15
   driftDetection:

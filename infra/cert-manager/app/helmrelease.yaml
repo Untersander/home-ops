@@ -10,7 +10,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: jetstack
-        namespace: flux-system
       chart: cert-manager
       version: v1.21.1
   driftDetection:

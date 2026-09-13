@@ -8,8 +8,7 @@ spec:
     spec:
       sourceRef:
         kind: HelmRepository
-        name: prometheus-community
-        namespace: flux-system
+        name: blackbox-exporter
       chart: prometheus-blackbox-exporter
       version: 11.18.0
   driftDetection:

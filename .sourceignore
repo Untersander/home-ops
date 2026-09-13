@@ -7,5 +7,6 @@
 # Include manifest directories
 !/infra/
 !/apps/
+!/crds/
 
 **/*.md

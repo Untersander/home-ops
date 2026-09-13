@@ -1,8 +1,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
-  name: app-template
-  namespace: flux-system
+  name: paperless-ngx
+  namespace: paperless-ngx
 spec:
   interval: 15m
   layerSelector:

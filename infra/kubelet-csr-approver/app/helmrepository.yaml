@@ -2,8 +2,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: grafana
-  namespace: flux-system
+  name: kubelet-csr-approver
 spec:
-  url: https://grafana.github.io/helm-charts
+  url: https://postfinance.github.io/kubelet-csr-approver
   interval: 24h

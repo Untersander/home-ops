@@ -8,8 +8,7 @@ spec:
     spec:
       sourceRef:
         kind: HelmRepository
-        name: prometheus-community
-        namespace: flux-system
+        name: kube-prometheus-stack
       chart: kube-prometheus-stack
       version: 90.0.0
   driftDetection:

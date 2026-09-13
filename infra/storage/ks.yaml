@@ -9,7 +9,7 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./infra/garage/app
+  path: ./infra/storage/garage/app
   targetNamespace: storage
   prune: true
   interval: 1h

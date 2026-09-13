@@ -2,8 +2,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: prometheus-community
-  namespace: flux-system
+  name: blackbox-exporter
 spec:
   url: https://prometheus-community.github.io/helm-charts
   interval: 24h

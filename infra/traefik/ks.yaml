@@ -6,8 +6,6 @@ metadata:
   namespace: traefik
 spec:
   dependsOn:
-    - name: repos
-      namespace: flux-system
     - name: crds
       namespace: flux-system
   sourceRef:
@@ -27,8 +25,6 @@ metadata:
   namespace: traefik
 spec:
   dependsOn:
-    - name: repos
-      namespace: flux-system
     - name: crds
       namespace: flux-system
     - name: traefik-configs

@@ -8,8 +8,7 @@ spec:
     spec:
       sourceRef:
         kind: HelmRepository
-        name: prometheus-community
-        namespace: flux-system
+        name: kube-state-metrics
       chart: kube-state-metrics
       version: 8.4.2
   driftDetection:

@@ -2,8 +2,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: cilium
-  namespace: flux-system
+  name: jellyfin
+  namespace: jellyfin
 spec:
-  url: https://helm.cilium.io
+  url: https://jellyfin.github.io/jellyfin-helm
   interval: 24h

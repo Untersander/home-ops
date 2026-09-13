@@ -1,9 +1,8 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/refs/heads/main/helmrepository-source-v1.json
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository #darauf verweist helmrelease.yaml
-metadata:
-  name: external-dns
-  namespace: flux-system
+metadata: 
+  name: external-secrets
 spec:
-  url: https://kubernetes-sigs.github.io/external-dns/
+  url: https://charts.external-secrets.io
   interval: 24h

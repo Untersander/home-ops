@@ -9,7 +9,6 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./infra/flux-system/crds
-  targetNamespace: flux-system
+  path: ./crds
   prune: true
   interval: 1h

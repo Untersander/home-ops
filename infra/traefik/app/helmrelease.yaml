@@ -10,7 +10,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: traefik
-        namespace: flux-system
       chart: traefik
       version: 41.5.0
   driftDetection:

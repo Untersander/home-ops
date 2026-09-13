@@ -10,7 +10,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: openebs
-        namespace: flux-system
       chart: openebs
       version: 4.6.0
   driftDetection:

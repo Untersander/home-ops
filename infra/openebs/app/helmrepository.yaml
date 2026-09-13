@@ -2,8 +2,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: cnpg
-  namespace: flux-system
+  name: openebs
+  namespace: openebs
 spec:
-  url: https://cloudnative-pg.github.io/charts
+  url: https://openebs.github.io/openebs
   interval: 24h

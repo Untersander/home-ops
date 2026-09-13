@@ -2,8 +2,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: traefik
-  namespace: flux-system
+  name: kube-state-metrics
 spec:
-  url: https://traefik.github.io/charts
+  url: https://prometheus-community.github.io/helm-charts
   interval: 24h

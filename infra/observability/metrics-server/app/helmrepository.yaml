@@ -2,8 +2,7 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: authentik
-  namespace: flux-system
+  name: metrics-server
 spec:
-  url: https://charts.goauthentik.io
+  url: https://kubernetes-sigs.github.io/metrics-server/
   interval: 24h

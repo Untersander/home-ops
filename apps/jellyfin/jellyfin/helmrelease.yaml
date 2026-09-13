@@ -10,7 +10,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: jellyfin
-        namespace: flux-system
       chart: jellyfin
       version: 3.2.0
   driftDetection:

@@ -8,7 +8,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: external-dns
-        namespace: flux-system
       chart: external-dns
       version: 1.21.1
   driftDetection:

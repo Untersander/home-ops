@@ -2,8 +2,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: kubelet-csr-approver
-  namespace: flux-system
+  name: traefik
+  namespace: traefik
 spec:
-  url: https://postfinance.github.io/kubelet-csr-approver
+  url: https://traefik.github.io/charts
   interval: 24h
