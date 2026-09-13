@@ -1,0 +1,15 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: envoy-gateway
+  namespace: envoy-gateway
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyService:
+        name: envoy-gateway
+        # Cilium L2 announcements send traffic to the leader node, which may not run an envoy pod
+        externalTrafficPolicy: Cluster
+        annotations:
+          lbipam.cilium.io/ips: 10.0.0.20

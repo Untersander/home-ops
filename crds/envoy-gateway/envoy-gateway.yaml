@@ -7,7 +7,7 @@ metadata:
 spec:
   url: https://github.com/envoyproxy/gateway
   ref:
-    tag: v1.8.3
+    tag: v1.9.1
   ignore: |-
     /*
     !/charts/gateway-helm/charts/crds/crds/generated

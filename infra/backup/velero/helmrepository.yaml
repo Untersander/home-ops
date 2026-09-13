@@ -2,8 +2,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: traefik
-  namespace: traefik
+  name: vmware-tanzu
+  namespace: backup
 spec:
-  url: https://traefik.github.io/charts
+  url: https://vmware-tanzu.github.io/helm-charts
   interval: 24h

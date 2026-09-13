@@ -9,8 +9,8 @@ spec:
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway
-    name: traefik-gateway
-    namespace: traefik
+    name: envoy-gateway
+    namespace: envoy-gateway
     sectionName: websecure
   rules:
   - backendRefs:

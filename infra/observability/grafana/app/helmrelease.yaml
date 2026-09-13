@@ -170,8 +170,8 @@ spec:
         hostnames:
           - grafana.k8s.garden
         parentRefs:
-          - name: traefik-gateway
-            namespace: traefik
+          - name: envoy-gateway
+            namespace: envoy-gateway
             sectionName: websecure
 
     serviceAccount:

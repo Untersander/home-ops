@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: envoy-gateway
+  namespace: envoy-gateway
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: envoy-gateway
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  # Gateway API and Envoy Gateway CRDs are managed in ./crds
+  install:
+    crds: Skip
+  upgrade:
+    crds: Skip
+  values:
+    crds:
+      enabled: false

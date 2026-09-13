@@ -2,7 +2,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: wildcard-k8s-garden-tls
-  namespace: traefik
+  namespace: envoy-gateway
 spec:
   # Secret names are always required.
   secretName: wildcard-k8s-garden-tls

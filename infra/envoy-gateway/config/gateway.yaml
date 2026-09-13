@@ -1,13 +1,15 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: traefik-gateway
-  namespace: traefik
+  name: envoy-gateway
+  namespace: envoy-gateway
 spec:
-  gatewayClassName: traefik
-  addresses:
-    - type: IPAddress
-      value: 10.0.0.20
+  gatewayClassName: envoy-gateway
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: envoy-gateway
   listeners:
   - allowedRoutes:
       namespaces:

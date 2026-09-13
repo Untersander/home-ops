@@ -124,8 +124,8 @@ service:
 
 # -- Ingress configuration. See: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
-  enabled: true
-  className: traefik
+  enabled: false
+  className: ""
   # annotations: {}
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-dns01-prod
@@ -142,16 +142,16 @@ ingress:
 
 # -- HTTPRoute configuration for Gateway API. See: https://gateway-api.sigs.k8s.io/
 httpRoute:
-  enabled: false
+  enabled: true
   annotations: {}
   # -- Gateway references to attach this HTTPRoute to
   parentRefs:
-    - name: traefik-gateway
-      namespace: traefik
+    - name: envoy-gateway
+      namespace: envoy-gateway
       sectionName: websecure-noreplay
   # -- Hostnames to match for this HTTPRoute
-  hostnames: play.noreplay.org
-    # - jellyfin.example.com
+  hostnames:
+    - play.noreplay.org
   # -- Rules for routing traffic
   rules:
     - matches:

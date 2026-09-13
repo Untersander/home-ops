@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./gatewayclass.yaml
+  - ./envoyproxy.yaml
+  - ./gateway.yaml
+  - ./clienttrafficpolicy.yaml
+  - ./backendtrafficpolicy.yaml
+  - ./http-https-redirect.yaml
+  - ./cert-k8s.yaml
+  - ./cert-noreplay.yaml
+  - ./l2.yaml

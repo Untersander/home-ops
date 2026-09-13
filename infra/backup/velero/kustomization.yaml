@@ -3,15 +3,14 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./helmrepository.yaml
+  - ./externalsecret.yaml
   - ./helmrelease.yaml
-  - ./cert-noreplay.yaml
-  - ./cert-k8s.yaml
-  - ./l2.yaml
-# Having Traefik values in a separate `values.yaml` is more comfortable.
 configMapGenerator:
-  - name: traefik-values
-    namespace: traefik
+  - name: velero-values
+    namespace: backup
     files:
       - values.yaml=./values.yaml
 configurations:
   - nameReference.yaml
+# generatorOptions:
+#   disableNameSuffixHash: true

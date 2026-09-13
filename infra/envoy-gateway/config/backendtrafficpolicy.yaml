@@ -1,0 +1,15 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: envoy-gateway
+  namespace: envoy-gateway
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy-gateway
+  timeout:
+    http:
+      # Envoy defaults to 15s for the whole response, which breaks downloads and streaming.
+      # Disabled; stalled streams are still closed by streamIdleTimeout in the ClientTrafficPolicy.
+      requestTimeout: 0s
