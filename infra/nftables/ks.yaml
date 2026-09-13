@@ -11,5 +11,5 @@ spec:
     namespace: flux-system
   path: ./infra/nft/app
   targetNamespace: nftables
-  prune: true
+  prune: false
   interval: 24h

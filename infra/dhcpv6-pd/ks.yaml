@@ -11,5 +11,5 @@ spec:
     namespace: flux-system
   path: ./infra/dhcpv6-pd/app
   targetNamespace: dhcpv6-pd
-  prune: true
+  prune: false
   interval: 1h

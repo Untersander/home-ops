@@ -2,27 +2,27 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  name: gateway-api
-  namespace: flux-system
+  name: envoy-gateway-crds
+  namespace: kube-system
 spec:
-  url: https://github.com/kubernetes-sigs/gateway-api
+  url: https://github.com/envoyproxy/gateway
   ref:
-    tag: v1.6.2
+    tag: v1.8.3
   ignore: |-
     /*
-    !/config/crd/
+    !/charts/gateway-helm/charts/crds/crds/generated
   interval: 24h
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: gateway-api-standard
-  namespace: flux-system
+  name: envoy-gateway-crds
+  namespace: kube-system
 spec:
   sourceRef:
     kind: GitRepository
-    name: gateway-api
-  path: ./config/crd/
+    name: envoy-gateway-crds
+  path: ./charts/gateway-helm/charts/crds/crds/generated
   prune: false
-  interval: 1h
+  interval: 3m
