@@ -1,10 +1,12 @@
-# ZFS volume, backed up via CSI snapshot (kopiur copyMethod: Snapshot)
+# Shared ZFS volume, backed up via CSI snapshot (kopiur copyMethod: Snapshot).
+# The shared class (shared: "yes") is required for k8up, which mounts the live PVC
+# in a second pod; plain openebs-zfs refuses that ("device already mounted").
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: test-zfs
+  name: test-zfs-shared
 spec:
-  storageClassName: openebs-zfs
+  storageClassName: openebs-zfs-shared
   accessModes:
     - ReadWriteOnce
   resources:
@@ -79,7 +81,7 @@ spec:
       volumes:
         - name: zfs
           persistentVolumeClaim:
-            claimName: test-zfs
+            claimName: test-zfs-shared
         - name: hostpath
           persistentVolumeClaim:
             claimName: test-hostpath

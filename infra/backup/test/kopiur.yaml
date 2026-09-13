@@ -30,7 +30,7 @@ spec:
 apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotPolicy
 metadata:
-  name: test-zfs
+  name: test-zfs-shared
 spec:
   repository:
     name: garage-test
@@ -38,7 +38,7 @@ spec:
   volumeSnapshotClassName: zfspv-snapclass
   sources:
     - pvc:
-        name: test-zfs
+        name: test-zfs-shared
   retention:
     keepLatest: 5
     keepDaily: 7
@@ -67,10 +67,10 @@ spec:
 apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotSchedule
 metadata:
-  name: test-zfs-hourly
+  name: test-zfs-shared-hourly
 spec:
   policyRef:
-    name: test-zfs
+    name: test-zfs-shared
   schedule:
     cron: "0 * * * *"
     runOnCreate: true
