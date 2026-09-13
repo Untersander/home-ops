@@ -1,15 +1,71 @@
+# Velero is disabled, its manifests are kept in ./infra/backup/velero for reference
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: velero
+  name: kopiur
   namespace: backup
 spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: ./infra/backup/velero
+  path: ./infra/backup/kopiur
   targetNamespace: backup
+  prune: true
+  interval: 1h
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: k8up
+  namespace: backup
+spec:
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./infra/backup/k8up
+  targetNamespace: backup
+  prune: true
+  interval: 1h
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: garage-buckets
+  namespace: backup
+spec:
+  dependsOn:
+    - name: garage-infra
+      namespace: object-storage
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./infra/backup/buckets
+  targetNamespace: backup
+  prune: true
+  interval: 1h
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: backup-test
+  namespace: backup
+spec:
+  dependsOn:
+    - name: kopiur
+    - name: k8up
+    - name: garage-buckets
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./infra/backup/test
+  targetNamespace: backup-test
   prune: true
   interval: 1h

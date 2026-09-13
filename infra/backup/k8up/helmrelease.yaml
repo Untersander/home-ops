@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: k8up
+spec:
+  chart:
+    spec:
+      sourceRef:
+        kind: HelmRepository
+        name: k8up-io
+      chart: k8up
+      version: 4.10.0
+  # Helm never upgrades CRDs by itself, let Flux handle them
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  driftDetection:
+    mode: enabled
+  interval: 1h

@@ -22,6 +22,9 @@ spec:
     data:
       storageClassName: openebs-zfs-shared-retain
       size: 30Gi
+  s3Api:
+    region: garage
+    rootDomain: .s3.k8s.garden
   admin:
     adminTokenSecretRef:
       name: garage-infra-admin-token

@@ -1,0 +1,85 @@
+# ZFS volume, backed up via CSI snapshot (kopiur copyMethod: Snapshot)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-zfs
+spec:
+  storageClassName: openebs-zfs
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Hostpath volume without snapshot support (kopiur copyMethod: Direct)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-hostpath
+spec:
+  storageClassName: openebs-hostpath-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Writes a timestamp every minute so every backup contains new data
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backup-test-writer
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backup-test-writer
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: backup-test-writer
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: writer
+          image: docker.io/library/busybox:1.37
+          command:
+            - /bin/sh
+            - -c
+            - |
+              while true; do
+                date -Iseconds | tee -a /data/zfs/log.txt >> /data/hostpath/log.txt
+                sleep 60
+              done
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 1m
+              memory: 8Mi
+            limits:
+              memory: 32Mi
+          volumeMounts:
+            - name: zfs
+              mountPath: /data/zfs
+            - name: hostpath
+              mountPath: /data/hostpath
+      volumes:
+        - name: zfs
+          persistentVolumeClaim:
+            claimName: test-zfs
+        - name: hostpath
+          persistentVolumeClaim:
+            claimName: test-hostpath
