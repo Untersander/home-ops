@@ -8,7 +8,6 @@ spec:
     type: Kubernetes
     kubernetes:
       envoyService:
-        name: envoy-gateway
         # Cilium L2 announcements send traffic to the leader node, which may not run an envoy pod
         externalTrafficPolicy: Cluster
         annotations:
