@@ -9,7 +9,7 @@ spec:
         kind: HelmRepository
         name: external-dns
       chart: external-dns
-      version: 1.21.1
+      version: 1.22.0
   driftDetection:
     mode: enabled
   interval: 3m
@@ -61,7 +61,7 @@ spec:
 
     policy: sync
 
-    registry: noop
+    registry: crd
     txtOwnerId: external-dns
 
     serviceMonitor:
