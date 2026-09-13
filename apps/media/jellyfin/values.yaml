@@ -277,7 +277,8 @@ persistence:
     # -- If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner.
     storageClass: "openebs-hostpath-ssd"
     ## -- Use an existing PVC for this mount
-    # existingClaim: ''
+    # Static PVC bound to the existing config volume, see pv.yaml
+    existingClaim: jellyfin-config
   media:
     # -- set to false to use emptyDir
     enabled: true

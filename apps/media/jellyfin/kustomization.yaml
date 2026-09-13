@@ -8,7 +8,7 @@ resources:
 # Having values in a separate `values.yaml` is more comfortable.
 configMapGenerator:
   - name: jellyfin-values
-    namespace: jellyfin
+    namespace: media
     files:
       - values.yaml=./values.yaml
 configurations:

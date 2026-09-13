@@ -26,7 +26,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: media
-  namespace: jellyfin
+  namespace: media
 spec:
   accessModes:
     - ReadWriteMany
@@ -35,3 +35,18 @@ spec:
       storage: 4Ti
   storageClassName: "local-storage"
   volumeName: jellyfin-media
+---
+# Existing config volume (users, library database, metadata) from the old jellyfin namespace
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-config
+  namespace: media
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: openebs-hostpath-ssd
+  volumeName: pvc-bfd4dad3-d9a9-4311-a201-e0b6c0423672
