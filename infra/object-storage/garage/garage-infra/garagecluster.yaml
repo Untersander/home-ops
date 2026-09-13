@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagecluster_v1beta2.json
+apiVersion: garage.rajsingh.info/v1beta2
+kind: GarageCluster
+metadata:
+  name: garage-infra
+spec:
+  replication:
+    factor: 1
+  storage:
+    replicas: 1
+    # affinity:
+    #   podAntiAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       - labelSelector:
+    #           matchLabels:
+    #             garage.rajsingh.info/cluster: garage-infra
+    #             garage.rajsingh.info/tier: storage
+    #         topologyKey: kubernetes.io/hostname
+    metadata:
+      storageClassName: openebs-hostpath-ssd-retain
+      size: 1Gi
+    data:
+      storageClassName: openebs-zfs-shared-retain
+      size: 30Gi
+  admin:
+    adminTokenSecretRef:
+      name: garage-infra-admin-token
+      key: admin-token
