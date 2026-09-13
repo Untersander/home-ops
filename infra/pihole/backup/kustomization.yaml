@@ -1,8 +1,5 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
+# No resources of its own: backups come from components/backup-kopiur and components/backup-k8up (see ../ks.yaml)
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-resources:
-  - ./garagekeys.yaml
-  - ./externalsecret.yaml
-  - ./kopiur.yaml
-  - ./k8up.yaml
+resources: []

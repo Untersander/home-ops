@@ -3,6 +3,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: pihole-config
   namespace: pihole
+  labels:
+    backup.k8s.garden/app: pihole
+    # openebs-hostpath-ssd (cluster default) has no CSI snapshots: read the live volume
+    backup.k8s.garden/copy-method: Direct
 spec:
   accessModes:
     - ReadWriteOnce

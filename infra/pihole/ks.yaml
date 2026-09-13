@@ -24,12 +24,15 @@ metadata:
 spec:
   dependsOn:
     - name: pihole
-    - name: kopiur
+    - name: backup-repositories
       namespace: backup
-    - name: k8up
-      namespace: backup
-    - name: garage-buckets
-      namespace: backup
+  # Backs up the PVCs labeled backup.k8s.garden/app=pihole (pihole-config)
+  components:
+    - ../../../components/backup-kopiur
+    - ../../../components/backup-k8up
+  postBuild:
+    substitute:
+      APP: pihole
   sourceRef:
     kind: GitRepository
     name: flux-system

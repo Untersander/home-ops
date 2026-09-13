@@ -30,20 +30,3 @@ spec:
   to:
     - kind: GarageBucket
       name: k8up-apps
----
-# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagereferencegrant_v1beta1.json
-# TODO: remove once pihole uses the backup components
-# Allow GarageKeys in the pihole namespace to use the app backup buckets
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageReferenceGrant
-metadata:
-  name: pihole
-spec:
-  from:
-    - kind: GarageKey
-      namespace: pihole
-  to:
-    - kind: GarageBucket
-      name: kopiur-apps
-    - kind: GarageBucket
-      name: k8up-apps

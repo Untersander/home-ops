@@ -14,9 +14,6 @@ spec:
       namespaceSelector:
         matchLabels:
           backup.k8s.garden/enabled: "true"
-    # TODO: remove once pihole uses the backup components
-    - kind: GarageKey
-      namespace: pihole
   to:
     - kind: GarageCluster
       name: garage-infra
