@@ -1,0 +1,33 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: nfs-ganesha
+  namespace: nfs
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: nfs-ganesha
+  ingress:
+    # LAN clients (real source IP via externalTrafficPolicy: Local)
+    - fromCIDR:
+        - 10.0.0.0/16
+      toPorts:
+        - ports:
+            - port: "2049"
+              protocol: TCP
+    # WireGuard clients, masqueraded behind the wg-manager pod
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: wg
+            service: wg-manager
+      toPorts:
+        - ports:
+            - port: "2049"
+              protocol: TCP
+    # kubelet probes
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "2049"
+              protocol: TCP

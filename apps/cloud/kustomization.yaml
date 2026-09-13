@@ -4,4 +4,3 @@ kind: Kustomization
 namespace: cloud
 resources:
   - ./namespace.yaml
-  - ./ks.yaml

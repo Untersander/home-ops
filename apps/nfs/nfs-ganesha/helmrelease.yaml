@@ -1,0 +1,115 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: nfs-ganesha
+  namespace: nfs
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: nfs-ganesha
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  values:
+    controllers:
+      nfs-ganesha:
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers:
+          # FSAL VFS reads /etc/mtab to find the filesystem of /data. containerd (unlike Docker) doesn't
+          # create it, so generate it from this pod's mount table; the same volumes are mounted here.
+          mtab:
+            image:
+              repository: docker.io/hectorm/nfs-ganesha
+              tag: latest@sha256:e63d6be46b5be3892a5a4d77a18c92c3798bd957744b8b1d50e1c68416c462fe
+            command: ["sh", "-c", "cat /proc/self/mounts > /mtab/mtab"]
+            securityContext:
+              readOnlyRootFilesystem: true
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+        containers:
+          app:
+            image:
+              repository: docker.io/hectorm/nfs-ganesha
+              tag: latest@sha256:e63d6be46b5be3892a5a4d77a18c92c3798bd957744b8b1d50e1c68416c462fe
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: &nfsPort 2049
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              readOnlyRootFilesystem: true
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+                # FSAL VFS uses open_by_handle_at (DAC_READ_SEARCH) and switches to the client's credentials.
+                # SYS_RESOURCE is required for PR_SET_IO_FLUSHER at startup; Ganesha drops it right after.
+                add:
+                  - CHOWN
+                  - DAC_OVERRIDE
+                  - DAC_READ_SEARCH
+                  - FOWNER
+                  - FSETID
+                  - SETGID
+                  - SETUID
+                  - SYS_RESOURCE
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+    defaultPodOptions:
+      securityContext:
+        seccompProfile: { type: RuntimeDefault }
+    service:
+      nfs-ganesha:
+        controller: nfs-ganesha
+        type: LoadBalancer
+        annotations:
+          lbipam.cilium.io/ips: "10.0.0.22"
+        # Keeps the real client IP so the CiliumNetworkPolicy can filter on it
+        externalTrafficPolicy: Local
+        ipFamilyPolicy: SingleStack
+        ipFamilies:
+          - IPv4
+        ports:
+          nfs:
+            port: *nfsPort
+            protocol: TCP
+    persistence:
+      data:
+        existingClaim: media-pvc
+      recovery:
+        existingClaim: nfs-ganesha-recovery
+      config:
+        type: configMap
+        name: nfs-ganesha-config
+        globalMounts:
+          - path: /etc/ganesha/ganesha.conf
+            subPath: ganesha.conf
+            readOnly: true
+      mtab:
+        type: emptyDir
+        advancedMounts:
+          nfs-ganesha:
+            mtab:
+              - path: /mtab
+            app:
+              - path: /etc/mtab
+                subPath: mtab
+                readOnly: true
+      run:
+        type: emptyDir
+      tmp:
+        type: emptyDir
