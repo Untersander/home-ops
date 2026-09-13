@@ -1,7 +1,0 @@
-# yaml-language-server: $schema=https://json.schemastore.org/kustomization
-# Backups come from components/backup-kopiur and components/backup-k8up (see ../ks.yaml)
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - ./ns.yaml
-  - ./workload.yaml

@@ -2,32 +2,6 @@
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageBucket
 metadata:
-  name: kopiur-test
-spec:
-  clusterRef:
-    name: garage-infra
-    namespace: object-storage
-  globalAlias: kopiur-test
-  # Test bucket, remove data together with the resource
-  deletionPolicy: Delete
----
-# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagebucket_v1beta1.json
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageBucket
-metadata:
-  name: k8up-test
-spec:
-  clusterRef:
-    name: garage-infra
-    namespace: object-storage
-  globalAlias: k8up-test
-  # Test bucket, remove data together with the resource
-  deletionPolicy: Delete
----
-# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagebucket_v1beta1.json
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageBucket
-metadata:
   name: kopiur-apps
 spec:
   clusterRef:

@@ -1,20 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagereferencegrant_v1beta1.json
-# Allow GarageKeys in the backup-test namespace to use the test buckets
-apiVersion: garage.rajsingh.info/v1beta1
-kind: GarageReferenceGrant
-metadata:
-  name: backup-test
-spec:
-  from:
-    - kind: GarageKey
-      namespace: backup-test
-  to:
-    - kind: GarageBucket
-      name: kopiur-test
-    - kind: GarageBucket
-      name: k8up-test
----
-# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagereferencegrant_v1beta1.json
 # Allow the per-app k8up keys of components/backup-k8up to use the shared k8up bucket.
 # kopiur uses the central kopiur-cluster key (credential projection) instead.
 apiVersion: garage.rajsingh.info/v1beta1

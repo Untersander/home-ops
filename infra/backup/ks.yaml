@@ -70,28 +70,3 @@ spec:
   targetNamespace: backup
   prune: true
   interval: 1h
----
-# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
-# Test app for components/backup-kopiur and components/backup-k8up
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: backup-test
-  namespace: backup
-spec:
-  dependsOn:
-    - name: backup-repositories
-  components:
-    - ../../../components/backup-kopiur
-    - ../../../components/backup-k8up
-  postBuild:
-    substitute:
-      APP: backup-test
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-    namespace: flux-system
-  path: ./infra/backup/test
-  targetNamespace: backup-test
-  prune: true
-  interval: 1h
