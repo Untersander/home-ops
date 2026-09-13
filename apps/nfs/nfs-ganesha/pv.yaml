@@ -1,7 +1,8 @@
+# The LAN share exports the whole pool root: media/ (Jellyfin) and paperless/
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: media-pv-nfs
+  name: nfs-zpool
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
@@ -10,10 +11,10 @@ spec:
   volumeMode: Filesystem
   accessModes:
   - ReadWriteMany
-  persistentVolumeReclaimPolicy: Delete
+  persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: /var/mnt/zpool/media
+    path: /var/mnt/zpool
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -26,7 +27,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: media-pvc
+  name: zpool
   namespace: nfs
   annotations:
     kustomize.toolkit.fluxcd.io/prune: disabled
@@ -37,7 +38,7 @@ spec:
     requests:
       storage: 4Ti
   storageClassName: "local-storage"
-  volumeName: media-pv-nfs
+  volumeName: nfs-zpool
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

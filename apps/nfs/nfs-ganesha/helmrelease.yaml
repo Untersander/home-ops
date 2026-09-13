@@ -89,7 +89,7 @@ spec:
             protocol: TCP
     persistence:
       data:
-        existingClaim: media-pvc
+        existingClaim: zpool
       recovery:
         existingClaim: nfs-ganesha-recovery
       config:

@@ -1,17 +1,18 @@
+# Paperless data (documents/, media.lock, consume/, export/) lives next to the media folder, outside of Jellyfin's volume
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: media-pv-paperless
+  name: paperless-media
 spec:
   capacity:
     storage: 200Gi
   volumeMode: Filesystem
   accessModes:
   - ReadWriteMany
-  persistentVolumeReclaimPolicy: Delete
+  persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: /var/mnt/zpool/media
+    path: /var/mnt/zpool/paperless
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -24,7 +25,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: paperless-media-pvc
+  name: paperless-media
   namespace: paperless-ngx
 spec:
   accessModes:
@@ -33,7 +34,7 @@ spec:
     requests:
       storage: 200Gi
   storageClassName: "local-storage"
-  volumeName: media-pv-paperless
+  volumeName: paperless-media
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
