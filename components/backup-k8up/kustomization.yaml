@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+# k8up backups of PVCs labeled backup.k8s.garden/app=${APP}, see ../README.md
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - ./k8up.yaml

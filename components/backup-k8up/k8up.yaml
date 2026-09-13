@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagekey_v1beta1.json
+# Per-app key for the shared k8up bucket (endpoint and bucket are k8up operator globals)
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: ${APP}-k8up
+spec:
+  clusterRef:
+    name: garage-infra
+    namespace: object-storage
+  bucketPermissions:
+    - bucketRef:
+        name: k8up-apps
+        namespace: backup
+      read: true
+      write: true
+  secretTemplate:
+    accessKeyIdKey: access-key-id
+    secretAccessKeyKey: secret-access-key
+    includeEndpoint: false
+---
+# One restic repository, so every app uses the same password
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: ${APP}-k8up-password
+spec:
+  refreshInterval: 6h0m0s
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: 1password-sdk
+  target:
+    template:
+      data:
+        password: "{{ .password }}"
+  data:
+    - secretKey: password
+      remoteRef:
+        key: "/K8up repo encrypt password/credential"
+---
+# Backs up PVCs labeled backup.k8s.garden/app=${APP}, opt out with k8up.io/backup: "false"
+apiVersion: k8up.io/v1
+kind: Schedule
+metadata:
+  name: ${APP}
+spec:
+  backend:
+    repoPasswordSecretRef:
+      name: ${APP}-k8up-password
+      key: password
+    s3:
+      accessKeyIDSecretRef:
+        name: ${APP}-k8up
+        key: access-key-id
+      secretAccessKeySecretRef:
+        name: ${APP}-k8up
+        key: secret-access-key
+  # No fsGroup: k8up mounts sources read-write, the kubelet would re-own the live volume
+  podSecurityContext:
+    runAsUser: ${BACKUP_UID:=1000}
+    runAsGroup: ${BACKUP_GID:=1000}
+  backup:
+    # Offset from kopiur (01:xx) so its temporary staging PVCs are never picked up
+    schedule: "${BACKUP_K8UP_SCHEDULE:=30 3 * * *}"
+    failedJobsHistoryLimit: 2
+    successfulJobsHistoryLimit: 2
+    labelSelectors:
+      - matchLabels:
+          backup.k8s.garden/app: ${APP}
+  check:
+    schedule: "@weekly-random"
+  prune:
+    schedule: "@weekly-random"
+    retention:
+      keepLast: 3
+      keepDaily: 14
+      keepWeekly: 8

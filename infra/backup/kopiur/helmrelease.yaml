@@ -15,3 +15,8 @@ spec:
   driftDetection:
     mode: enabled
   interval: 30m
+  values:
+    features:
+      # Copy the ClusterRepository credentials into app namespaces for mover Jobs
+      credentialProjection:
+        enabled: true

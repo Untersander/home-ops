@@ -15,6 +15,24 @@ spec:
       name: k8up-test
 ---
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagereferencegrant_v1beta1.json
+# Allow the per-app k8up keys of components/backup-k8up to use the shared k8up bucket.
+# kopiur uses the central kopiur-cluster key (credential projection) instead.
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageReferenceGrant
+metadata:
+  name: backup-apps
+spec:
+  from:
+    - kind: GarageKey
+      namespaceSelector:
+        matchLabels:
+          backup.k8s.garden/enabled: "true"
+  to:
+    - kind: GarageBucket
+      name: k8up-apps
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagereferencegrant_v1beta1.json
+# TODO: remove once pihole uses the backup components
 # Allow GarageKeys in the pihole namespace to use the app backup buckets
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageReferenceGrant

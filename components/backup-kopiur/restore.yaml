@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/restore_v1alpha1.json
+# Passive volume populator: claimed by every PVC whose dataSourceRef names it,
+# each restored from its own /pvc/<name> path of SnapshotPolicy ${APP}
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: Restore
+metadata:
+  name: ${APP}
+spec:
+  source:
+    fromPolicy:
+      name: ${APP}
+      offset: 0
+  target:
+    populator: {}
+  policy:
+    onMissingSnapshot: Continue
+  credentialProjection:
+    enabled: true
+  mover:
+    securityContext:
+      runAsUser: ${BACKUP_UID:=1000}
+      runAsGroup: ${BACKUP_GID:=1000}
+      runAsNonRoot: true
+    podSecurityContext:
+      fsGroup: ${BACKUP_GID:=1000}
+      fsGroupChangePolicy: OnRootMismatch

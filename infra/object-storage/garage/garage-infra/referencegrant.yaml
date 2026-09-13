@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagereferencegrant_v1beta1.json
-# Allow buckets and keys of the backup namespaces to use this cluster
+# Allow backup buckets/keys and namespaces that opted into backups to use this cluster
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageReferenceGrant
 metadata:
@@ -9,7 +9,12 @@ spec:
     - kind: GarageBucket
       namespace: backup
     - kind: GarageKey
-      namespace: backup-test
+      namespace: backup
+    - kind: GarageKey
+      namespaceSelector:
+        matchLabels:
+          backup.k8s.garden/enabled: "true"
+    # TODO: remove once pihole uses the backup components
     - kind: GarageKey
       namespace: pihole
   to:

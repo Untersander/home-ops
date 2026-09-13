@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagekey_v1beta1.json
+# Central key of the kopiur ClusterRepository, projected into app namespaces by kopiur
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: kopiur-cluster
+spec:
+  clusterRef:
+    name: garage-infra
+    namespace: object-storage
+  bucketPermissions:
+    - bucketRef:
+        name: kopiur-apps
+      read: true
+      write: true
+      owner: true
+  # kopiur mounts the whole secret via envFrom and expects the AWS_* key names
+  secretTemplate:
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+    includeEndpoint: false

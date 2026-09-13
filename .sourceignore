@@ -8,5 +8,6 @@
 !/infra/
 !/apps/
 !/crds/
+!/components/
 
 **/*.md

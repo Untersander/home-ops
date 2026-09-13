@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/clusterrepository_v1alpha1.json
+# Cluster-wide kopiur repository used by components/backup-kopiur
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: ClusterRepository
+metadata:
+  name: garage
+spec:
+  backend:
+    s3:
+      bucket: kopiur-apps
+      # Kept apart from the older per-namespace repositories in this bucket
+      prefix: cluster/
+      # Bare host:port, no scheme
+      endpoint: garage-infra.object-storage.svc.cluster.local:3900
+      region: garage
+      tls:
+        disableTls: true
+      auth:
+        secretRef:
+          name: kopiur-cluster
+          namespace: backup
+  encryption:
+    passwordSecretRef:
+      name: kopiur-cluster-password
+      namespace: backup
+      key: KOPIA_PASSWORD
+  create:
+    enabled: true
+  # Only namespaces that opted into backups
+  allowedNamespaces:
+    selector:
+      matchLabels:
+        backup.k8s.garden/enabled: "true"
+  # Mover Jobs run in the app namespace, kopiur copies the credentials there
+  credentialProjection:
+    allowed: true
+  identityDefaults:
+    hostnameExpr: namespace
+    usernameExpr: policyName
+  maintenance:
+    namespace: backup
+    schedule:
+      quick:
+        cron: "0 * * * *"
+        jitter: 10m
+      full:
+        cron: "0 3 * * *"
+        jitter: 1h
+  parameters:
+    epoch:
+      minDuration: 1h
+  moverDefaults:
+    cache:
+      # Keep kopia's caches well below the cache volume size
+      contentCacheSizeMb: 512
+      metadataCacheSizeMb: 1024
+  scheduleDefaults:
+    timezone: Europe/Zurich

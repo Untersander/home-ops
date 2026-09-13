@@ -1,0 +1,99 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/snapshotpolicy_v1alpha1.json
+# CSI snapshot backups of PVCs labeled backup.k8s.garden/app=${APP} (ZFS)
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: ${APP}
+spec:
+  repository:
+    kind: ClusterRepository
+    name: garage
+  copyMethod: Snapshot
+  volumeSnapshotClassName: ${BACKUP_SNAPSHOTCLASS:=zfspv-snapclass}
+  sources:
+    - pvcSelector:
+        labelSelector:
+          matchLabels:
+            backup.k8s.garden/app: ${APP}
+          matchExpressions:
+            - key: backup.k8s.garden/copy-method
+              operator: NotIn
+              values: ["Direct"]
+      sourcePathStrategy: PvcName
+  groupBy: None
+  compression:
+    compressor: zstd
+  credentialProjection:
+    enabled: true
+  retention:
+    keepLatest: 3
+    keepDaily: 14
+    keepWeekly: 8
+  mover:
+    securityContext:
+      runAsUser: ${BACKUP_UID:=1000}
+      runAsGroup: ${BACKUP_GID:=1000}
+      runAsNonRoot: true
+    podSecurityContext:
+      fsGroup: ${BACKUP_GID:=1000}
+      fsGroupChangePolicy: OnRootMismatch
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/snapshotpolicy_v1alpha1.json
+# Live-volume backups of PVCs without CSI snapshots (hostpath, local-storage),
+# labeled backup.k8s.garden/app=${APP} and backup.k8s.garden/copy-method=Direct
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: ${APP}-direct
+spec:
+  repository:
+    kind: ClusterRepository
+    name: garage
+  copyMethod: Direct
+  sources:
+    - pvcSelector:
+        labelSelector:
+          matchLabels:
+            backup.k8s.garden/app: ${APP}
+            backup.k8s.garden/copy-method: Direct
+      sourcePathStrategy: PvcName
+  groupBy: None
+  compression:
+    compressor: zstd
+  credentialProjection:
+    enabled: true
+  retention:
+    keepLatest: 3
+    keepDaily: 14
+    keepWeekly: 8
+  mover:
+    securityContext:
+      runAsUser: ${BACKUP_UID:=1000}
+      runAsGroup: ${BACKUP_GID:=1000}
+      runAsNonRoot: true
+    # Sources are mounted read-only, so the kubelet never rewrites the live volume
+    podSecurityContext:
+      fsGroup: ${BACKUP_GID:=1000}
+      fsGroupChangePolicy: OnRootMismatch
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/snapshotschedule_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: ${APP}
+spec:
+  policyRef:
+    name: ${APP}
+  schedule:
+    cron: "${BACKUP_KOPIUR_CRON:=H 1 * * *}"
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/snapshotschedule_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: ${APP}-direct
+spec:
+  policyRef:
+    name: ${APP}-direct
+  schedule:
+    cron: "${BACKUP_KOPIUR_CRON:=H 1 * * *}"

@@ -19,3 +19,13 @@ spec:
   driftDetection:
     mode: enabled
   interval: 1h
+  values:
+    k8up:
+      timezone: Europe/Zurich
+      # Shared repository for components/backup-k8up: Schedules omit endpoint/bucket.
+      # Credentials are NOT set globally, k8up would inject them as plain env values.
+      envVars:
+        - name: BACKUP_GLOBALS3ENDPOINT
+          value: http://garage-infra.object-storage.svc.cluster.local:3900
+        - name: BACKUP_GLOBALS3BUCKET
+          value: k8up-apps

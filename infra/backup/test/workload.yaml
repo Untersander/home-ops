@@ -1,23 +1,31 @@
-# Shared ZFS volume, backed up via CSI snapshot (kopiur copyMethod: Snapshot).
-# The shared class (shared: "yes") is required for k8up, which mounts the live PVC
-# in a second pod; plain openebs-zfs refuses that ("device already mounted").
+# ZFS volume backed up via CSI snapshot, restored automatically from the latest
+# kopiur backup when the PVC is created (Restore backup-test from components/backup-kopiur)
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: test-zfs-shared
+  name: backup-test
+  labels:
+    backup.k8s.garden/app: backup-test
 spec:
-  storageClassName: openebs-zfs-shared
+  storageClassName: openebs-zfs-shared-retain
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
+  dataSourceRef:
+    apiGroup: kopiur.home-operations.com
+    kind: Restore
+    name: backup-test
 ---
-# Hostpath volume without snapshot support (kopiur copyMethod: Direct)
+# Hostpath volume without CSI snapshots, backed up by the Direct policy, restored manually
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: test-hostpath
+  name: backup-test-hostpath
+  labels:
+    backup.k8s.garden/app: backup-test
+    backup.k8s.garden/copy-method: Direct
 spec:
   storageClassName: openebs-hostpath-ssd
   accessModes:
@@ -81,7 +89,7 @@ spec:
       volumes:
         - name: zfs
           persistentVolumeClaim:
-            claimName: test-zfs-shared
+            claimName: backup-test
         - name: hostpath
           persistentVolumeClaim:
-            claimName: test-hostpath
+            claimName: backup-test-hostpath
