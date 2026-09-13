@@ -10,6 +10,8 @@ spec:
       namespace: backup
     - kind: GarageKey
       namespace: backup-test
+    - kind: GarageKey
+      namespace: pihole
   to:
     - kind: GarageCluster
       name: garage-infra

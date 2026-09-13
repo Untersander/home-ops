@@ -13,3 +13,28 @@ spec:
   targetNamespace: pihole
   prune: true
   interval: 1h
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+# Kept separate from the app so a broken backup stack never blocks pihole itself
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: pihole-backup
+  namespace: pihole
+spec:
+  dependsOn:
+    - name: pihole
+    - name: kopiur
+      namespace: backup
+    - name: k8up
+      namespace: backup
+    - name: garage-buckets
+      namespace: backup
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./infra/pihole/backup
+  targetNamespace: pihole
+  prune: true
+  interval: 1h

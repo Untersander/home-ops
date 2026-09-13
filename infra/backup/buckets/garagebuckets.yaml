@@ -23,3 +23,29 @@ spec:
   globalAlias: k8up-test
   # Test bucket, remove data together with the resource
   deletionPolicy: Delete
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagebucket_v1beta1.json
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: kopiur-apps
+spec:
+  clusterRef:
+    name: garage-infra
+    namespace: object-storage
+  globalAlias: kopiur-apps
+  # Real backup data, keep it if the resource is deleted
+  deletionPolicy: Retain
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagebucket_v1beta1.json
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: k8up-apps
+spec:
+  clusterRef:
+    name: garage-infra
+    namespace: object-storage
+  globalAlias: k8up-apps
+  # Real backup data, keep it if the resource is deleted
+  deletionPolicy: Retain

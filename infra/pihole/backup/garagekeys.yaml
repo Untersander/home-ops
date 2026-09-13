@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagekey_v1beta1.json
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: kopiur-pihole
+spec:
+  clusterRef:
+    name: garage-infra
+    namespace: object-storage
+  bucketPermissions:
+    - bucketRef:
+        name: kopiur-apps
+        namespace: backup
+      read: true
+      write: true
+  # kopiur mounts the whole secret via envFrom and expects the AWS_* key names
+  secretTemplate:
+    accessKeyIdKey: AWS_ACCESS_KEY_ID
+    secretAccessKeyKey: AWS_SECRET_ACCESS_KEY
+    includeEndpoint: false
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagekey_v1beta1.json
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: k8up-pihole
+spec:
+  clusterRef:
+    name: garage-infra
+    namespace: object-storage
+  bucketPermissions:
+    - bucketRef:
+        name: k8up-apps
+        namespace: backup
+      read: true
+      write: true
+  secretTemplate:
+    accessKeyIdKey: access-key-id
+    secretAccessKeyKey: secret-access-key

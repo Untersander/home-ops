@@ -1,0 +1,35 @@
+# Backs up every PVC in this namespace (only pihole-config)
+apiVersion: k8up.io/v1
+kind: Schedule
+metadata:
+  name: apps
+spec:
+  backend:
+    repoPasswordSecretRef:
+      name: k8up-repo-password
+      key: password
+    s3:
+      endpoint: http://garage-infra.object-storage.svc.cluster.local:3900
+      bucket: k8up-apps
+      accessKeyIDSecretRef:
+        name: k8up-pihole
+        key: access-key-id
+      secretAccessKeySecretRef:
+        name: k8up-pihole
+        key: secret-access-key
+  # pihole-FTL drops to uid/gid 1000, which owns all files in /etc/pihole
+  podSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+  backup:
+    # Offset from kopiur (03:00) so its temporary PVCs are never picked up
+    schedule: "30 3 * * *"
+    failedJobsHistoryLimit: 2
+    successfulJobsHistoryLimit: 2
+  check:
+    schedule: "0 4 * * 1"
+  prune:
+    schedule: "0 4 * * 0"
+    retention:
+      keepDaily: 14
+      keepWeekly: 8
