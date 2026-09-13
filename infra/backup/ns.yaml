@@ -3,6 +3,8 @@ kind: Namespace
 metadata:
   name: backup
   labels:
+    # kopiur creates the Maintenance of ClusterRepository garage in this namespace
+    backup.k8s.garden/enabled: "true"
     pod-security.kubernetes.io/enforce: privileged
     pod-security.kubernetes.io/enforce-version: latest
     pod-security.kubernetes.io/warn: privileged

@@ -81,6 +81,10 @@ spec:
 Any number of the app's ZFS PVCs can point at the same Restore; each is restored from its own backup path (`/pvc/<pvc-name>`).
 When a PVC is created, it's filled from the latest kopiur backup, or starts empty if there is none.
 
+To restore an existing PVC this way, scale the app down, delete the PVC and let Flux recreate it.
+Finished backup pods still reference the PVC and keep it in `Terminating` (k8up keeps them per history limit, kopiur for 1h), so delete them first:
+`kubectl -n myapp delete pod --field-selector=status.phase==Succeeded`.
+
 ```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
