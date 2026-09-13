@@ -171,25 +171,25 @@ resources: {}
 # -- Configure startup probe for Jellyfin.
 # This probe gives Jellyfin enough time to start, especially with large media libraries.
 # After the startup probe succeeds once, liveness and readiness probes take over.
-startupProbe:
-  httpGet:
-    path: /health
-    port: http
-  initialDelaySeconds: 0
-  periodSeconds: 10
-  failureThreshold: 30
+# startupProbe:
+#   httpGet:
+#     path: /health
+#     port: http
+#   initialDelaySeconds: 0
+#   periodSeconds: 10
+#   failureThreshold: 30
   # With these defaults, Jellyfin has up to 5 minutes (30 * 10s) to start.
   # Adjust failureThreshold if you have very large media libraries or slow storage.
 
 # -- Configure liveness probe for Jellyfin.
 # This probe is disabled during startup (startup probe handles initial checks).
 # Uses httpGet for compatibility with both IPv4 and IPv6.
-livenessProbe:
-  tcpSocket: null
-  httpGet:
-    path: /health
-    port: http
-  initialDelaySeconds: 10
+# livenessProbe:
+#   tcpSocket: null
+#   httpGet:
+#     path: /health
+#     port: http
+#   initialDelaySeconds: 10
   # successThreshold: 1
   # failureThreshold: 3
   # timeoutSeconds: 1
@@ -198,12 +198,12 @@ livenessProbe:
 # -- Configure readiness probe for Jellyfin.
 # This probe is disabled during startup (startup probe handles initial checks).
 # Uses httpGet for compatibility with both IPv4 and IPv6.
-readinessProbe:
-  tcpSocket: null
-  httpGet:
-    path: /health
-    port: http
-  initialDelaySeconds: 10
+# readinessProbe:
+#   tcpSocket: null
+#   httpGet:
+#     path: /health
+#     port: http
+#   initialDelaySeconds: 10
   # successThreshold: 1
   # failureThreshold: 3
   # timeoutSeconds: 1
