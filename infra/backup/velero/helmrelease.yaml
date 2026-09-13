@@ -11,7 +11,7 @@ spec:
         kind: HelmRepository
         name: vmware-tanzu
       chart: velero
-      version: 12.0.1
+      version: 12.1.0
   driftDetection:
     mode: enabled
   interval: 1h
