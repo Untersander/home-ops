@@ -61,7 +61,7 @@ spec:
 
     policy: sync
 
-    registry: crd
+    registry: noop
     txtOwnerId: external-dns
 
     serviceMonitor:
