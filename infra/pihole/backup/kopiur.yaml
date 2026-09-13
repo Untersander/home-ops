@@ -59,6 +59,11 @@ spec:
       runAsUser: 1000
       runAsGroup: 1000
       runAsNonRoot: true
+    # Match the volume's group instead of the mover image default (65532),
+    # so the identity recorded on the snapshot is 1000:1000 for restores
+    podSecurityContext:
+      fsGroup: 1000
+      fsGroupChangePolicy: OnRootMismatch
 ---
 apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotSchedule
