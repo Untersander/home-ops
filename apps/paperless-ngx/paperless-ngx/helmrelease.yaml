@@ -93,7 +93,3 @@ spec:
             subPath: consume
           - path: /usr/src/paperless/export
             subPath: export
-      data:
-        existingClaim: paperless-data-pvc
-        globalMounts:
-          - path: /usr/src/paperless/data

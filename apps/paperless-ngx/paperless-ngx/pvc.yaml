@@ -27,6 +27,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: paperless-media
   namespace: paperless-ngx
+  labels:
+    backup.k8s.garden/app: paperless-ngx
+    backup.k8s.garden/copy-method: Direct # openebs-hostpath-ssd sc (cluster default) has no CSI snapshots
 spec:
   accessModes:
     - ReadWriteMany
@@ -35,16 +38,3 @@ spec:
       storage: 200Gi
   storageClassName: "local-storage"
   volumeName: paperless-media
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: paperless-data-pvc
-  namespace: paperless-ngx
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
-  storageClassName: "openebs-hostpath-ssd-retain"

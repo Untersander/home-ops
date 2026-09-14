@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: paperless-samba
+  namespace: paperless-ngx
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: paperless-samba
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  values:
+    controllers:
+      samba:
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: docker.io/dockurr/samba
+              tag: 4.23.10@sha256:404f91bdf317d390241a41165579cd25199f34171b44677d877c75dc40184042
+            env:
+              # samba.sh creates this unix user; smb.conf uses it as guest account and force user
+              USER: paperless
+              UID: "1000"
+              GID: "1000"
+              # Unused: the share is guest-only
+              PASS: guest-only
+              # smb.conf is mounted read-only and already sets force user/group
+              FORCE: "no"
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: &smbPort 445
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              # samba.sh runs adduser/smbpasswd at startup, which write to /etc
+              readOnlyRootFilesystem: false
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+                # smbd switches to the forced user's credentials and binds port 445
+                add:
+                  - CHOWN
+                  - DAC_OVERRIDE
+                  - FOWNER
+                  - FSETID
+                  - SETGID
+                  - SETUID
+                  - NET_BIND_SERVICE
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 512Mi
+    defaultPodOptions:
+      securityContext:
+        seccompProfile: { type: RuntimeDefault }
+    service:
+      samba:
+        controller: samba
+        type: LoadBalancer
+        annotations:
+          lbipam.cilium.io/ips: "10.0.0.23"
+        # Keeps the real client IP so the CiliumNetworkPolicy and hosts allow can filter on it
+        externalTrafficPolicy: Local
+        ipFamilyPolicy: SingleStack
+        ipFamilies:
+          - IPv4
+        ports:
+          smb:
+            port: *smbPort
+            protocol: TCP
+    persistence:
+      # Only the consume folder of the paperless volume is shared
+      consume:
+        existingClaim: paperless-media
+        globalMounts:
+          - path: /shared
+            subPath: consume
+      config:
+        type: configMap
+        name: paperless-samba-config
+        globalMounts:
+          - path: /etc/samba/smb.conf
+            subPath: smb.conf
+            readOnly: true
+      var-lib-samba:
+        type: emptyDir
+        globalMounts:
+          - path: /var/lib/samba
+      run:
+        type: emptyDir
+        globalMounts:
+          - path: /run/samba
+      cache:
+        type: emptyDir
+        globalMounts:
+          - path: /var/cache/samba
