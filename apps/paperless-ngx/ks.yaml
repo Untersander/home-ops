@@ -21,12 +21,6 @@ metadata:
   name: paperless-ngx-db
   namespace: paperless-ngx
 spec:
-  components:
-    - ../../../components/backup-kopiur
-    - ../../../components/backup-k8up
-  postBuild:
-    substitute:
-      APP: paperless-ngx
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -43,6 +37,12 @@ metadata:
   name: paperless-ngx-app
   namespace: paperless-ngx
 spec:
+  components:
+    - ../../../components/backup-kopiur
+    - ../../../components/backup-k8up
+  postBuild:
+    substitute:
+      APP: paperless-ngx
   dependsOn:
     - name: paperless-ngx-db
   sourceRef:
