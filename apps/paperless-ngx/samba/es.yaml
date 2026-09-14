@@ -1,0 +1,20 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: paperless-samba
+  namespace: paperless-ngx
+spec:
+  refreshInterval: 6h0m0s
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  target:
+    template:
+      type: generic
+      data:
+        # samba.sh rejects passwords containing ":"
+        password: "{{ .password }}"
+  data:
+    - secretKey: password
+      remoteRef:
+        key: "Paperless/smb-password"

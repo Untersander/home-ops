@@ -6,6 +6,7 @@ resources:
   - ./helmrelease.yaml
   - ./l2.yaml
   - ./ciliumnetworkpolicy.yaml
+  - ./es.yaml
 configMapGenerator:
   - name: paperless-samba-config
     files:

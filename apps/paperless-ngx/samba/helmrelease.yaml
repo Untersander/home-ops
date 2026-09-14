@@ -23,12 +23,15 @@ spec:
               repository: docker.io/dockurr/samba
               tag: 4.23.10@sha256:404f91bdf317d390241a41165579cd25199f34171b44677d877c75dc40184042
             env:
-              # samba.sh creates this unix user; smb.conf uses it as guest account and force user
+              # samba.sh creates this unix user and sets its SMB password on every start
               USER: paperless
               UID: "1000"
               GID: "1000"
-              # Unused: the share is guest-only
-              PASS: guest-only
+              PASS:
+                valueFrom:
+                  secretKeyRef:
+                    name: paperless-samba
+                    key: password
               # smb.conf is mounted read-only and already sets force user/group
               FORCE: "no"
             probes:
