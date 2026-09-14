@@ -4,7 +4,7 @@ metadata:
   name: openebs-zfs-shared
 parameters:
   recordsize: "128k"
-  compression: "off"
+  compression: "lz4"
   dedup: "off"
   fstype: "zfs"
   poolname: "hdd"
@@ -25,7 +25,7 @@ metadata:
   name: openebs-zfs-shared-retain
 parameters:
   recordsize: "128k"
-  compression: "off"
+  compression: "lz4"
   dedup: "off"
   fstype: "zfs"
   poolname: "hdd"
