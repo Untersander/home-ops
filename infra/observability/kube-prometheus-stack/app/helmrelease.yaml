@@ -10,7 +10,7 @@ spec:
         kind: HelmRepository
         name: kube-prometheus-stack
       chart: kube-prometheus-stack
-      version: 91.2.1
+      version: 91.4.0
   driftDetection:
     mode: enabled
   interval: 1h
