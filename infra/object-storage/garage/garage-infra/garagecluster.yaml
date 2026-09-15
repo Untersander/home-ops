@@ -29,3 +29,7 @@ spec:
     adminTokenSecretRef:
       name: garage-infra-admin-token
       key: admin-token
+  # Creates a ServiceMonitor for the admin /metrics endpoint (job="garage")
+  monitoring:
+    enabled: true
+    interval: 30s
