@@ -5,6 +5,8 @@ kind: ClusterRepository
 metadata:
   name: garage
 spec:
+  server:
+    namespace: backup
   backend:
     s3:
       bucket: kopiur-apps
