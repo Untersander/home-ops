@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: opencloud
+  namespace: cloud
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: opencloud
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  values:
+    controllers:
+      opencloud:
+        strategy: Recreate
+        containers:
+          app:
+            image:
+              repository: docker.io/opencloudeu/opencloud-rolling
+              tag: 8.0.1
+            # init only writes /etc/opencloud/opencloud.yaml once, it fails (ignored) if the config exists
+            command: ["/bin/sh", "-c", "opencloud init || true; opencloud server"]
+            env:
+              TZ: Europe/Zurich
+              OC_URL: https://cloud.k8s.garden
+              OC_INSECURE: "false"
+              OC_LOG_LEVEL: info
+              # TLS is terminated at the envoy gateway
+              PROXY_TLS: "false"
+              PROXY_HTTP_ADDR: 0.0.0.0:9200
+              PROXY_ENABLE_BASIC_AUTH: "false"
+              IDM_CREATE_DEMO_USERS: "false"
+              IDM_ADMIN_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: opencloud-app
+                    key: admin-password
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512M
+
+    defaultPodOptions:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: { type: RuntimeDefault }
+
+    service:
+      opencloud:
+        controller: opencloud
+        ports:
+          http:
+            port: 9200
+
+    route:
+      opencloud:
+        hostnames: ["cloud.k8s.garden"]
+        parentRefs:
+          - name: envoy-gateway
+            namespace: envoy-gateway
+            sectionName: websecure
+        rules:
+          - backendRefs:
+              - identifier: opencloud
+                port: 9200
+
+    persistence:
+      config:
+        existingClaim: opencloud-config
+        globalMounts:
+          - path: /etc/opencloud
+      data:
+        existingClaim: opencloud-data
+        globalMounts:
+          - path: /var/lib/opencloud
