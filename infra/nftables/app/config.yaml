@@ -43,6 +43,18 @@ data:
 
         }
 
+        chain forward_world {
+            # igmp is used for multicast routing, so we need to allow it to pass through the firewall
+            ip protocol igmp accept
+
+            # allow IPv6 control and error messages needed by forwarded clients
+            icmpv6 type {destination-unreachable,packet-too-big,time-exceeded,parameter-problem} accept
+
+            # allow example
+            # ip protocol . th dport vmap { udp . 51820 : accept, udp . 5201 : accept, tcp . 5201 : accept}
+            drop
+        }
+
         chain forward {
             type filter hook forward priority filter; policy accept;
 
@@ -51,7 +63,7 @@ data:
 
             # connections from the internal net to the internet or to other
             # internal nets are allowed
-            iifname vmap { lo : accept, $DEV_WORLD : jump inbound_world, $DEV_PRIVATE : accept }
+            iifname vmap { lo : accept, $DEV_WORLD : jump forward_world, $DEV_PRIVATE : accept }
 
             # the rest is dropped by the above policy
         }
