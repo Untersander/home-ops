@@ -28,7 +28,7 @@ namespace:
 # enabling node-agent). Required.
 image:
   repository: docker.io/velero/velero
-  tag: v1.18.2
+  tag: v1.18.3
   # Digest value example: sha256:73266e6bd7e2fe3f65fb20677d36c4a8df76d417d9ba76bd9932e0d983a776ec.
   # If used, it will take precedence over the image.tag.
   # digest:
@@ -131,7 +131,7 @@ dnsPolicy: ClusterFirst
 # If the value is a string then it is evaluated as a template.
 initContainers:
   - name: velero-plugin-for-aws
-    image: velero/velero-plugin-for-aws:v1.14.2
+    image: velero/velero-plugin-for-aws:v1.14.3
     imagePullPolicy: IfNotPresent
     volumeMounts:
       - mountPath: /target
