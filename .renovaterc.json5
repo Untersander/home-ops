@@ -21,6 +21,7 @@
   prConcurrentLimit: 5,
   prHourlyLimit: 5,
   rangeStrategy: 'bump',
+  ignoreTests: true,
   packageRules: [
     {
       description: 'group dependencies by application (first directory under apps/ or infra/)',
