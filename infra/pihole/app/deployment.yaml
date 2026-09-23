@@ -52,7 +52,7 @@ spec:
           envFrom:
             - secretRef:
                 name: pihole-webserver-api-secret
-          image: pihole/pihole:2026.07.2
+          image: pihole/pihole:2026.09.0
           name: pihole
           ports:
             - containerPort: 53
