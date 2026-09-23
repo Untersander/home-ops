@@ -19,7 +19,7 @@
     'renovate',
   ],
   prConcurrentLimit: 5,
-  prHourlyLimit: 2,
+  prHourlyLimit: 5,
   rangeStrategy: 'bump',
   packageRules: [
     {
@@ -38,6 +38,17 @@
         'kubernetes',
       ],
       enabled: false,
+    },
+    {
+      description: 'automerge non-breaking updates (branch automerge, no PR opened)',
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+        'digest',
+        'pin',
+        'pinDigest',
+      ],
+      automerge: true,
     },
     {
       matchUpdateTypes: [
