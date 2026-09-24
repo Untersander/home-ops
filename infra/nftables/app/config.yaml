@@ -5,7 +5,6 @@ metadata:
   namespace: nftables
 data:
   firewall.nft: |
-    add table inet global
     destroy table inet global
 
     define DEV_PRIVATE = br0
@@ -65,7 +64,6 @@ data:
             # internal nets are allowed
             iifname vmap { lo : accept, $DEV_WORLD : jump forward_world, $DEV_PRIVATE : accept }
 
-            # the rest is dropped by the above policy
         }
 
         chain postrouting {
