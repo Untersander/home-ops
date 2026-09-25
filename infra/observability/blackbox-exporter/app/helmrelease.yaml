@@ -10,7 +10,7 @@ spec:
         kind: HelmRepository
         name: blackbox-exporter
       chart: prometheus-blackbox-exporter
-      version: 11.18.0
+      version: 11.19.1
   driftDetection:
     mode: enabled
   interval: 1h
