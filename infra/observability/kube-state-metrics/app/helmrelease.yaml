@@ -10,7 +10,7 @@ spec:
         kind: HelmRepository
         name: kube-state-metrics
       chart: kube-state-metrics
-      version: 8.5.0
+      version: 8.6.0
   driftDetection:
     mode: enabled
   interval: 1h
