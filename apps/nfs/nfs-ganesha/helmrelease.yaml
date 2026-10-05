@@ -23,7 +23,7 @@ spec:
           mtab:
             image:
               repository: docker.io/hectorm/nfs-ganesha
-              tag: latest@sha256:45f8966e88568727fc4a427418bcdfd3d13732c5abbb11ea0d91dfd3941bea93
+              tag: latest@sha256:8b2470c5dceacbfd885fde0933fe04357629d2f382b16dca30eb8bafa0f87e9a
             command: ["sh", "-c", "cat /proc/self/mounts > /mtab/mtab"]
             securityContext:
               readOnlyRootFilesystem: true
@@ -34,7 +34,7 @@ spec:
           app:
             image:
               repository: docker.io/hectorm/nfs-ganesha
-              tag: latest@sha256:45f8966e88568727fc4a427418bcdfd3d13732c5abbb11ea0d91dfd3941bea93
+              tag: latest@sha256:8b2470c5dceacbfd885fde0933fe04357629d2f382b16dca30eb8bafa0f87e9a
             probes:
               liveness: &probes
                 enabled: true
