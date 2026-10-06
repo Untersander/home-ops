@@ -19,7 +19,7 @@ spec:
           app:
             image:
               repository: docker.io/opencloudeu/opencloud-rolling
-              tag: 8.0.1
+              tag: 8.1.0
             # init only writes /etc/opencloud/opencloud.yaml once, it fails (ignored) if the config exists
             command: ["/bin/sh", "-c", "opencloud init || true; opencloud server"]
             env:
