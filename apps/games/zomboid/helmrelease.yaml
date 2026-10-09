@@ -35,12 +35,8 @@ spec:
               MIN_MEMORY: 2048m
               MAX_MEMORY: 6144m
               ADMINUSERNAME: admin
-              # only needed to create the admin account on first start, the server logs it in clear text
-              ADMINPASSWORD:
-                valueFrom:
-                  secretKeyRef:
-                    name: zomboid
-                    key: admin-password
+              # ADMINPASSWORD is only needed to create the admin account on the very first start and the
+              # server logs its arguments in clear text, so it's left unset.
               PASSWORD:
                 valueFrom:
                   secretKeyRef:
