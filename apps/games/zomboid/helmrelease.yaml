@@ -1,0 +1,94 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: zomboid
+  namespace: games
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: zomboid
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  values:
+    controllers:
+      zomboid:
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        pod:
+          # SIGTERM makes the entrypoint send `quit` to the server, which saves the world before exiting
+          terminationGracePeriodSeconds: 180
+        containers:
+          app:
+            image:
+              # server version has to match the players' game version
+              repository: docker.io/danixu86/project-zomboid-dedicated-server
+              tag: 42.21-release-2@sha256:c165eb74027339bb22bc9a39ae352aa616c1fdd6983c8ec76420b643f1acd456
+            env:
+              TZ: Europe/Zurich
+              # world migrated from the in-game hosted server keeps its name, the save references it
+              SERVERNAME: servertest
+              # Mods/WorkshopItems are maintained in Server/servertest.ini on the data PVC
+              SELF_MANAGED_MODS: "true"
+              MIN_MEMORY: 2048m
+              MAX_MEMORY: 6144m
+              ADMINUSERNAME: admin
+              # only needed to create the admin account on first start, the server logs it in clear text
+              ADMINPASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: zomboid
+                    key: admin-password
+              PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: zomboid
+                    key: server-password
+            ports:
+              - name: game
+                containerPort: &gamePort 16261
+                hostPort: *gamePort
+                protocol: UDP
+              - name: direct
+                containerPort: &directPort 16262
+                hostPort: *directPort
+                protocol: UDP
+            # the entrypoint starts as root, fixes ownership of the volumes and drops to the steam user
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: [ALL]
+                add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+            resources:
+              requests:
+                cpu: 1000m
+                memory: 4Gi
+              limits:
+                memory: 8Gi
+
+    defaultPodOptions:
+      securityContext:
+        seccompProfile: { type: RuntimeDefault }
+
+    service:
+      zomboid:
+        controller: zomboid
+        ports:
+          game:
+            port: *gamePort
+            protocol: UDP
+          direct:
+            port: *directPort
+            protocol: UDP
+
+    persistence:
+      data:
+        existingClaim: zomboid-data
+        globalMounts:
+          - path: /home/steam/Zomboid
+      workshop:
+        existingClaim: zomboid-workshop
+        globalMounts:
+          - path: /home/steam/pz-dedicated/steamapps/workshop

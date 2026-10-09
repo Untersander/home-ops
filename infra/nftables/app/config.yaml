@@ -28,6 +28,8 @@ data:
             # allow example
             # ip protocol . th dport vmap { udp . 51820 : accept, udp . 5201 : accept, tcp . 5201 : accept}
             ip protocol . th dport vmap { udp . 51820 : accept}
+            # Project Zomboid Server (hostPort, apps/games/zomboid)
+            ip protocol . th dport vmap { udp . 16261 : accept, udp . 16262 : accept}
             drop
         }
 
@@ -51,8 +53,6 @@ data:
 
             # allow example
             # ip protocol . th dport vmap { udp . 51820 : accept, udp . 5201 : accept, tcp . 5201 : accept}
-            # Project Zomboid Server Steam
-            ip protocol . th dport vmap { udp . 16261 : accept, udp . 16262 : accept, udp . 8766 : accept}
             drop
         }
 

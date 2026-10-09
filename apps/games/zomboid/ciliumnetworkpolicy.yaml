@@ -1,0 +1,21 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zomboid
+  namespace: games
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: zomboid
+  ingress:
+    # players via hostPort: LAN and internet clients are both "world",
+    # "host" covers LAN players connecting through the node's public IP
+    - fromEntities:
+        - world
+        - host
+      toPorts:
+        - ports:
+            - port: "16261"
+              protocol: UDP
+            - port: "16262"
+              protocol: UDP

@@ -1,0 +1,33 @@
+# Server config (Server/servertest.*), world save (Saves/Multiplayer/servertest) and accounts (db/servertest.db)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zomboid-data
+  namespace: games
+  labels:
+    backup.k8s.garden/app: zomboid
+spec:
+  storageClassName: openebs-zfs-shared-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  dataSourceRef:
+    apiGroup: kopiur.home-operations.com
+    kind: Restore
+    name: zomboid
+---
+# Workshop mod cache, re-downloadable so not backed up
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zomboid-workshop
+  namespace: games
+spec:
+  storageClassName: openebs-hostpath-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
