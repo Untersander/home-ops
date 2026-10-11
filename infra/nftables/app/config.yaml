@@ -53,6 +53,7 @@ data:
 
             # allow example
             # ip protocol . th dport vmap { udp . 51820 : accept, udp . 5201 : accept, tcp . 5201 : accept}
+            ip protocol . th dport vmap { udp . 51820 : accept}
             drop
         }
 
