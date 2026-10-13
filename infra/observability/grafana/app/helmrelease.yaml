@@ -10,7 +10,7 @@ spec:
         kind: HelmRepository
         name: grafana-community
       chart: grafana
-      version: 13.2.7
+      version: 13.5.0
   driftDetection:
     mode: enabled
   interval: 1h
