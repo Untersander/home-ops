@@ -21,7 +21,7 @@ spec:
           app:
             image:
               repository: docker.io/dockurr/samba
-              tag: 4.23.10@sha256:404f91bdf317d390241a41165579cd25199f34171b44677d877c75dc40184042
+              tag: 4.23.10@sha256:2a0452a12b7a244a22f18d0f233101bb8d4952b5500ae263905e3b9dad3bf2ae
             env:
               # samba.sh creates this unix user and sets its SMB password on every start
               USER: paperless
