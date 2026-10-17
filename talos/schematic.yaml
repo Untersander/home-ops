@@ -1,0 +1,7 @@
+# Talos Image Factory schematic, the schematic ID is resolved via https://factory.talos.dev/schematics
+customization:
+  extraKernelArgs:
+    - talos.config=metal-iso
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/zfs

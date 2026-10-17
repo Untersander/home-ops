@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+vars:
+  KUBECONFIG: '{{.HOME}}/.kube/talos-k8s-garden.config'
+
+env:
+  KUBECONFIG: '{{.KUBECONFIG}}'
+
+includes:
+  talos:
+    taskfile: .taskfiles/talos.yaml
+    dir: talos
+  flux:
+    taskfile: .taskfiles/flux.yaml
+
+tasks:
+  default:
+    cmd: task --list
+    silent: true

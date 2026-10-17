@@ -2,6 +2,22 @@
 
 This is a basic Talos home lab config for a single node k8s cluster, which will be used as a 25 Gbit/s router/firewall and home server.
 
+## Taskfile
+The steps below are available as [Task](https://taskfile.dev/) commands from the repo root (`task --list`, versions are pinned in `.taskfiles/talos.yaml`).
+Bootstrap order for a new cluster:
+```bash
+task talos:iso:download
+task talos:usb:write ISO=tmp/talos-<version>-<schematic>-metal-amd64-secureboot.iso DISK=/dev/diskN
+task talos:iso:metal-config   # pulls secrets.yaml from 1Password and generates the machine config
+task talos:usb:write ISO=talos/metal-config.iso DISK=/dev/diskN   # or: task talos:apply-config INSECURE=true
+task talos:gen-talosconfig
+task talos:bootstrap
+task talos:kubeconfig
+task talos:cilium
+task flux:bootstrap
+```
+Upgrades: `task talos:upgrade` and `task talos:upgrade-k8s`. If `task talos:efi:check` flags a boot entry (AMI firmware "UEFI OS" entry, [siderolabs/talos#14575](https://github.com/siderolabs/talos/pull/14575)), upgrade with `task talos:upgrade LEGACY=true`.
+
 Download to ISO from the [Talos Image Factory](https://factory.talos.dev/) and write to USB stick:
 ```bash
 dd if=path/to/talos.iso of=/dev/sdX bs=4M status=progress conv=fsync
@@ -12,7 +28,7 @@ Metal ISO Factory URLs:
 
 To update just change the version in the URL.
 
-Following custimization is added to the Talos image via the factory URL:
+Following customization is added to the Talos image via the factory URL (kept in [schematic.yaml](schematic.yaml), the Taskfile resolves its schematic ID via the Image Factory API):
 ```yaml
 customization:
     extraKernelArgs:
@@ -69,11 +85,11 @@ See [Metal ISO](https://www.talos.dev/v1.11/reference/kernel/#metal-iso) for mor
 
 Or use talosctl to apply the config remotely:
 ```bash
-talosctl apply-config --file machine-configs/$NODE_NAME.yaml --insecure -n <IP_ADDRESS>
+talosctl apply-config --file machine-configs/$NODE_NAME.yaml --insecure -n $IP_ADDRESS
 ```
 After the first boot you can always re-apply the config using:
 ```bash
-talosctl apply-config --file machine-configs/$NODE_NAME.yaml -n <IP_ADDRESS>
+talosctl apply-config --file machine-configs/$NODE_NAME.yaml -n $IP_ADDRESS
 ```
 ## Generate Talosconfig to access the cluster
 ```bash
@@ -83,8 +99,7 @@ talosctl gen config $CLUSTER_NAME $K8s_API_ENDPOINT \
   --force \
   -o talosconfig.yaml
 ```
-Set the Talos endpoint, as the `--endpoints` flag does not work at the moment.
-You can also set the node so you don't have to provide `-n <IP_ADDRESS>` all the time.
+You can also set the node so you don't have to provide `-n $IP_ADDRESS` all the time.
 ```bash
 talosctl config merge talosconfig.yaml
 export IP_ADDRESS=10.0.0.1
@@ -156,12 +171,12 @@ machine:
 ## Upgrade Talos and Kubernetes
 Either use [tuppr](https://github.com/home-operations/tuppr) or manually update using the following commands:
 ```bash
-talosctl upgrade --image factory.talos.dev/metal-installer-secureboot/53eda813751085f0a61b224c00256666bba00dcf409d5eb50b140ddb64c76c1a:v1.13.3 -n <IP_ADDRESS>
-talosctl upgrade-k8s --to 1.36.1 -n <IP_ADDRESS>
+talosctl upgrade --image factory.talos.dev/metal-installer-secureboot/53eda813751085f0a61b224c00256666bba00dcf409d5eb50b140ddb64c76c1a:v1.13.3 -n $IP_ADDRESS
+talosctl upgrade-k8s --to 1.36.1 -n $IP_ADDRESS
 ```
 If INSTALLER_IMAGE is still set in the environment variables, use the following command to upgrade Talos:
 ```bash
-talosctl upgrade --image $INSTALLER_IMAGE -n <IP_ADDRESS>
+talosctl upgrade --image $INSTALLER_IMAGE -n $IP_ADDRESS
 ```
 
 ## Home "Router" Setup

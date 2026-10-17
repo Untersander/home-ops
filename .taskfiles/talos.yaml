@@ -1,0 +1,178 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+vars:
+  CLUSTER_NAME: '{{.CLUSTER_NAME | default "k8s-garden"}}'
+  K8S_API_ENDPOINT: '{{.K8S_API_ENDPOINT | default "https://api.k8s.garden:6443"}}'
+  NODE: '{{.NODE | default "cp-0"}}'
+  IP_ADDRESS: '{{.IP_ADDRESS | default "10.0.0.1"}}'
+  SCHEMATIC_FILE: '{{.ROOT_DIR}}/talos/schematic.yaml'
+  # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
+  TALOS_VERSION: v1.14.3
+  # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
+  KUBERNETES_VERSION: v1.37.1
+  # renovate: datasource=docker depName=quay.io/cilium/charts/cilium
+  CILIUM_VERSION: 1.20.2
+  # renovate: datasource=docker depName=docker.io/library/python
+  EFI_CHECK_IMAGE_TAG: 3.14-alpine
+  SECRETS_REF: op://Private/Talos Home Lab Secrets/secrets.yaml
+
+env:
+  TALOSCONFIG: '{{.ROOT_DIR}}/talos/talosconfig.yaml'
+
+tasks:
+  secrets:pull:
+    desc: Pull secrets.yaml from 1Password
+    cmd: op read --out-file secrets.yaml --file-mode 0600 "{{.SECRETS_REF}}"
+    status:
+      - test -f secrets.yaml
+
+  iso:download:
+    desc: Download the Talos factory ISO for TALOS_VERSION and schematic.yaml into tmp/
+    # Image Factory vars, only resolved (HTTP call) by the tasks that need them
+    vars: &factory-vars
+      SCHEMATIC_ID:
+        sh: curl -fsS -X POST --data-binary @"{{.SCHEMATIC_FILE}}" https://factory.talos.dev/schematics | jq -er .id
+      INSTALLER_IMAGE: factory.talos.dev/metal-installer-secureboot/{{.SCHEMATIC_ID}}:{{.TALOS_VERSION}}
+      ISO_URL: https://factory.talos.dev/image/{{.SCHEMATIC_ID}}/{{.TALOS_VERSION}}/metal-amd64-secureboot.iso
+      ISO_FILE: '{{.ROOT_DIR}}/tmp/talos-{{.TALOS_VERSION}}-{{trunc 8 .SCHEMATIC_ID}}-metal-amd64-secureboot.iso'
+    cmds:
+      - mkdir -p "$(dirname '{{.ISO_FILE}}')"
+      - curl -fL --progress-bar -o "{{.ISO_FILE}}" "{{.ISO_URL}}"
+    status:
+      - test -f "{{.ISO_FILE}}"
+
+  usb:write:
+    desc: 'Write an ISO to a USB stick (e.g. task talos:usb:write ISO=tmp/talos.iso DISK=/dev/disk4)'
+    dir: '{{.USER_WORKING_DIR}}'
+    prompt: 'This will ERASE {{.DISK}} and write {{.ISO}} to it. Continue?'
+    requires:
+      vars: [ISO, DISK]
+    preconditions:
+      - sh: test -f "{{.ISO}}"
+        msg: 'ISO {{.ISO}} not found'
+    cmds:
+      - cmd: diskutil unmountDisk "{{.DISK}}"
+        platforms: [darwin]
+      - cmd: sudo dd if="{{.ISO}}" of="{{.DISK | replace "/dev/disk" "/dev/rdisk"}}" bs=4m status=progress
+        platforms: [darwin]
+      - cmd: diskutil eject "{{.DISK}}"
+        platforms: [darwin]
+      - cmd: sudo dd if="{{.ISO}}" of="{{.DISK}}" bs=4M status=progress conv=fsync
+        platforms: [linux]
+
+  gen-config:
+    desc: Generate the machine config for NODE
+    deps: [secrets:pull]
+    vars: *factory-vars
+    cmd: |
+      talosctl gen config {{.CLUSTER_NAME}} {{.K8S_API_ENDPOINT}} \
+        --with-secrets secrets.yaml \
+        --kubernetes-version {{trimPrefix "v" .KUBERNETES_VERSION}} \
+        --talos-version {{.TALOS_VERSION}} \
+        --config-patch @machine-patches/base-patch.yaml \
+        --config-patch @machine-patches/disk-patch.yaml \
+        --config-patch @machine-patches/openebs-patch.yaml \
+        --config-patch @machine-patches/userns-patch.yaml \
+        --config-patch @machine-patches/{{.NODE}}-patch.yaml \
+        --output-types controlplane \
+        --install-image {{.INSTALLER_IMAGE}} \
+        --install-disk "" \
+        --force \
+        -o machine-configs/{{.NODE}}.yaml
+
+  gen-talosconfig:
+    desc: Generate talosconfig.yaml with endpoint and node set to IP_ADDRESS
+    deps: [secrets:pull]
+    cmds:
+      - |
+        talosctl gen config {{.CLUSTER_NAME}} {{.K8S_API_ENDPOINT}} \
+          --with-secrets secrets.yaml \
+          --output-types talosconfig \
+          --force \
+          -o talosconfig.yaml
+      - talosctl config endpoint {{.IP_ADDRESS}}
+      - talosctl config node {{.IP_ADDRESS}}
+
+  talosconfig:merge:
+    desc: Merge talosconfig.yaml into ~/.talos/config
+    preconditions:
+      - test -f talosconfig.yaml
+    cmd: TALOSCONFIG="$HOME/.talos/config" talosctl config merge talosconfig.yaml
+
+  iso:metal-config:
+    desc: Build metal-config.iso (volume label metal-iso) containing the machine config for NODE
+    cmds:
+      - task: gen-config
+      - mkdir -p metal-config
+      - cp machine-configs/{{.NODE}}.yaml metal-config/config.yaml
+      - rm -f metal-config.iso
+      - |
+        if [ "$(uname)" = "Darwin" ] && command -v hdiutil >/dev/null; then
+          hdiutil makehybrid -iso -joliet \
+            -iso-volume-name metal-iso -joliet-volume-name metal-iso \
+            -o metal-config.iso metal-config
+        elif command -v mkisofs >/dev/null; then
+          mkisofs -joliet -rock -volid 'metal-iso' -output metal-config.iso metal-config/config.yaml
+        else
+          docker run --rm -v "$(pwd)/:/data" alpine:latest \
+            sh -c "apk add cdrkit && mkisofs -joliet -rock -volid 'metal-iso' -output /data/metal-config.iso /data/metal-config/config.yaml"
+        fi
+
+  apply-config:
+    desc: 'Apply the machine config to IP_ADDRESS (first boot: INSECURE=true, extra flags after --, e.g. -- --dry-run)'
+    preconditions:
+      - test -f machine-configs/{{.NODE}}.yaml
+    cmd: talosctl apply-config --file machine-configs/{{.NODE}}.yaml -n {{.IP_ADDRESS}} {{if .INSECURE}}--insecure{{end}} {{.CLI_ARGS}}
+
+  bootstrap:
+    desc: Bootstrap etcd on IP_ADDRESS (run only once, against one node)
+    prompt: 'Bootstrap etcd on {{.IP_ADDRESS}}? Only do this once per cluster.'
+    cmd: talosctl bootstrap -n {{.IP_ADDRESS}} -e {{.IP_ADDRESS}}
+
+  kubeconfig:
+    desc: Fetch the kubeconfig to KUBECONFIG
+    cmd: talosctl kubeconfig "{{.KUBECONFIG}}" -n {{.IP_ADDRESS}} --force
+
+  cilium:install:
+    desc: Install cilium (Gateway API disabled until Flux takes over)
+    preconditions:
+      - sh: test -f "{{.KUBECONFIG}}"
+        msg: 'kubeconfig {{.KUBECONFIG}} not found, run task talos:kubeconfig'
+    cmd: |
+      helm upgrade --install cilium oci://quay.io/cilium/charts/cilium \
+        --version {{.CILIUM_VERSION}} \
+        --namespace kube-system \
+        --values {{.ROOT_DIR}}/infra/cilium/app/values.yaml \
+        --set gatewayAPI.enabled=false \
+        --set operator.prometheus.serviceMonitor.enabled=false \
+        --set prometheus.serviceMonitor.enabled=false \
+        --set hubble.metrics.serviceMonitor.enabled=false \
+        --set hubble.relay.prometheus.serviceMonitor.enabled=false \
+        --wait
+
+  efi:check:
+    desc: List EFI boot entries on NODE and flag the ones the Talos installer cannot parse
+    vars:
+      IMAGE: docker.io/library/python:{{.EFI_CHECK_IMAGE_TAG}}
+    preconditions:
+      - sh: test -f "{{.KUBECONFIG}}"
+        msg: 'kubeconfig {{.KUBECONFIG}} not found, run task talos:kubeconfig'
+    cmd: |
+      kubectl run efi-check-{{.NODE}} -n kube-system --rm -i --quiet --restart=Never \
+        --pod-running-timeout=3m --image={{.IMAGE}} \
+        --overrides='{"apiVersion":"v1","spec":{"nodeName":"{{.NODE}}","tolerations":[{"operator":"Exists"}],"containers":[{"name":"efi-check","image":"{{.IMAGE}}","command":["python3","-u","-"],"stdin":true,"stdinOnce":true,"securityContext":{"privileged":true}}]}}' \
+        < "{{.TASKFILE_DIR}}/scripts/efi-check.py"
+
+  upgrade:
+    desc: 'Upgrade Talos on IP_ADDRESS to INSTALLER_IMAGE (LEGACY=true for the legacy upgrade method, see talos:efi:check)'
+    deps: [gen-talosconfig]
+    vars: *factory-vars
+    prompt: 'Upgrade Talos on {{.IP_ADDRESS}} to {{.INSTALLER_IMAGE}}{{if .LEGACY}} using the legacy method{{end}}?'
+    cmd: talosctl upgrade --image {{.INSTALLER_IMAGE}} -n {{.IP_ADDRESS}} {{if .LEGACY}}--legacy{{end}}
+
+  upgrade-k8s:
+    desc: Upgrade Kubernetes on IP_ADDRESS to KUBERNETES_VERSION
+    deps: [gen-talosconfig]
+    prompt: 'Upgrade Kubernetes on {{.IP_ADDRESS}} to {{.KUBERNETES_VERSION}}?'
+    cmd: talosctl upgrade-k8s --to {{trimPrefix "v" .KUBERNETES_VERSION}} -n {{.IP_ADDRESS}}

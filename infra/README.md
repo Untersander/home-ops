@@ -10,6 +10,8 @@ The following infra services are installed via Flux:
 
 
 ## Flux
+To connect a fresh cluster to this repository (install components, deploy key, 1Password secret, sync), run `task flux:bootstrap` from the repo root.
+
 First initialization repository with Flux:
 ```bash
 flux bootstrap git \

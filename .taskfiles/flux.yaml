@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+vars:
+  GIT_URL: ssh://git@github.com/Untersander/home-ops.git
+  ONEPASSWORD_TOKEN_REF: op://Kubernetes/Service Account Auth Token Kubernetes/credential
+
+tasks:
+  bootstrap:
+    desc: Install Flux and connect it to this repository
+    cmds:
+      - task: install
+      - task: deploy-key
+      - task: onepassword-secret
+      - task: sync
+
+  install:
+    desc: Install the Flux components pinned in infra/flux-system/gotk-components.yaml
+    cmds:
+      - kubectl apply --server-side -f {{.ROOT_DIR}}/infra/flux-system/gotk-components.yaml
+      - flux check
+
+  deploy-key:
+    desc: Create the flux-system git secret and print the deploy key for GitHub
+    cmds:
+      - flux create secret git flux-system --url={{.GIT_URL}} --ssh-key-algorithm=ed25519
+      - task: deploy-key:confirm
+    status:
+      - kubectl -n flux-system get secret flux-system
+
+  deploy-key:confirm:
+    internal: true
+    prompt: Added the deploy key above to the GitHub repository (Settings → Deploy keys)?
+    cmd: 'true'
+
+  rotate-deploy-key:
+    desc: Delete and recreate the flux-system git secret (new deploy key)
+    prompt: Delete the current flux-system deploy key secret?
+    cmds:
+      - kubectl -n flux-system delete secret flux-system --ignore-not-found
+      - task: deploy-key
+
+  onepassword-secret:
+    desc: Create the 1Password service account secret for External Secrets
+    cmds:
+      - kubectl create namespace external-secrets --dry-run=client -o yaml | kubectl apply -f -
+      - |
+        kubectl create secret generic onepasswordsecret -n external-secrets \
+          --from-literal=token="$(op read '{{.ONEPASSWORD_TOKEN_REF}}')" \
+          --dry-run=client -o yaml | kubectl apply -f -
+
+  sync:
+    desc: Apply the flux-system GitRepository and Kustomizations
+    cmd: kubectl apply -f {{.ROOT_DIR}}/infra/flux-system/gotk-sync.yaml
+
+  update-components:
+    desc: Regenerate gotk-components.yaml with the local flux CLI version
+    cmd: flux install --export > {{.ROOT_DIR}}/infra/flux-system/gotk-components.yaml
