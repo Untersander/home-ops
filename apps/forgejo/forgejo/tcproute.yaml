@@ -1,0 +1,16 @@
+# Git over SSH via the gateway's ssh listener (git.k8s.garden:22).
+# Not the chart's tcpRoute, it still renders TCPRoute v1alpha2, which Gateway API v1.6 no longer serves.
+apiVersion: gateway.networking.k8s.io/v1
+kind: TCPRoute
+metadata:
+  name: forgejo-ssh
+  namespace: forgejo
+spec:
+  parentRefs:
+    - name: envoy-gateway
+      namespace: envoy-gateway
+      sectionName: ssh
+  rules:
+    - backendRefs:
+        - name: forgejo-ssh
+          port: 22

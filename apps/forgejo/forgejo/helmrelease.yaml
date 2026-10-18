@@ -1,0 +1,136 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: forgejo
+  namespace: forgejo
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: forgejo
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  values:
+    image:
+      # Pinned here instead of the chart's appVersion, the runner registration sidecar reuses it
+      fullOverride: &image code.forgejo.org/forgejo/forgejo:15.0.10-rootless
+      rootless: true
+
+    deployment:
+      annotations:
+        reloader.stakater.com/auto: "true"
+      env:
+        - name: TZ
+          value: Europe/Zurich
+
+    podSecurityContext:
+      fsGroup: 1000
+      fsGroupChangePolicy: OnRootMismatch
+      seccompProfile: { type: RuntimeDefault }
+    containerSecurityContext: &securityContext
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 256M
+
+    persistence:
+      enabled: true
+      create: false
+      claimName: forgejo-data
+
+    httpRoute:
+      enabled: true
+      hostnames: ["git.k8s.garden"]
+      parentRefs:
+        - name: envoy-gateway
+          namespace: envoy-gateway
+          sectionName: websecure
+
+    # SSH is exposed by ./tcproute.yaml
+    service:
+      ssh:
+        port: 22
+
+    gitea:
+      admin:
+        existingSecret: forgejo-admin
+        email: admin@k8s.garden
+        # 1Password is the source of truth for the admin password
+        passwordMode: keepUpdated
+
+      config:
+        APP_NAME: Forgejo
+        server:
+          DOMAIN: git.k8s.garden
+          ROOT_URL: https://git.k8s.garden/
+          SSH_DOMAIN: git.k8s.garden
+          SSH_PORT: 22 # advertised in clone URLs (gateway listener)
+          SSH_LISTEN_PORT: 2222 # rootless image
+        database:
+          DB_TYPE: postgres
+          HOST: forgejo-db-rw.forgejo.svc.cluster.local:5432
+          NAME: forgejo
+          USER: forgejo
+        service:
+          DISABLE_REGISTRATION: true
+        actions:
+          ENABLED: true
+
+      additionalConfigFromEnvs:
+        - name: FORGEJO__DATABASE__PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: forgejo-db-app
+              key: password
+
+    # Registers the Actions runner with the shared secret (offline registration).
+    # forgejo-cli actions register is idempotent, so it runs on every start.
+    # --keep-labels: the runner declares its labels when it connects; without the flag,
+    # every Forgejo restart would wipe them and no job would match the runner anymore.
+    extraContainers:
+      - name: register-runner
+        image: *image
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            until uuid=$(forgejo forgejo-cli actions register --name k8s --keep-labels --secret-file /runner/token); do
+              echo "runner registration failed, retrying in 10s"
+              sleep 10
+            done
+            echo "runner registered: ${uuid}"
+            exec tail -f /dev/null
+        env:
+          - name: GITEA_APP_INI
+            value: /data/gitea/conf/app.ini
+          - name: GITEA_CUSTOM
+            value: /data/gitea
+          - name: GITEA_WORK_DIR
+            value: /data
+          - name: HOME
+            value: /data/gitea/git
+        securityContext: *securityContext
+        resources:
+          requests:
+            cpu: 1m
+            memory: 16Mi
+        volumeMounts:
+          - name: data
+            mountPath: /data
+          - name: runner-secret
+            mountPath: /runner
+            readOnly: true
+    extraVolumes:
+      - name: runner-secret
+        secret:
+          secretName: forgejo-runner
+
+    test:
+      enabled: false

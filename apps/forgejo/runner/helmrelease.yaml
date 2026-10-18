@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: forgejo-runner
+  namespace: forgejo
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: forgejo-runner
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  values:
+    forgejo:
+      url: https://git.k8s.garden # only validated by the chart, see command
+      existingSecret: forgejo-runner
+
+    image:
+      repository: code.forgejo.org/forgejo/runner
+      tag: 13.2.0
+
+    # The chart expects the runner UUID in the secret. It is the first 16 characters
+    # of the shared secret as raw bytes (like forgejo-cli actions register), so derive it here.
+    command:
+      - sh
+      - -ec
+      - |
+        uuid=$(head -c 16 /etc/forgejo-runner-secret/token | od -An -tx1 | tr -d ' \n' \
+          | sed -E 's/^(.{8})(.{4})(.{4})(.{4})(.{12})$/\1-\2-\3-\4-\5/')
+        # The URL is handed to jobs (GITHUB_SERVER_URL, artifacts), so use the gateway like everyone else
+        exec /bin/forgejo-runner daemon \
+          --config /config/runner.yaml \
+          --url https://git.k8s.garden \
+          --uuid "$uuid" \
+          --token-url file:///etc/forgejo-runner-secret/token
+
+    podSecurityContext:
+      fsGroup: 1000
+      fsGroupChangePolicy: OnRootMismatch
+      runAsGroup: 1000
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile: { type: RuntimeDefault }
+
+    runnerConfig: |
+      log:
+        level: info
+      runner:
+        capacity: 2
+        timeout: 3h
+        shutdown_timeout: 3m
+        labels:
+          - ubuntu-latest:k8s:///config/podspec-default.yaml
+          - ubuntu-24.04:k8s:///config/podspec-default.yaml
+      cache:
+        enabled: true
+        dir: /data/cache
+        port: 8088
+        proxy_port: 8089
+      container:
+        docker_host: "-"
+        workdir_parent: shared/workdir
+      host:
+        workdir_parent: /data/act
+      plugins:
+        k8s:
+          address: unix:///plugin/forgejo-runner-k8s.sock
+          options:
+            # Job pods run next to Forgejo, under the namespace's default (baseline) Pod Security
+            namespace: forgejo
+            poll_timeout: 10m
+
+    # One pod per job; the plugin execs the steps in the "main" container
+    podSpecs:
+      podspec-default.yaml: |
+        automountServiceAccountToken: false
+        enableServiceLinks: false
+        restartPolicy: Never
+        securityContext:
+          seccompProfile:
+            type: RuntimeDefault
+        containers:
+          - name: main
+            # Ubuntu with node and the act toolcache, runs as root (not privileged) so jobs can apt-get
+            image: ghcr.io/bjw-s-labs/forgejo-runner:ubuntu-24.04
+            env:
+              - name: DEBIAN_FRONTEND
+                value: noninteractive
+            securityContext:
+              allowPrivilegeEscalation: false
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 4Gi

@@ -43,3 +43,15 @@ spec:
         kind: Secret
         name: wildcard-noreplay-org-tls
       mode: Terminate
+  # Git over SSH (Forgejo)
+  - allowedRoutes:
+      kinds:
+      - kind: TCPRoute
+      namespaces:
+        from: Selector
+        selector:
+          matchLabels:
+            kubernetes.io/metadata.name: forgejo
+    name: ssh
+    port: 22
+    protocol: TCP

@@ -1,0 +1,108 @@
+# Runner: talks to Forgejo through the gateway, starts job pods via the API server,
+# downloads actions from the internet and serves the actions cache to job pods
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: forgejo-runner
+  namespace: forgejo
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: forgejo-runner
+      app.kubernetes.io/instance: forgejo-runner
+  ingress:
+    # Cache proxy (cache.proxy_port)
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/managed-by: forgejo-runner
+      toPorts:
+        - ports:
+            - port: "8089"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+    # git.k8s.garden (envoy listens on 10443 for the 443 listener)
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: envoy-gateway
+            app.kubernetes.io/name: envoy
+      toPorts:
+        - ports:
+            - port: "10443"
+              protocol: TCP
+    - toEntities:
+        - kube-apiserver
+    # Public internet only, no LAN
+    - toCIDRSet:
+        - cidr: 0.0.0.0/0
+          except:
+            - 10.0.0.0/8
+            - 100.64.0.0/10
+            - 169.254.0.0/16
+            - 172.16.0.0/12
+            - 192.168.0.0/16
+        - cidr: ::/0
+          except:
+            - 2a02:169:4a00::/48 # home prefix
+            - fc00::/7
+            - fe80::/10
+---
+# Job pods: no ingress, egress only to DNS, Forgejo (through the gateway), the runner's cache proxy and the internet
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: forgejo-runner-jobs
+  namespace: forgejo
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/managed-by: forgejo-runner
+  # Steps are run via the API server (pods/exec), not over the pod network
+  ingress:
+    - {}
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: envoy-gateway
+            app.kubernetes.io/name: envoy
+      toPorts:
+        - ports:
+            - port: "10443"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: forgejo-runner
+            app.kubernetes.io/instance: forgejo-runner
+      toPorts:
+        - ports:
+            - port: "8089"
+              protocol: TCP
+    # Public internet only, no LAN
+    - toCIDRSet:
+        - cidr: 0.0.0.0/0
+          except:
+            - 10.0.0.0/8
+            - 100.64.0.0/10
+            - 169.254.0.0/16
+            - 172.16.0.0/12
+            - 192.168.0.0/16
+        - cidr: ::/0
+          except:
+            - 2a02:169:4a00::/48 # home prefix
+            - fc00::/7
+            - fe80::/10

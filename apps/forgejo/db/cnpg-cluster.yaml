@@ -1,0 +1,14 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: forgejo-db
+  namespace: forgejo
+spec:
+  instances: 1
+  storage:
+    size: 5Gi
+    storageClass: openebs-hostpath-ssd-retain
+  bootstrap:
+    initdb:
+      database: forgejo
+      owner: forgejo

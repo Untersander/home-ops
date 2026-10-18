@@ -1,0 +1,19 @@
+# Repositories, LFS, attachments, avatars, packages, app.ini and the SSH host keys
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: forgejo-data
+  namespace: forgejo
+  labels:
+    backup.k8s.garden/app: forgejo
+spec:
+  storageClassName: openebs-zfs-shared-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  dataSourceRef:
+    apiGroup: kopiur.home-operations.com
+    kind: Restore
+    name: forgejo

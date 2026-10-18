@@ -1,0 +1,45 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: forgejo-admin
+  namespace: forgejo
+spec:
+  refreshInterval: 6h0m0s
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  target:
+    template:
+      type: generic
+      data:
+        username: "{{ .username }}"
+        password: "{{ .password }}"
+  data:
+    - secretKey: username
+      remoteRef:
+        key: "Forgejo/username"
+    - secretKey: password
+      remoteRef:
+        key: "Forgejo/password"
+---
+# Shared secret for offline runner registration, 40 hex characters (openssl rand -hex 20).
+# Forgejo registers it via forgejo-cli, the runner connects with it.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: forgejo-runner
+  namespace: forgejo
+spec:
+  refreshInterval: 6h0m0s
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  target:
+    template:
+      type: generic
+      data:
+        token: "{{ .token }}"
+  data:
+    - secretKey: token
+      remoteRef:
+        key: "Forgejo/runner-secret"

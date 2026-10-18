@@ -1,0 +1,39 @@
+# Ingress only; the instance manager needs egress to the API server
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: forgejo-db
+  namespace: forgejo
+spec:
+  endpointSelector:
+    matchLabels:
+      cnpg.io/cluster: forgejo-db
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: forgejo
+            app.kubernetes.io/instance: forgejo
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+    # CNPG operator (instance manager status API) and other instances of the cluster (replication)
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: db
+            app.kubernetes.io/name: cloudnative-pg
+        - matchLabels:
+            cnpg.io/cluster: forgejo-db
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+            - port: "8000"
+              protocol: TCP
+    # kubelet probes
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
