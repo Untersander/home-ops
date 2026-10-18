@@ -10,6 +10,32 @@ spec:
     recordType: AAAA
     targets:
     - "2a02:169:4a00::"
+  - dnsName: k8s.garden
+    recordType: TXT
+    targets:
+    - '"protonmail-verification=56a1a909a19308a06c5c2296d6d18f4ecb0c271a"'
+    - '"v=spf1 include:_spf.protonmail.ch ~all"'
+  - dnsName: _dmarc.k8s.garden
+    recordType: TXT
+    targets:
+    - '"v=DMARC1; p=quarantine"'
+  - dnsName: protonmail._domainkey.k8s.garden
+    recordType: CNAME
+    targets:
+    - protonmail.domainkey.d2bahif4msrad4viqsspnimaerawglydofimjkkxjsbzuacroryca.domains.proton.ch
+  - dnsName: protonmail2._domainkey.k8s.garden
+    recordType: CNAME
+    targets:
+    - protonmail2.domainkey.d2bahif4msrad4viqsspnimaerawglydofimjkkxjsbzuacroryca.domains.proton.ch
+  - dnsName: protonmail3._domainkey.k8s.garden
+    recordType: CNAME
+    targets:
+    - protonmail3.domainkey.d2bahif4msrad4viqsspnimaerawglydofimjkkxjsbzuacroryca.domains.proton.ch
+  - dnsName: k8s.garden
+    recordType: MX
+    targets:
+    - 10 mail.protonmail.ch
+    - 20 mailsec.protonmail.ch
   - dnsName: "*.k8s.garden"
     recordType: A
     targets:
