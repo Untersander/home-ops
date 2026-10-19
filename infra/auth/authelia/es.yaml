@@ -1,0 +1,44 @@
+# Mounted at /secrets, one file per key; read via AUTHELIA_*_FILE env vars or the template filter in ./config.
+# The OIDC clients only get the digests here ("Authelia OIDC <client>/digest"), the apps get the plaintext secrets in their own namespace.
+# <client>-client-secret-digest entries are added by `task authelia:client:add`.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: authelia-secrets
+  namespace: auth
+spec:
+  refreshInterval: 6h0m0s
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  data:
+    - secretKey: session-secret
+      remoteRef:
+        key: "Authelia/session-secret"
+    - secretKey: storage-encryption-key
+      remoteRef:
+        key: "Authelia/storage-encryption-key"
+    - secretKey: reset-password-jwt-secret
+      remoteRef:
+        key: "Authelia/reset-password-jwt-secret"
+    - secretKey: oidc-hmac-secret
+      remoteRef:
+        key: "Authelia/oidc-hmac-secret"
+    - secretKey: oidc-jwks-key
+      remoteRef:
+        key: "Authelia/oidc-jwks-key"
+    - secretKey: smtp-username
+      remoteRef:
+        key: "Proton SMTP Token/username"
+    - secretKey: smtp-password
+      remoteRef:
+        key: "Proton SMTP Token/credential"
+    - secretKey: ldap-password
+      remoteRef:
+        key: "LLDAP authelia/password"
+    - secretKey: forgejo-client-secret-digest
+      remoteRef:
+        key: "Authelia OIDC forgejo/digest"
+    - secretKey: grafana-client-secret-digest
+      remoteRef:
+        key: "Authelia OIDC grafana/digest"

@@ -1,0 +1,19 @@
+# SQLite user database (users.db) and the lldap_config.toml copied by the entrypoint
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lldap-data
+  namespace: auth
+  labels:
+    backup.k8s.garden/app: lldap
+spec:
+  storageClassName: openebs-zfs-shared-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  dataSourceRef:
+    apiGroup: kopiur.home-operations.com
+    kind: Restore
+    name: lldap

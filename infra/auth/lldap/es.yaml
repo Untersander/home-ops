@@ -1,0 +1,37 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: lldap-secrets
+  namespace: auth
+spec:
+  refreshInterval: 6h0m0s
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  target:
+    template:
+      type: generic
+      data:
+        jwt-secret: "{{ .jwtSecret }}"
+        # Encrypts all stored passwords; changing it invalidates every password
+        key-seed: "{{ .keySeed }}"
+        admin-password: "{{ .adminPassword }}"
+        # Service accounts created by the bootstrap sidecar
+        authelia-password: "{{ .autheliaPassword }}"
+        jellyfin-password: "{{ .jellyfinPassword }}"
+  data:
+    - secretKey: jwtSecret
+      remoteRef:
+        key: "LLDAP/jwt-secret"
+    - secretKey: keySeed
+      remoteRef:
+        key: "LLDAP/key-seed"
+    - secretKey: adminPassword
+      remoteRef:
+        key: "LLDAP/password"
+    - secretKey: autheliaPassword
+      remoteRef:
+        key: "LLDAP authelia/password"
+    - secretKey: jellyfinPassword
+      remoteRef:
+        key: "LLDAP jellyfin/password"

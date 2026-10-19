@@ -1,0 +1,25 @@
+# Ingress only; the session store is reachable by Authelia alone
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: authelia-valkey
+  namespace: auth
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: authelia-valkey
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: authelia
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+    # kubelet probes (app-template default TCP probes)
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP

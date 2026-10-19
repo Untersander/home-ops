@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=https://www.authelia.com/schemas/v4.39/json-schema/configuration.json
+# Secrets are not part of this file: single values come from AUTHELIA_*_FILE env vars,
+# values inside lists (JWKS key) from the template filter's secret function.
+# The template filter also runs over comments, so don't write template braces in comments.
+# The OIDC clients are in ./oidc-clients.yml, Authelia merges both files.
+theme: auto
+
+server:
+  address: tcp://:9091
+
+log:
+  level: info
+
+# Startup must not fail when the NTP server is unreachable
+ntp:
+  disable_failure: true
+
+totp:
+  issuer: k8s.garden
+
+webauthn:
+  display_name: k8s.garden
+  enable_passkey_login: true
+
+authentication_backend:
+  ldap:
+    implementation: lldap
+    address: ldap://lldap.auth.svc.cluster.local:3890
+    base_dn: dc=k8s,dc=garden
+    # Member of lldap_password_manager, so password resets work
+    user: uid=authelia,ou=people,dc=k8s,dc=garden
+
+# Only applies to forward-auth (Envoy ext_authz), which no route uses yet;
+# the OIDC clients use their own authorization policies below
+access_control:
+  default_policy: deny
+  rules:
+    - domain: "*.k8s.garden"
+      subject: group:admins
+      policy: two_factor
+
+session:
+  cookies:
+    - domain: k8s.garden
+      authelia_url: https://auth.k8s.garden
+  redis:
+    host: authelia-valkey.auth.svc.cluster.local
+    port: 6379
+
+storage:
+  local:
+    path: /data/db.sqlite3
+
+# Proton Mail; the token (1Password "Proton SMTP Token") can only send as its own address
+notifier:
+  smtp:
+    address: submission://smtp.protonmail.ch:587
+    username: '{{ secret "/secrets/smtp-username" }}'
+    sender: Authelia <contact@k8s.garden>
+
+identity_providers:
+  oidc:
+    jwks:
+      - key_id: main
+        algorithm: RS256
+        use: sig
+        key: {{ secret "/secrets/oidc-jwks-key" | mindent 10 "|" | msquote }}
+
+    authorization_policies:
+      # LLDAP groups allowed to use the apps
+      family:
+        default_policy: deny
+        rules:
+          - policy: two_factor
+            subject:
+              - group:family
+              - group:admins
+
+    claims_policies:
+      # Grafana reads these from the ID token instead of the userinfo endpoint
+      grafana:
+        id_token: [email, name, groups, preferred_username]

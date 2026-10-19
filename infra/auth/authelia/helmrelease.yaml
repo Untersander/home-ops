@@ -1,0 +1,103 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: authelia
+  namespace: auth
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: authelia
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  values:
+    controllers:
+      authelia:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        # SQLite on a RWO volume
+        strategy: Recreate
+        containers:
+          app:
+            image:
+              repository: ghcr.io/authelia/authelia
+              tag: 4.39.28
+            env:
+              TZ: Europe/Zurich
+              # Merged in order, see ./config
+              X_AUTHELIA_CONFIG: /config/configuration.yml,/config/oidc-clients.yml
+              X_AUTHELIA_CONFIG_FILTERS: template
+              AUTHELIA_SESSION_SECRET_FILE: /secrets/session-secret
+              AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /secrets/storage-encryption-key
+              AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE: /secrets/reset-password-jwt-secret
+              AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE: /secrets/oidc-hmac-secret
+              AUTHELIA_AUTHENTICATION_BACKEND_LDAP_PASSWORD_FILE: /secrets/ldap-password
+              AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE: /secrets/smtp-password
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/health
+                    port: 9091
+              readiness: *probe
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64M
+              limits:
+                memory: 256M
+
+    defaultPodOptions:
+      # Authelia reads every AUTHELIA_* env var as config, the injected AUTHELIA_PORT etc. break startup
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: { type: RuntimeDefault }
+
+    service:
+      authelia:
+        controller: authelia
+        ports:
+          http:
+            port: 9091
+
+    route:
+      authelia:
+        hostnames: ["auth.k8s.garden"]
+        parentRefs:
+          - name: envoy-gateway
+            namespace: envoy-gateway
+            sectionName: websecure
+        rules:
+          - backendRefs:
+              - identifier: authelia
+                port: 9091
+
+    persistence:
+      config:
+        type: configMap
+        name: authelia-config
+        globalMounts:
+          - path: /config
+            readOnly: true
+      secrets:
+        type: secret
+        name: authelia-secrets
+        globalMounts:
+          - path: /secrets
+            readOnly: true
+      data:
+        existingClaim: authelia-data
+        globalMounts:
+          - path: /data

@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: auth-valkey
+  namespace: auth
+spec:
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./infra/auth/valkey
+  targetNamespace: auth
+  prune: true
+  interval: 1h
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: auth-lldap
+  namespace: auth
+spec:
+  components:
+    - ../../../components/backup-kopiur
+  postBuild:
+    substitute:
+      APP: lldap
+  # kopiur's webhook rejects policies while the ClusterRepository doesn't exist,
+  # and the auto-restore PVC must not be created before the repository is there
+  dependsOn:
+    - name: backup-repositories
+      namespace: backup
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./infra/auth/lldap
+  targetNamespace: auth
+  prune: true
+  interval: 1h
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: auth-authelia
+  namespace: auth
+spec:
+  components:
+    - ../../../components/backup-kopiur
+  postBuild:
+    substitute:
+      APP: authelia
+  dependsOn:
+    - name: auth-lldap
+    - name: auth-valkey
+    - name: backup-repositories
+      namespace: backup
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./infra/auth/authelia
+  targetNamespace: auth
+  prune: true
+  interval: 1h

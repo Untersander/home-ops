@@ -1,0 +1,15 @@
+# Declarative groups and service accounts, applied by /app/bootstrap.sh in the bootstrap sidecar.
+# People are managed in the LLDAP UI (https://ldap.k8s.garden) and added to the groups below;
+# DO_CLEANUP=false keeps them, the script only warns about users and memberships not declared here.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lldap-bootstrap
+  namespace: auth
+data:
+  groups.json: |
+    {"name": "admins"}
+    {"name": "family"}
+  users.json: |
+    {"id": "authelia", "email": "authelia@k8s.garden", "displayName": "Authelia", "password_file": "/secrets/authelia-password", "groups": ["lldap_password_manager"]}
+    {"id": "jellyfin", "email": "jellyfin@k8s.garden", "displayName": "Jellyfin", "password_file": "/secrets/jellyfin-password", "groups": ["lldap_strict_readonly"]}

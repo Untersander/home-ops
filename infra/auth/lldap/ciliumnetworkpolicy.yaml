@@ -1,0 +1,38 @@
+# Ingress only; LDAP is reachable by the apps that bind against it, the web UI through the gateway
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: lldap
+  namespace: auth
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: lldap
+  ingress:
+    # LDAP: Authelia (user backend) and Jellyfin (LDAP-Auth plugin)
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: authelia
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: media
+            app.kubernetes.io/name: jellyfin
+      toPorts:
+        - ports:
+            - port: "3890"
+              protocol: TCP
+    # Web UI (websecure listener)
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: envoy-gateway
+            app.kubernetes.io/name: envoy
+      toPorts:
+        - ports:
+            - port: "17170"
+              protocol: TCP
+    # kubelet probes
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "17170"
+              protocol: TCP

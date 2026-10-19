@@ -13,6 +13,8 @@ includes:
     dir: talos
   flux:
     taskfile: .taskfiles/flux.yaml
+  authelia:
+    taskfile: .taskfiles/authelia.yaml
 
 tasks:
   default:

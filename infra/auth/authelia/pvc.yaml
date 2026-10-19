@@ -1,0 +1,19 @@
+# SQLite storage (db.sqlite3): registered TOTP/WebAuthn devices, consents, OIDC sessions
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: authelia-data
+  namespace: auth
+  labels:
+    backup.k8s.garden/app: authelia
+spec:
+  storageClassName: openebs-zfs-shared-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  dataSourceRef:
+    apiGroup: kopiur.home-operations.com
+    kind: Restore
+    name: authelia

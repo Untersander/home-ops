@@ -1,0 +1,138 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: lldap
+  namespace: auth
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: lldap
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  values:
+    controllers:
+      lldap:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        # SQLite on a RWO volume
+        strategy: Recreate
+        containers:
+          app:
+            image: &image
+              repository: docker.io/lldap/lldap
+              tag: v0.6.3-alpine-rootless
+            env:
+              TZ: Europe/Zurich
+              LLDAP_HTTP_URL: https://ldap.k8s.garden
+              LLDAP_LDAP_BASE_DN: dc=k8s,dc=garden
+              LLDAP_LDAP_USER_EMAIL: admin@k8s.garden
+              LLDAP_DATABASE_URL: sqlite:///data/users.db?mode=rwc
+              LLDAP_JWT_SECRET_FILE: /secrets/jwt-secret
+              LLDAP_KEY_SEED_FILE: /secrets/key-seed
+              LLDAP_LDAP_USER_PASS_FILE: /secrets/admin-password
+              # 1Password is the source of truth for the admin password
+              LLDAP_FORCE_LDAP_USER_PASS_RESET: always
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: 17170
+              readiness: *probe
+            securityContext: &securityContext
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32M
+
+          # Creates the groups and service accounts from ./bootstrap-configmap.yaml.
+          # bootstrap.sh waits for the server and is idempotent, so it runs on every start.
+          bootstrap:
+            image: *image
+            command: ["/bin/bash", "-c"]
+            args:
+              - |
+                until /app/bootstrap.sh; do
+                  echo "bootstrap failed, retrying in 30s"
+                  sleep 30
+                done
+                exec tail -f /dev/null
+            env:
+              LLDAP_URL: http://localhost:17170
+              LLDAP_ADMIN_USERNAME: admin
+              LLDAP_ADMIN_PASSWORD_FILE: /secrets/admin-password
+              DO_CLEANUP: "false"
+            securityContext: *securityContext
+            resources:
+              requests:
+                cpu: 1m
+                memory: 16Mi
+
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: { type: RuntimeDefault }
+
+    service:
+      lldap:
+        controller: lldap
+        ports:
+          http:
+            port: 17170
+          ldap:
+            port: 3890
+
+    route:
+      lldap:
+        hostnames: ["ldap.k8s.garden"]
+        parentRefs:
+          - name: envoy-gateway
+            namespace: envoy-gateway
+            sectionName: websecure
+        rules:
+          - backendRefs:
+              - identifier: lldap
+                port: 17170
+
+    persistence:
+      data:
+        existingClaim: lldap-data
+        advancedMounts:
+          lldap:
+            app:
+              - path: /data
+      secrets:
+        type: secret
+        name: lldap-secrets
+        advancedMounts:
+          lldap:
+            app:
+              - path: /secrets
+                readOnly: true
+            bootstrap:
+              - path: /secrets
+                readOnly: true
+      bootstrap:
+        type: configMap
+        name: lldap-bootstrap
+        items:
+          - key: groups.json
+            path: group-configs/groups.json
+          - key: users.json
+            path: user-configs/users.json
+        advancedMounts:
+          lldap:
+            bootstrap:
+              - path: /bootstrap
+                readOnly: true

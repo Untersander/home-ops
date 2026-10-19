@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./ocirepository.yaml
+  - ./helmrelease.yaml
+  - ./pvc.yaml
+  - ./es.yaml
+  - ./ciliumnetworkpolicy.yaml
+configMapGenerator:
+  - name: authelia-config
+    files:
+      - ./config/configuration.yml
+      - ./config/oidc-clients.yml
+generatorOptions:
+  # Referenced by name in the HelmRelease; reloader restarts Authelia on changes
+  disableNameSuffixHash: true

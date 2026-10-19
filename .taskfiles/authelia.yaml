@@ -1,0 +1,185 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+vars:
+  VAULT: Kubernetes
+  # One 1Password API Credential item per OIDC client: "Authelia OIDC <client>" with
+  # credential (plaintext secret for the app), digest (for Authelia), username (client_id) and hostname
+  CLIENT_ITEM_PREFIX: Authelia OIDC
+  AUTHELIA_HOST: auth.k8s.garden
+  AUTHELIA_DIR: '{{.ROOT_DIR}}/infra/auth/authelia'
+  CLIENTS_FILE: '{{.AUTHELIA_DIR}}/config/oidc-clients.yml'
+  ES_FILE: '{{.AUTHELIA_DIR}}/es.yaml'
+  # Same image as the HelmRelease, so Renovate updates both
+  IMAGE:
+    sh: yq '.spec.values.controllers.authelia.containers.app.image | .repository + ":" + .tag' "{{.ROOT_DIR}}/infra/auth/authelia/helmrelease.yaml"
+
+tasks:
+  client:secret:
+    desc: 'Create the secret of OIDC client CLIENT in its 1Password item "Authelia OIDC <CLIENT>": credential (app) and digest (Authelia). FORCE=true rotates it (e.g. task authelia:client:secret CLIENT=forgejo)'
+    requires:
+      vars: [CLIENT]
+    vars:
+      FORCE: '{{.FORCE | default "false"}}'
+      CLIENT_ITEM: '{{.CLIENT_ITEM_PREFIX}} {{.CLIENT}}'
+    preconditions:
+      - sh: docker info >/dev/null 2>&1
+        msg: docker is needed to run the authelia CLI
+    status:
+      - '{{if eq .FORCE "true"}}false{{else}}op read "op://{{.VAULT}}/{{.CLIENT_ITEM}}/credential" >/dev/null 2>&1{{end}}'
+    cmd: |
+      set -euo pipefail
+      out="$(docker run --rm {{.IMAGE}} authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 72 --random.charset rfc3986)"
+      export SECRET="$(printf '%s\n' "$out" | sed -n 's/^Random Password: //p')"
+      export DIGEST="$(printf '%s\n' "$out" | sed -n 's/^Digest: //p')"
+      test -n "$SECRET" && test -n "$DIGEST"
+
+      # The values go through env and stdin, command arguments are visible to other processes
+      upsert='
+        def upsert($label; $value):
+          if any(.fields[]; .label == $label)
+          then .fields |= map(if .label == $label then .value = $value else . end)
+          else .fields += [{"id": $label, "label": $label, "type": "CONCEALED", "value": $value}]
+          end;
+        upsert("credential"; env.SECRET) | upsert("digest"; env.DIGEST)'
+
+      if op item get "{{.CLIENT_ITEM}}" --vault "{{.VAULT}}" >/dev/null 2>&1; then
+        op item get "{{.CLIENT_ITEM}}" --vault "{{.VAULT}}" --format json \
+          | jq "$upsert" \
+          | op item edit "{{.CLIENT_ITEM}}" --vault "{{.VAULT}}" >/dev/null
+      else
+        # No dates, rotation is manual (FORCE=true); empty date fields would be stored as 0 (1970)
+        op item template get "API Credential" \
+          | jq '.title = "{{.CLIENT_ITEM}}"
+              | .fields |= map(select(.type != "DATE"))
+              | (.fields[] | select(.id == "notesPlain")).value = "OIDC client {{.CLIENT}} of Authelia (infra/auth): credential for the app, digest for Authelia"
+              | (.fields[] | select(.id == "username")).value = "{{.CLIENT}}"
+              | (.fields[] | select(.id == "hostname")).value = "{{.AUTHELIA_HOST}}"' \
+          | jq "$upsert" \
+          | op item create --vault "{{.VAULT}}" - >/dev/null
+      fi
+
+      echo "Stored {{.CLIENT_ITEM}}/credential and {{.CLIENT_ITEM}}/digest in vault {{.VAULT}}"
+      {{if eq .FORCE "true"}}echo "Rotated: ExternalSecrets pick it up within 6h, or force a sync: kubectl annotate externalsecret <name> -n <namespace> force-sync=\$(date +%s) --overwrite"{{end}}
+
+  client:add:
+    desc: 'Add OIDC client CLIENT to oidc-clients.yml and its digest to the Authelia ExternalSecret (e.g. task authelia:client:add CLIENT=forgejo NAME=Forgejo REDIRECT_URIS=https://git.k8s.garden/user/oauth2/authelia/callback)'
+    requires:
+      vars: [CLIENT, REDIRECT_URIS]
+    vars:
+      NAME: '{{.NAME | default .CLIENT}}'
+      # Comma separated
+      SCOPES: '{{.SCOPES | default "openid,email,profile,groups"}}'
+      AUTH_METHOD: '{{.AUTH_METHOD | default "client_secret_basic"}}'
+      POLICY: '{{.POLICY | default "family"}}'
+      PKCE: '{{.PKCE | default "true"}}'
+      CLAIMS_POLICY: '{{.CLAIMS_POLICY | default ""}}'
+      # Template filter expression, rendered by Authelia ({{"{{"}} would otherwise be rendered by Task)
+      SECRET_EXPR: '{{"{{"}} secret "/secrets/{{.CLIENT}}-client-secret-digest" }}'
+    preconditions:
+      - sh: echo "{{.CLIENT}}" | grep -Eq '^[a-z0-9][a-z0-9-]*$'
+        msg: 'CLIENT must be lowercase letters, digits and dashes'
+      - sh: test -z "$(CLIENT={{.CLIENT}} yq '.identity_providers.oidc.clients[] | select(.client_id == strenv(CLIENT)) | .client_id' "{{.CLIENTS_FILE}}")"
+        msg: 'Client {{.CLIENT}} already exists in {{.CLIENTS_FILE}}'
+      - sh: test -z "$(KEY={{.CLIENT}}-client-secret-digest yq '.spec.data[] | select(.secretKey == strenv(KEY)) | .secretKey' "{{.ES_FILE}}")"
+        msg: '{{.CLIENT}}-client-secret-digest already exists in {{.ES_FILE}}'
+      - sh: echo "{{.AUTH_METHOD}}" | grep -Eq '^(client_secret_basic|client_secret_post)$'
+        msg: 'AUTH_METHOD must be client_secret_basic or client_secret_post'
+    env:
+      CLIENT: '{{.CLIENT}}'
+      NAME: '{{.NAME}}'
+      REDIRECT_URIS: '{{.REDIRECT_URIS}}'
+      SCOPES: '{{.SCOPES}}'
+      AUTH_METHOD: '{{.AUTH_METHOD}}'
+      POLICY: '{{.POLICY}}'
+      PKCE: '{{.PKCE}}'
+      CLAIMS_POLICY: '{{.CLAIMS_POLICY}}'
+      SECRET_EXPR: '{{.SECRET_EXPR}}'
+    cmds:
+      - |
+        yq -i '
+          .identity_providers.oidc.clients += [
+            {
+              "client_id": strenv(CLIENT),
+              "client_name": strenv(NAME),
+              "client_secret": strenv(SECRET_EXPR),
+              "public": false,
+              "authorization_policy": strenv(POLICY),
+              "require_pkce": (strenv(PKCE) == "true"),
+              "pkce_challenge_method": "S256",
+              "redirect_uris": (strenv(REDIRECT_URIS) | split(",")),
+              "scopes": (strenv(SCOPES) | split(",")),
+              "response_types": ["code"],
+              "grant_types": ["authorization_code"],
+              "access_token_signed_response_alg": "none",
+              "userinfo_signed_response_alg": "none",
+              "token_endpoint_auth_method": strenv(AUTH_METHOD)
+            }
+          ]
+          | with(.identity_providers.oidc.clients[-1];
+              .client_secret style="single"
+              | (.scopes, .response_types, .grant_types) style="flow")
+        ' "{{.CLIENTS_FILE}}"
+      - cmd: yq -i '.identity_providers.oidc.clients[-1].claims_policy = strenv(CLAIMS_POLICY)' "{{.CLIENTS_FILE}}"
+        if: test -n "{{.CLAIMS_POLICY}}"
+      - |
+        yq -i '
+          .spec.data += [{"secretKey": strenv(CLIENT) + "-client-secret-digest", "remoteRef": {"key": "{{.CLIENT_ITEM_PREFIX}} " + strenv(CLIENT) + "/digest"}}]
+          | .spec.data[-1].remoteRef.key style="double"
+        ' "{{.ES_FILE}}"
+      - task: validate
+      - |
+        cat <<EOF
+
+        Added client {{.CLIENT}}. Next:
+          1. task authelia:client:secret CLIENT={{.CLIENT}}
+          2. Give the app the plaintext secret in its namespace, e.g.:
+
+        apiVersion: external-secrets.io/v1
+        kind: ExternalSecret
+        metadata:
+          name: {{.CLIENT}}-oidc
+        spec:
+          refreshInterval: 6h0m0s
+          secretStoreRef:
+            name: 1password-sdk
+            kind: ClusterSecretStore
+          data:
+            - secretKey: client-secret
+              remoteRef:
+                key: "{{.CLIENT_ITEM_PREFIX}} {{.CLIENT}}/credential"
+        EOF
+
+  validate:
+    desc: Validate the Authelia config in infra/auth/authelia/config with dummy secrets
+    silent: true
+    vars:
+      # Digest of 'insecure_secret' from the Authelia docs
+      DUMMY_DIGEST: '$pbkdf2-sha512$310000$c8p78n7pUMln0jzvd4aK4Q$JNRBzwAo0ek5qKn50cFzzvE9RXV88h1wJn5KGiHrD0YKtZaR/nCb2CJPOsKaPK0hjf.9yHxzQGZziziccp6Yng'
+    preconditions:
+      - sh: docker info >/dev/null 2>&1
+        msg: docker is needed to run the authelia CLI
+    cmd: |
+      set -euo pipefail
+      tmp="$(mktemp -d)"
+      trap 'rm -rf "$tmp"' EXIT
+      mkdir "$tmp/secrets"
+
+      # One dummy file per key of the ExternalSecret, mounted like the real secret
+      for key in $(yq '.spec.data[].secretKey' "{{.ES_FILE}}"); do
+        case "$key" in
+          oidc-jwks-key) openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "$tmp/secrets/$key" 2>/dev/null ;;
+          *-client-secret-digest) printf '%s' '{{.DUMMY_DIGEST}}' > "$tmp/secrets/$key" ;;
+          *) openssl rand -hex 32 > "$tmp/secrets/$key" ;;
+        esac
+      done
+      chmod -R a+rX "$tmp/secrets"
+
+      # Same Authelia env as the HelmRelease (config paths, *_FILE secrets, filters)
+      yq '.spec.values.controllers.authelia.containers.app.env | to_entries[] | select(.key | test("AUTHELIA_")) | .key + "=" + .value' \
+        "{{.AUTHELIA_DIR}}/helmrelease.yaml" > "$tmp/env"
+
+      docker run --rm --env-file "$tmp/env" \
+        -v "{{.AUTHELIA_DIR}}/config:/config:ro" \
+        -v "$tmp/secrets:/secrets:ro" \
+        {{.IMAGE}} authelia validate-config

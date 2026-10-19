@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://www.authelia.com/schemas/v4.39/json-schema/configuration.json
+# OIDC clients, merged with ./configuration.yml by Authelia.
+# Add clients with `task authelia:client:add`, create their secrets with `task authelia:client:secret`.
+# client_secret is the digest from 1Password ("Authelia OIDC <client_id>/digest"), the app gets the plaintext secret ("/credential").
+identity_providers:
+  oidc:
+    clients:
+      - client_id: forgejo
+        client_name: Forgejo
+        client_secret: '{{ secret "/secrets/forgejo-client-secret-digest" }}'
+        public: false
+        authorization_policy: family
+        require_pkce: true
+        pkce_challenge_method: S256
+        redirect_uris:
+          - https://git.k8s.garden/user/oauth2/authelia/callback
+        scopes: [openid, email, profile, groups]
+        response_types: [code]
+        grant_types: [authorization_code]
+        access_token_signed_response_alg: none
+        userinfo_signed_response_alg: none
+        token_endpoint_auth_method: client_secret_basic
+      - client_id: grafana
+        client_name: Grafana
+        client_secret: '{{ secret "/secrets/grafana-client-secret-digest" }}'
+        public: false
+        authorization_policy: family
+        claims_policy: grafana
+        require_pkce: true
+        pkce_challenge_method: S256
+        redirect_uris:
+          - https://grafana.k8s.garden/login/generic_oauth
+        scopes: [openid, profile, groups, email]
+        response_types: [code]
+        grant_types: [authorization_code]
+        access_token_signed_response_alg: none
+        userinfo_signed_response_alg: none
+        token_endpoint_auth_method: client_secret_basic
