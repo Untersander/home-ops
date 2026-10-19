@@ -43,3 +43,26 @@ spec:
     - secretKey: token
       remoteRef:
         key: "Forgejo/runner-secret"
+---
+# OIDC client for the Authelia authentication source (plaintext secret; Authelia only knows its digest).
+# The chart passes key/secret to `forgejo admin auth add-oauth` / `update-oauth` on every start.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: forgejo-oidc
+  namespace: forgejo
+spec:
+  refreshInterval: 6h0m0s
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  target:
+    template:
+      type: generic
+      data:
+        key: forgejo
+        secret: "{{ .secret }}"
+  data:
+    - secretKey: secret
+      remoteRef:
+        key: "Authelia OIDC forgejo/credential"

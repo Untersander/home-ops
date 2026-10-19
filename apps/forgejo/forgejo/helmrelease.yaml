@@ -66,6 +66,18 @@ spec:
         # 1Password is the source of truth for the admin password
         passwordMode: keepUpdated
 
+      # SSO via Authelia (infra/auth). The name is part of the redirect URI registered in Authelia.
+      oauth:
+        - name: authelia
+          provider: openidConnect
+          existingSecret: forgejo-oidc
+          autoDiscoverUrl: https://auth.k8s.garden/.well-known/openid-configuration
+          scopes: openid email profile groups
+          groupClaimName: groups
+          adminGroup: admins
+          # Authelia already enforces two factors
+          skip-local-2fa: true
+
       config:
         APP_NAME: Forgejo
         server:
@@ -79,8 +91,15 @@ spec:
           HOST: forgejo-db-rw.forgejo.svc.cluster.local:5432
           NAME: forgejo
           USER: forgejo
+        # Accounts are only created through SSO; existing accounts are linked once with their password
         service:
-          DISABLE_REGISTRATION: true
+          DISABLE_REGISTRATION: false
+          ALLOW_ONLY_EXTERNAL_REGISTRATION: true
+          SHOW_REGISTRATION_BUTTON: false
+        oauth2_client:
+          ENABLE_AUTO_REGISTRATION: true
+          USERNAME: preferred_username
+          ACCOUNT_LINKING: login
         actions:
           ENABLED: true
 
@@ -105,7 +124,7 @@ spec:
               echo "runner registration failed, retrying in 10s"
               sleep 10
             done
-            echo "runner registered: ${uuid}"
+            echo "runner registered: $${uuid}"
             exec tail -f /dev/null
         env:
           - name: GITEA_APP_INI
