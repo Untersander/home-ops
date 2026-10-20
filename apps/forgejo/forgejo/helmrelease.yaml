@@ -98,7 +98,8 @@ spec:
           SHOW_REGISTRATION_BUTTON: false
         oauth2_client:
           ENABLE_AUTO_REGISTRATION: true
-          USERNAME: preferred_username
+          # Forgejo 15 has no preferred_username option; nickname falls back to it for OIDC
+          USERNAME: nickname
           ACCOUNT_LINKING: login
         actions:
           ENABLED: true
