@@ -73,6 +73,9 @@ spec:
       name: myapp
   extAuth:
     failOpen: false
+    # Envoy only sends Host, Method, Path, Content-Length and Authorization by default;
+    # Authelia needs the scheme (https) and its session cookie
+    headersToExtAuth: ["Accept", "Authorization", "Proxy-Authorization", "Cookie", "X-Forwarded-Proto", "X-Forwarded-For"]
     http:
       backendRefs:
         - name: authelia
