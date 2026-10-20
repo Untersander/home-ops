@@ -43,6 +43,10 @@ access_control:
       policy: two_factor
 
 session:
+  # Defaults are 5m/1h; forward-auth apps (e.g. config forms) send no requests while you type,
+  # and an expired session makes their API calls fail with 401 in the background
+  inactivity: 1h
+  expiration: 12h
   cookies:
     - domain: k8s.garden
       authelia_url: https://auth.k8s.garden
