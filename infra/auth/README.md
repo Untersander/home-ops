@@ -63,10 +63,14 @@ Plugin settings live on the `jellyfin-config` PVC, not in Git.
 
 | Setting | Value |
 | --- | --- |
-| LDAP server / port | `lldap.auth.svc.cluster.local` / `3890`, no SSL/StartTLS |
-| Bind user | `uid=jellyfin,ou=people,dc=k8s,dc=garden`, password from `LLDAP jellyfin` |
-| Base DN | `ou=people,dc=k8s,dc=garden` |
-| User filter | `(\|(memberOf=cn=family,ou=groups,dc=k8s,dc=garden)(memberOf=cn=admins,ou=groups,dc=k8s,dc=garden))` |
-| Admin filter | `(memberOf=cn=admins,ou=groups,dc=k8s,dc=garden)` |
-| Login attributes / username attribute | `uid` |
-| Enable user creation | on |
+| LDAP Server / Port | `lldap.auth.svc.cluster.local` / `3890`, Secure LDAP and StartTLS off |
+| LDAP Bind User | `uid=jellyfin,ou=people,dc=k8s,dc=garden` |
+| LDAP Bind User Password | `op read "op://Kubernetes/LLDAP jellyfin/password"` |
+| LDAP Base DN for searches | `ou=people,dc=k8s,dc=garden` |
+| LDAP Search Filter | `(\|(memberof=cn=family,ou=groups,dc=k8s,dc=garden)(memberof=cn=admins,ou=groups,dc=k8s,dc=garden))` |
+| LDAP Search Attributes | `uid, mail` |
+| LDAP Uid Attribute / LDAP Username Attribute | `uid` / `uid` |
+| LDAP Admin Base DN | `ou=people,dc=k8s,dc=garden` |
+| LDAP Admin Filter | `(memberof=cn=admins,ou=groups,dc=k8s,dc=garden)` |
+| Enable User Creation | on |
+| Allow Password Change | off (the bind user is read-only; passwords are changed in LLDAP or via Authelia's reset) |
