@@ -70,6 +70,19 @@ If you don't have the 1Password CLI installed, you can also use the following co
 kubectl create secret generic onepasswordsecret --from-literal=token=<yourTokenGoesHere_inPlaintext> --namespace=external-secrets
 ```
 
+### Internal repository
+Apps that shouldn't be public live in `ssh://git@git.k8s.garden/jan/home-ops-internal.git` (Forgejo in this cluster), synced by [flux-system/internal.yaml](./flux-system/internal.yaml) from its `./apps` folder like `./apps` here.
+The `components/` folder of this repo is included in its artifact, so its Flux Kustomizations use the same component paths.
+It can only sync once Forgejo is up.
+
+The read-only deploy key is the 1Password item `Flux home-ops-internal` (SSH Key, vault `Kubernetes`) with an extra field `known_hosts`:
+```bash
+op item create --vault Kubernetes --category "SSH Key" --title "Flux home-ops-internal" --ssh-generate-key ed25519
+op item edit --vault Kubernetes "Flux home-ops-internal" "known_hosts[text]=$(ssh-keyscan git.k8s.garden 2>/dev/null)"
+# Add as deploy key (read-only) in Forgejo: repository → Settings → Deploy keys
+op read "op://Kubernetes/Flux home-ops-internal/public key"
+```
+
 ## Storage
 Possible storage solutions:
 - OpenEBS

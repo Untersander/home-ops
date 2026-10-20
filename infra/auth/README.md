@@ -55,6 +55,33 @@ Rotate a secret with `task authelia:client:secret CLIENT=<client> FORCE=true`.
 
 `task authelia:validate` checks the config with dummy secrets (needs Docker), e.g. after editing the config by hand.
 
+## Forward-auth (apps without OIDC)
+
+Envoy asks Authelia before every request to a route that has a `SecurityPolicy` like the one below (Envoy ext_authz).
+The `access_control` rules in [configuration.yml](./authelia/config/configuration.yml) decide who gets in (`*.k8s.garden` and `*.noreplay.org`: `admins` with two factors), the portal is https://auth.k8s.garden or https://auth.noreplay.org, matching the app's cookie domain.
+The app's namespace has to be listed in [authelia/referencegrant.yaml](./authelia/referencegrant.yaml).
+
+```yaml
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: myapp
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: myapp
+  extAuth:
+    failOpen: false
+    http:
+      backendRefs:
+        - name: authelia
+          namespace: auth
+          port: 9091
+      path: /api/authz/ext-authz/
+      headersToBackend: ["Remote-User", "Remote-Groups", "Remote-Email", "Remote-Name"]
+```
+
 ## Jellyfin (configured in the Jellyfin UI)
 
 Plugin settings live on the `jellyfin-config` PVC, not in Git.

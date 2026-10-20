@@ -1,0 +1,62 @@
+# Private repo on the cluster's own Forgejo, synced like ./apps and ./infra.
+# The deploy key (read-only) comes from 1Password, see infra/README.md.
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/gitrepository-source-v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: home-ops-internal
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: home-ops-internal
+  url: ssh://git@git.k8s.garden/jan/home-ops-internal.git
+  # Shared kustomize components (backups) from this repo, at the same path as here
+  include:
+    - repository:
+        name: flux-system
+      fromPath: components
+      toPath: components
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: home-ops-internal
+  namespace: flux-system
+spec:
+  # Namespaces are defined in ./apps
+  dependsOn:
+    - name: apps
+  interval: 10m0s
+  path: ./apps
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: home-ops-internal
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: home-ops-internal
+  namespace: flux-system
+spec:
+  refreshInterval: 6h0m0s
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  target:
+    template:
+      type: generic
+      data:
+        identity: "{{ .identity }}"
+        known_hosts: "{{ .knownHosts }}"
+  data:
+    - secretKey: identity
+      remoteRef:
+        key: "Flux home-ops-internal/private key?ssh-format=openssh"
+    - secretKey: knownHosts
+      remoteRef:
+        key: "Flux home-ops-internal/known_hosts"

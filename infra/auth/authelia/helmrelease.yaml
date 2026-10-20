@@ -74,11 +74,14 @@ spec:
 
     route:
       authelia:
-        hostnames: ["auth.k8s.garden"]
+        hostnames: ["auth.k8s.garden", "auth.noreplay.org"]
         parentRefs:
           - name: envoy-gateway
             namespace: envoy-gateway
             sectionName: websecure
+          - name: envoy-gateway
+            namespace: envoy-gateway
+            sectionName: websecure-noreplay
         rules:
           - backendRefs:
               - identifier: authelia

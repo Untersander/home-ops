@@ -30,7 +30,7 @@ authentication_backend:
     # Member of lldap_password_manager, so password resets work
     user: uid=authelia,ou=people,dc=k8s,dc=garden
 
-# Only applies to forward-auth (Envoy ext_authz), which no route uses yet;
+# Only applies to forward-auth (Envoy ext_authz), i.e. routes with a SecurityPolicy pointing at Authelia;
 # the OIDC clients use their own authorization policies below
 access_control:
   default_policy: deny
@@ -38,11 +38,17 @@ access_control:
     - domain: "*.k8s.garden"
       subject: group:admins
       policy: two_factor
+    - domain: "*.noreplay.org"
+      subject: group:admins
+      policy: two_factor
 
 session:
   cookies:
     - domain: k8s.garden
       authelia_url: https://auth.k8s.garden
+    # Forward-auth on *.noreplay.org needs a portal on the same cookie domain
+    - domain: noreplay.org
+      authelia_url: https://auth.noreplay.org
   redis:
     host: authelia-valkey.auth.svc.cluster.local
     port: 6379
