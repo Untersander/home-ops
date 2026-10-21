@@ -14,7 +14,7 @@ vars:
   # renovate: datasource=docker depName=quay.io/cilium/charts/cilium
   CILIUM_VERSION: 1.20.3
   # renovate: datasource=docker depName=docker.io/library/python
-  EFI_CHECK_IMAGE_TAG: 3.14-alpine
+  EFI_CHECK_IMAGE_TAG: 3.15-alpine
   SECRETS_REF: op://Private/Talos Home Lab Secrets/secrets.yaml
 
 env:
