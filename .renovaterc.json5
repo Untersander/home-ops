@@ -22,6 +22,7 @@
   prHourlyLimit: 5,
   rangeStrategy: 'bump',
   ignoreTests: true,
+  commitBody: '{{#if isGroup}}{{#each upgrades}}- {{{depName}}}: {{{displayFrom}}} ➔ {{{displayTo}}}\n{{/each}}{{/if}}',
   packageRules: [
     {
       description: 'group dependencies by application (first directory under apps/ or infra/)',
@@ -30,6 +31,32 @@
         'infra/**',
       ],
       groupName: '{{ lookup (split packageFile "/") 1 }}',
+    },
+    {
+      description: 'group all automerged updates into one branch: Renovate stops a run after each automerge, so separate branches starve each other',
+      matchFileNames: [
+        '!.github/workflows/**',
+      ],
+      matchUpdateTypes: [
+        'patch',
+        'digest',
+        'pin',
+        'pinDigest',
+      ],
+      groupName: 'all non-major',
+      semanticCommitScope: 'deps',
+    },
+    {
+      description: 'same group for minor updates, except zer0ver 0.x minors which are not automerged and would block the whole group',
+      matchFileNames: [
+        '!.github/workflows/**',
+      ],
+      matchUpdateTypes: [
+        'minor',
+      ],
+      matchCurrentVersion: '!/^v?0\\./',
+      groupName: 'all non-major',
+      semanticCommitScope: 'deps',
     },
     {
       matchFileNames: [
