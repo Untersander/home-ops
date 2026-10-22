@@ -1,0 +1,23 @@
+{
+  "name": "network-animation",
+  "private": true,
+  "description": "Remotion animations of the homelab network layout, rendered to ../network-{physical,inside}-{dark,light}.gif for the README",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "npm run render:physical:dark && npm run render:physical:light && npm run render:inside:dark && npm run render:inside:light",
+    "render:physical:dark": "remotion render src/index.ts network-physical-dark ../network-physical-dark.gif --codec=gif --every-nth-frame=2 --scale=0.75",
+    "render:physical:light": "remotion render src/index.ts network-physical-light ../network-physical-light.gif --codec=gif --every-nth-frame=2 --scale=0.75",
+    "render:inside:dark": "remotion render src/index.ts network-inside-dark ../network-inside-dark.gif --codec=gif --every-nth-frame=2 --scale=0.75",
+    "render:inside:light": "remotion render src/index.ts network-inside-light ../network-inside-light.gif --codec=gif --every-nth-frame=2 --scale=0.75"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.537",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.537"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "typescript": "7.0.2"
+  }
+}

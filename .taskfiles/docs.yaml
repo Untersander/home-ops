@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+# Runs in docs/network-animation (see the include in Taskfile.yaml)
+tasks:
+  animation:render:
+    desc: Render the network animations to docs/network-{physical,inside}-{dark,light}.gif (used in README.md)
+    deps: [deps]
+    cmd: npm run render
+
+  animation:studio:
+    desc: Open the network animations in Remotion Studio (live preview in the browser)
+    deps: [deps]
+    cmd: npm run studio
+
+  deps:
+    internal: true
+    desc: Install the npm packages when package-lock.json changed
+    sources:
+      - package.json
+      - package-lock.json
+    generates:
+      - node_modules/.package-lock.json
+    cmd: npm install --no-fund --no-audit
