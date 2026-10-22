@@ -1,0 +1,27 @@
+# Ingress only; clients reach the server through the gateway
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: atuin
+  namespace: atuin
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: atuin
+      app.kubernetes.io/instance: atuin
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: envoy-gateway
+            app.kubernetes.io/name: envoy
+      toPorts:
+        - ports:
+            - port: "8888"
+              protocol: TCP
+    # kubelet probes
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "8888"
+              protocol: TCP

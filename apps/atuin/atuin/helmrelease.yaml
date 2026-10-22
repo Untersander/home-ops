@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: atuin
+  namespace: atuin
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: atuin
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  valuesFrom:
+    - kind: ConfigMap
+      name: atuin-values # Default name, changed using Kustomization

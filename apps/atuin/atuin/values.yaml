@@ -1,0 +1,83 @@
+controllers:
+  atuin:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/atuinsh/atuin
+          tag: 18.24.2
+        args: ["start"]
+        env:
+          TZ: Europe/Zurich
+          ATUIN_HOST: 0.0.0.0
+          ATUIN_PORT: "8888"
+          # Only reachable from the LAN/VPN; set to false once all accounts exist
+          ATUIN_OPEN_REGISTRATION: "true"
+          ATUIN_DB_URI:
+            valueFrom:
+              secretKeyRef:
+                name: atuin-db-app
+                key: uri
+        probes:
+          liveness: &probe
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: 8888
+          readiness: *probe
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: 8888
+              failureThreshold: 30
+              periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+
+defaultPodOptions:
+  # The atuin service would inject ATUIN_PORT=tcp://..., which atuin-server rejects
+  enableServiceLinks: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    seccompProfile: { type: RuntimeDefault }
+
+service:
+  atuin:
+    controller: atuin
+    ports:
+      http:
+        port: 8888
+
+route:
+  atuin:
+    hostnames: ["atuin.k8s.garden"]
+    parentRefs:
+      - name: envoy-gateway
+        namespace: envoy-gateway
+        sectionName: websecure
+    rules:
+      - backendRefs:
+          - identifier: atuin
+            port: 8888
+
+persistence:
+  # atuin-server writes an example server.toml on start, all settings come from env
+  config:
+    type: emptyDir
+    globalMounts:
+      - path: /config
