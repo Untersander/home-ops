@@ -16,6 +16,10 @@ spec:
     mode: enabled
   interval: 1h
   values:
+    global:
+      # No usage pings to Google Analytics (blocked by the default-deny network policy anyway)
+      analytics:
+        enabled: false
     localpv-provisioner:
       hostpathClass:
         enabled: false
