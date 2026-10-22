@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# WireGuard via hostPort, web UI through the gateway.
+# Egress stays open: the pod routes and masquerades the VPN clients, so restricting it restricts the VPN.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: wg-manager
+  namespace: wg
+spec:
+  endpointSelector:
+    matchLabels:
+      service: wg-manager
+  ingress:
+    - fromEntities:
+        - world
+        - host
+      toPorts:
+        - ports:
+            - port: "51820"
+              protocol: UDP
+    # Web UI (websecure listener)
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: envoy-gateway
+            app.kubernetes.io/name: envoy
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+  egress:
+    - toEntities:
+        - all

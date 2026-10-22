@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# Envoy proxy: listeners are open to everyone that can route here (LAN, VPN, pods hairpinning
+# through *.k8s.garden); WAN is filtered by nftables. Envoy listens on port + 10000 (80 -> 10080).
+# Egress to any pod, every backend restricts its own ingress.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: envoy
+  namespace: envoy-gateway
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: envoy
+  ingress:
+    - fromEntities:
+        - all
+      toPorts:
+        - ports:
+            - port: "10080"
+              protocol: TCP
+            - port: "10443"
+              protocol: TCP
+            - port: "10022"
+              protocol: TCP
+  egress:
+    # xDS from the controller
+    - toEndpoints:
+        - matchLabels:
+            control-plane: envoy-gateway
+      toPorts:
+        - ports:
+            - port: "18000"
+              endPort: 18002
+              protocol: TCP
+    - toEndpoints:
+        - matchExpressions:
+            - key: k8s:io.kubernetes.pod.namespace
+              operator: Exists
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# Controller and certgen job: serve xDS to the proxies, talk to the API server
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: envoy-gateway
+  namespace: envoy-gateway
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/component
+        operator: NotIn
+        values:
+          - proxy
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: envoy
+      toPorts:
+        - ports:
+            - port: "18000"
+              endPort: 18002
+              protocol: TCP
+  egress:
+    - toEntities:
+        - kube-apiserver

@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# DNS for the LAN and VPN clients, DHCP via hostPort, web UI through the gateway.
+# Egress: upstream resolvers and blocklist downloads, DHCP replies.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: pihole
+  namespace: pihole
+spec:
+  endpointSelector:
+    matchLabels:
+      service: pihole
+  ingress:
+    # LAN clients (real source IP via the L2 announced LoadBalancer)
+    - fromCIDRSet:
+        - cidr: 10.0.0.0/16
+        - cidr: 2a02:169:4a00::/48 # home prefix
+        - cidr: fd00::/8
+        - cidr: fe80::/10
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+    # WireGuard clients, masqueraded behind the wg-manager pod
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: wg
+            service: wg-manager
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+    # DHCP discover/request are broadcasts from 0.0.0.0, which is "world"
+    - fromEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "67"
+              protocol: UDP
+    # Web UI (websecure listener)
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: envoy-gateway
+            app.kubernetes.io/name: envoy
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+  egress:
+    # Upstream DNS (plain and DoT) and gravity blocklists; public internet only, no LAN
+    - toCIDRSet:
+        - cidr: 0.0.0.0/0
+          except:
+            - 10.0.0.0/8
+            - 100.64.0.0/10
+            - 169.254.0.0/16
+            - 172.16.0.0/12
+            - 192.168.0.0/16
+        - cidr: ::/0
+          except:
+            - 2a02:169:4a00::/48 # home prefix
+            - fc00::/7
+            - fe80::/10
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+            - port: "853"
+              protocol: TCP
+            - port: "443"
+              protocol: TCP
+    # DHCP offers/acks to clients (broadcast or the LAN)
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "68"
+              protocol: UDP

@@ -1,4 +1,5 @@
-# Ingress only; clients reach the server through the gateway
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# Clients reach the server through the gateway; no egress beyond DNS (SQLite on a PVC)
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

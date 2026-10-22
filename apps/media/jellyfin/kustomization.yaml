@@ -5,6 +5,7 @@ resources:
   - ./helmrepository.yaml
   - ./helmrelease.yaml
   - ./pv.yaml
+  - ./ciliumnetworkpolicy.yaml
 # Having values in a separate `values.yaml` is more comfortable.
 configMapGenerator:
   - name: jellyfin-values

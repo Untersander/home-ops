@@ -1,4 +1,5 @@
-# Ingress only; LDAP is reachable by the apps that bind against it, the web UI through the gateway
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# LDAP is reachable by the apps that bind against it, the web UI through the gateway; no egress beyond DNS
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

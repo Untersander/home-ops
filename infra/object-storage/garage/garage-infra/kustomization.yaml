@@ -6,3 +6,4 @@ resources:
   - ./garagecluster.yaml
   - ./httproute.yaml
   - ./referencegrant.yaml
+  - ./ciliumnetworkpolicy.yaml

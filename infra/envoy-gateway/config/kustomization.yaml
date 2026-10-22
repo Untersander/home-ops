@@ -11,3 +11,4 @@ resources:
   - ./cert-k8s.yaml
   - ./cert-noreplay.yaml
   - ./l2.yaml
+  - ./ciliumnetworkpolicy.yaml

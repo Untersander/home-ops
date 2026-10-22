@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
 # Runner: talks to Forgejo through the gateway, starts job pods via the API server,
 # downloads actions from the internet and serves the actions cache to job pods
 apiVersion: cilium.io/v2
@@ -54,6 +55,7 @@ spec:
             - fc00::/7
             - fe80::/10
 ---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
 # Job pods: no ingress, egress only to DNS, Forgejo (through the gateway), the runner's cache proxy and the internet
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy

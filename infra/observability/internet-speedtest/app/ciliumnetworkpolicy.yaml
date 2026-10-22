@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# Scraped by Prometheus (default-deny baseline), runs speedtests against the internet on any port
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: speedtest-exporter
+  namespace: observability
+spec:
+  endpointSelector:
+    matchLabels:
+      app: speedtest-exporter
+  egress:
+    # Public internet only, no LAN
+    - toCIDRSet:
+        - cidr: 0.0.0.0/0
+          except:
+            - 10.0.0.0/8
+            - 100.64.0.0/10
+            - 169.254.0.0/16
+            - 172.16.0.0/12
+            - 192.168.0.0/16
+        - cidr: ::/0
+          except:
+            - 2a02:169:4a00::/48 # home prefix
+            - fc00::/7
+            - fe80::/10

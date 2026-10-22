@@ -1,4 +1,5 @@
-# Ingress only; the instance manager needs egress to the API server
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# App access only; operator access and API server egress come from infra/cilium/policies/cnpg.yaml
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -16,24 +17,4 @@ spec:
       toPorts:
         - ports:
             - port: "5432"
-              protocol: TCP
-    # CNPG operator (instance manager status API) and other instances of the cluster (replication)
-    - fromEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: db
-            app.kubernetes.io/name: cloudnative-pg
-        - matchLabels:
-            cnpg.io/cluster: forgejo-db
-      toPorts:
-        - ports:
-            - port: "5432"
-              protocol: TCP
-            - port: "8000"
-              protocol: TCP
-    # kubelet probes
-    - fromEntities:
-        - host
-      toPorts:
-        - ports:
-            - port: "8000"
               protocol: TCP

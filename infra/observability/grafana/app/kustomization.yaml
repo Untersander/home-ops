@@ -5,6 +5,7 @@ resources:
   - ./helmrepository.yaml
   - ./helmrelease.yaml
   - ./externalsecret.yaml
+  - ./ciliumnetworkpolicy.yaml
 configMapGenerator:
   - name: garage-dashboard
     files:

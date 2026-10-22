@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# Reachable by Paperless alone, no egress beyond DNS
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: paperless-valkey
+  namespace: paperless-ngx
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: paperless-valkey
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: paperless-ngx
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP

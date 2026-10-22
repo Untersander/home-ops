@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# Webhook calls come from the API server (default-deny baseline); manages Garage through its admin API
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: garage-operator
+  namespace: object-storage
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: garage-operator
+  egress:
+    - toEntities:
+        - kube-apiserver
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: garage
+      toPorts:
+        - ports:
+            - port: "3903"
+              protocol: TCP

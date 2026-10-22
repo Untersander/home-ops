@@ -1,5 +1,6 @@
-# Ingress only; egress stays open for LDAP, Valkey and SMTP.
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
 # Apps reach Authelia through the gateway, also for the OIDC back channel (token/userinfo).
+# Egress: LDAP, Valkey and SMTP.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -25,4 +26,37 @@ spec:
       toPorts:
         - ports:
             - port: "9091"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: lldap
+      toPorts:
+        - ports:
+            - port: "3890"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: authelia-valkey
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+    # SMTP submission (smtp.protonmail.ch); public internet only, no LAN
+    - toCIDRSet:
+        - cidr: 0.0.0.0/0
+          except:
+            - 10.0.0.0/8
+            - 100.64.0.0/10
+            - 169.254.0.0/16
+            - 172.16.0.0/12
+            - 192.168.0.0/16
+        - cidr: ::/0
+          except:
+            - 2a02:169:4a00::/48 # home prefix
+            - fc00::/7
+            - fe80::/10
+      toPorts:
+        - ports:
+            - port: "587"
               protocol: TCP

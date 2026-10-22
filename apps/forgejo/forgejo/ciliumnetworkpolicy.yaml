@@ -1,5 +1,6 @@
-# Ingress only; egress stays open for webhooks, mirrors and migrations.
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
 # Everything, including the Actions runner and job pods, reaches Forgejo through the gateway.
+# Egress: database, Authelia OIDC through the gateway, and the internet for webhooks, mirrors, migrations and mail.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -29,3 +30,34 @@ spec:
         - ports:
             - port: "3000"
               protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            cnpg.io/cluster: forgejo-db
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+    # auth.k8s.garden (OIDC token/userinfo back channel)
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: envoy-gateway
+            app.kubernetes.io/name: envoy
+      toPorts:
+        - ports:
+            - port: "10443"
+              protocol: TCP
+    # Public internet only, no LAN
+    - toCIDRSet:
+        - cidr: 0.0.0.0/0
+          except:
+            - 10.0.0.0/8
+            - 100.64.0.0/10
+            - 169.254.0.0/16
+            - 172.16.0.0/12
+            - 192.168.0.0/16
+        - cidr: ::/0
+          except:
+            - 2a02:169:4a00::/48 # home prefix
+            - fc00::/7
+            - fe80::/10

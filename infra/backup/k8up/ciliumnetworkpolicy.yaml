@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# Operator only; the backup/check/prune job pods get their egress from infra/cilium/policies/backup.yaml
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: k8up
+  namespace: backup
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: k8up
+  egress:
+    - toEntities:
+        - kube-apiserver

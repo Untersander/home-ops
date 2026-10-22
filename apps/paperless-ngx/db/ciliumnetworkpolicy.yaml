@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# App access only; operator access and API server egress come from infra/cilium/policies/cnpg.yaml
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: paperless-db
+  namespace: paperless-ngx
+spec:
+  endpointSelector:
+    matchLabels:
+      cnpg.io/cluster: paperless-db
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: paperless-ngx
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP

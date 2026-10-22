@@ -1,4 +1,5 @@
-# Ingress only; the session store is reachable by Authelia alone
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# The session store is reachable by Authelia alone; no egress beyond DNS
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
