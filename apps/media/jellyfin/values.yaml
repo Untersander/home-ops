@@ -18,7 +18,8 @@ image:
   # -- Container image repository for Jellyfin.
   repository: docker.io/jellyfin/jellyfin
   # -- Jellyfin container image tag. Leave empty to automatically use the Chart's app version.
-  tag: ""
+  # Pinned so Renovate updates the image independently of chart releases (helm-values manager)
+  tag: "12.2"
   # -- Image pull policy (Always, IfNotPresent, or Never).
   pullPolicy: IfNotPresent
 
@@ -79,8 +80,9 @@ dnsConfig: {}
 dnsPolicy: ""
 
 # -- Deployment strategy configuration. See `kubectl explain deployment.spec.strategy`.
+# Recreate: a rolling update would run two pods against the same SQLite database on the RWO config volume
 deploymentStrategy:
-  type: RollingUpdate
+  type: Recreate
 
 # -- Annotations to add to the deployment.
 deploymentAnnotations: {}
@@ -112,7 +114,7 @@ service:
   # -- Port for the Jellyfin service.
   port: 8096
   # -- Name of the port in the service.
-  portName: service
+  portName: http
   # -- Annotations for the service.
   annotations: {}
   # -- Labels for the service.
@@ -168,46 +170,43 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+# Probes are relaxed for database migrations on major upgrades (e.g. 10.11 -> 12.x), which must not be interrupted.
+# While migrating, Jellyfin's startup UI answers /health with "Degraded" (HTTP 200), so /health cannot tell
+# when the migration is done. Between the startup UI stopping and the main server listening, the port is closed
+# for a moment, and the migration loads the CPU, so liveness tolerates 5 minutes (10 * 30s) of failed or slow checks.
+
 # -- Configure startup probe for Jellyfin.
-# This probe gives Jellyfin enough time to start, especially with large media libraries.
-# After the startup probe succeeds once, liveness and readiness probes take over.
-# startupProbe:
-#   httpGet:
-#     path: /health
-#     port: http
-#   initialDelaySeconds: 0
-#   periodSeconds: 10
-#   failureThreshold: 30
-  # With these defaults, Jellyfin has up to 5 minutes (30 * 10s) to start.
-  # Adjust failureThreshold if you have very large media libraries or slow storage.
+# Up to 10 minutes (60 * 10s) for the startup UI to come up, it normally answers within seconds.
+startupProbe:
+  tcpSocket: null
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 60
 
 # -- Configure liveness probe for Jellyfin.
-# This probe is disabled during startup (startup probe handles initial checks).
-# Uses httpGet for compatibility with both IPv4 and IPv6.
-# livenessProbe:
-#   tcpSocket: null
-#   httpGet:
-#     path: /health
-#     port: http
-#   initialDelaySeconds: 10
-  # successThreshold: 1
-  # failureThreshold: 3
-  # timeoutSeconds: 1
-  # periodSeconds: 10
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 10
 
 # -- Configure readiness probe for Jellyfin.
-# This probe is disabled during startup (startup probe handles initial checks).
-# Uses httpGet for compatibility with both IPv4 and IPv6.
-# readinessProbe:
-#   tcpSocket: null
-#   httpGet:
-#     path: /health
-#     port: http
-#   initialDelaySeconds: 10
-  # successThreshold: 1
-  # failureThreshold: 3
-  # timeoutSeconds: 1
-  # periodSeconds: 10
+# Only controls routing, never restarts the pod.
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
 
 # -- Additional volumes to mount in the Jellyfin pod.
 volumes: []
@@ -296,6 +295,8 @@ persistence:
     ## -- Use an existing PVC for this mount
     # /var/mnt/zpool/media, see pv.yaml
     existingClaim: media
+    # Chart default is true (meant for nfs) but applies to the pvc mount too; Jellyfin writes NFOs, artwork and subtitles here
+    readOnly: false
   cache:
     # -- set to false to use emptyDir
     enabled: false
@@ -505,4 +506,5 @@ networkPolicy:
     # Default selector works with prometheus-operator and kube-prometheus-stack.
     # Adjust if your Prometheus uses different labels.
     podSelector:
-      app.kubernetes.io/name: prometheus
+      matchLabels:
+        app.kubernetes.io/name: prometheus
