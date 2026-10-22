@@ -2,6 +2,8 @@ controllers:
   atuin:
     annotations:
       reloader.stakater.com/auto: "true"
+    # SQLite on a RWO volume
+    strategy: Recreate
     containers:
       app:
         image:
@@ -14,11 +16,8 @@ controllers:
           ATUIN_PORT: "8888"
           # Only reachable from the LAN/VPN; set to false once all accounts exist
           ATUIN_OPEN_REGISTRATION: "true"
-          ATUIN_DB_URI:
-            valueFrom:
-              secretKeyRef:
-                name: atuin-db-app
-                key: uri
+          # Created on first start, opened in WAL mode
+          ATUIN_DB_URI: sqlite:///data/atuin.db
         probes:
           liveness: &probe
             enabled: true
@@ -54,6 +53,8 @@ defaultPodOptions:
     runAsNonRoot: true
     runAsUser: 1000
     runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
     seccompProfile: { type: RuntimeDefault }
 
 service:
@@ -76,6 +77,10 @@ route:
             port: 8888
 
 persistence:
+  data:
+    existingClaim: atuin-data
+    globalMounts:
+      - path: /data
   # atuin-server writes an example server.toml on start, all settings come from env
   config:
     type: emptyDir

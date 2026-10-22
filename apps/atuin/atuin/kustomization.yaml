@@ -5,6 +5,7 @@ resources:
   - ./ocirepository.yaml
   - ./helmrelease.yaml
   - ./ciliumnetworkpolicy.yaml
+  - ./pvc.yaml
 # Having values in a separate `values.yaml` is more comfortable.
 configMapGenerator:
   - name: atuin-values

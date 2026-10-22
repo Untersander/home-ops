@@ -1,0 +1,19 @@
+# SQLite database (atuin.db) holding the end-to-end encrypted history
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: atuin-data
+  namespace: atuin
+  labels:
+    backup.k8s.garden/app: atuin
+spec:
+  storageClassName: openebs-zfs-shared-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  dataSourceRef:
+    apiGroup: kopiur.home-operations.com
+    kind: Restore
+    name: atuin
