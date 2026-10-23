@@ -22,7 +22,8 @@ spec:
         - cluster
 ---
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Operator: webhook calls come from the API server via the default-deny baseline
+# Operator and its admission-create/-patch hook jobs (webhook certificates):
+# webhook calls come from the API server via the default-deny baseline
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -31,7 +32,7 @@ metadata:
 spec:
   endpointSelector:
     matchLabels:
-      app.kubernetes.io/component: prometheus-operator
+      app.kubernetes.io/name: kube-prometheus-stack-prometheus-operator
   egress:
     - toEntities:
         - kube-apiserver

@@ -1,0 +1,56 @@
+# Monthly scrub of the hdd pool: finds silent corruption while raidz1 parity can still repair it.
+# Talos has no cron, so this runs the host's zpool (from the ZFS extension, matching the kernel module)
+# via chroot. Needs privileged; the openebs namespace is exempt from Pod Security (talos/machine-patches/openebs-patch.yaml).
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: zfs-scrub
+  namespace: openebs
+spec:
+  schedule: "0 5 1 * *" # after the nightly backups
+  timeZone: Europe/Zurich
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      # A scrub of the full pool takes hours; if the pod is killed the scrub keeps running in the kernel
+      activeDeadlineSeconds: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: zfs-scrub
+        spec:
+          restartPolicy: Never
+          nodeSelector:
+            kubernetes.io/hostname: cp-0
+          containers:
+            - name: scrub
+              image: docker.io/library/busybox:1.37.0
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  pool=hdd
+                  zpool() { chroot /host /usr/local/sbin/zpool "$@"; }
+                  echo "scrubbing ${pool}"
+                  zpool scrub -w "${pool}"
+                  zpool status "${pool}"
+                  # Fail the job (visible in kube-state-metrics) if the scrub found anything
+                  zpool status -x "${pool}" | grep -q "is healthy"
+              securityContext:
+                privileged: true
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+              volumeMounts:
+                - name: host
+                  mountPath: /host
+                  mountPropagation: HostToContainer
+          volumes:
+            - name: host
+              hostPath:
+                path: /
+                type: Directory

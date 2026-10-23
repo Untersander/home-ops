@@ -8,6 +8,7 @@ parameters:
   dedup: "off"
   fstype: "zfs"
   poolname: "hdd"
+  quotatype: "refquota"
   shared: "yes"
 provisioner: zfs.csi.openebs.io
 reclaimPolicy: Delete
@@ -29,6 +30,31 @@ parameters:
   dedup: "off"
   fstype: "zfs"
   poolname: "hdd"
+  quotatype: "refquota"
+  shared: "yes"
+provisioner: zfs.csi.openebs.io
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+allowedTopologies:
+- matchLabelExpressions:
+  - key: kubernetes.io/hostname
+    values:
+      - cp-0
+---
+# Large, sequentially read files (photos, videos, object storage blocks, user files):
+# 1M records mean less metadata, better HDD throughput and less raidz padding
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: openebs-zfs-shared-retain-large
+parameters:
+  recordsize: "1M"
+  compression: "lz4"
+  dedup: "off"
+  fstype: "zfs"
+  poolname: "hdd"
+  quotatype: "refquota"
   shared: "yes"
 provisioner: zfs.csi.openebs.io
 reclaimPolicy: Retain

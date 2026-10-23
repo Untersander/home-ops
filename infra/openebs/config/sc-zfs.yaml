@@ -8,6 +8,7 @@ parameters:
   dedup: "off"
   fstype: "zfs"
   poolname: "hdd"
+  quotatype: "refquota"
 provisioner: zfs.csi.openebs.io
 reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
@@ -28,6 +29,7 @@ parameters:
   dedup: "off"
   fstype: "zfs"
   poolname: "hdd"
+  quotatype: "refquota"
 provisioner: zfs.csi.openebs.io
 reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer
