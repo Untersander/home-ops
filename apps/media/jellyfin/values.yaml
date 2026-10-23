@@ -19,7 +19,7 @@ image:
   repository: docker.io/jellyfin/jellyfin
   # -- Jellyfin container image tag. Leave empty to automatically use the Chart's app version.
   # Pinned so Renovate updates the image independently of chart releases (helm-values manager)
-  tag: "12.2"
+  tag: "12.3"
   # -- Image pull policy (Always, IfNotPresent, or Never).
   pullPolicy: IfNotPresent
 

@@ -10,7 +10,7 @@ spec:
         kind: HelmRepository
         name: k8up-io
       chart: k8up
-      version: 4.10.0
+      version: 4.10.1
   # Helm never upgrades CRDs by itself, let Flux handle them
   install:
     crds: CreateReplace
