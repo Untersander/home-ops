@@ -42,18 +42,7 @@ spec:
         - kube-apiserver
     # Public internet only, no LAN
     - toCIDRSet:
-        - cidr: 0.0.0.0/0
-          except:
-            - 10.0.0.0/8
-            - 100.64.0.0/10
-            - 169.254.0.0/16
-            - 172.16.0.0/12
-            - 192.168.0.0/16
-        - cidr: ::/0
-          except:
-            - 2a02:169:4a00::/48 # home prefix
-            - fc00::/7
-            - fe80::/10
+        - cidrGroupRef: public-internet
 ---
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
 # Job pods: no ingress, egress only to DNS, Forgejo (through the gateway), the runner's cache proxy and the internet
@@ -96,15 +85,4 @@ spec:
               protocol: TCP
     # Public internet only, no LAN
     - toCIDRSet:
-        - cidr: 0.0.0.0/0
-          except:
-            - 10.0.0.0/8
-            - 100.64.0.0/10
-            - 169.254.0.0/16
-            - 172.16.0.0/12
-            - 192.168.0.0/16
-        - cidr: ::/0
-          except:
-            - 2a02:169:4a00::/48 # home prefix
-            - fc00::/7
-            - fe80::/10
+        - cidrGroupRef: public-internet

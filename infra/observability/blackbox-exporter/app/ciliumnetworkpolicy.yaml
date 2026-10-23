@@ -12,18 +12,7 @@ spec:
   egress:
     # Public internet only, no LAN
     - toCIDRSet:
-        - cidr: 0.0.0.0/0
-          except:
-            - 10.0.0.0/8
-            - 100.64.0.0/10
-            - 169.254.0.0/16
-            - 172.16.0.0/12
-            - 192.168.0.0/16
-        - cidr: ::/0
-          except:
-            - 2a02:169:4a00::/48 # home prefix
-            - fc00::/7
-            - fe80::/10
+        - cidrGroupRef: public-internet
       toPorts:
         - ports:
             - port: "80"

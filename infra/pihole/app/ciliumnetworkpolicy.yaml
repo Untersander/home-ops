@@ -49,18 +49,7 @@ spec:
   egress:
     # Upstream DNS (plain and DoT) and gravity blocklists; public internet only, no LAN
     - toCIDRSet:
-        - cidr: 0.0.0.0/0
-          except:
-            - 10.0.0.0/8
-            - 100.64.0.0/10
-            - 169.254.0.0/16
-            - 172.16.0.0/12
-            - 192.168.0.0/16
-        - cidr: ::/0
-          except:
-            - 2a02:169:4a00::/48 # home prefix
-            - fc00::/7
-            - fe80::/10
+        - cidrGroupRef: public-internet
       toPorts:
         - ports:
             - port: "53"
@@ -69,6 +58,15 @@ spec:
               protocol: TCP
             - port: "443"
               protocol: TCP
+    # Pi-hole queries several upstreams at once; late answers get ICMP port unreachable back
+    - toCIDRSet:
+        - cidrGroupRef: public-internet
+      icmps:
+        - fields:
+            - type: DestinationUnreachable
+              family: IPv4
+            - type: DestinationUnreachable
+              family: IPv6
     # DHCP offers/acks to clients (broadcast or the LAN)
     - toEntities:
         - world

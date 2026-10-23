@@ -33,3 +33,14 @@ spec:
         - ports:
             - port: "53"
               protocol: ANY
+    # Apps resolving A and AAAA in parallel close the socket after the first answer; the kernel answers
+    # the late reply with ICMP port unreachable to the kube-dns ClusterIP, which Cilium sees as "world"
+    - toCIDR:
+        - 10.96.0.10/32
+        - fdee:1::a/128
+      icmps:
+        - fields:
+            - type: DestinationUnreachable
+              family: IPv4
+            - type: DestinationUnreachable
+              family: IPv6
