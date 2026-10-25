@@ -8,7 +8,7 @@ vars:
   IP_ADDRESS: '{{.IP_ADDRESS | default "10.0.0.1"}}'
   SCHEMATIC_FILE: '{{.ROOT_DIR}}/talos/schematic.yaml'
   # renovate: datasource=docker depName=ghcr.io/siderolabs/installer
-  TALOS_VERSION: v1.14.3
+  TALOS_VERSION: v1.14.4
   # renovate: datasource=docker depName=ghcr.io/siderolabs/kubelet
   KUBERNETES_VERSION: v1.37.1
   # renovate: datasource=docker depName=quay.io/cilium/charts/cilium
