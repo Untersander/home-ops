@@ -5,4 +5,4 @@ metadata:
   name: cilium
 spec:
   url: https://helm.cilium.io
-  interval: 24h
+  interval: 12h

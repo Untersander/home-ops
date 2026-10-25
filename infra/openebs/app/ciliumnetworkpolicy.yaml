@@ -1,5 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Provisioners and CSI plugins only talk to the API server (the zfs node plugin runs on the host network)
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

@@ -1,5 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Aggregated API called by the API server (default-deny baseline); scrapes the kubelet on the host
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

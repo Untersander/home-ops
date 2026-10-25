@@ -5,5 +5,5 @@ metadata:
   namespace: immich
 spec:
   type: oci
-  interval: 24h
+  interval: 12h
   url: oci://ghcr.io/immich-app/immich-charts

@@ -1,5 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Scraped by Prometheus (default-deny baseline), reads from the API server
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

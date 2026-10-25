@@ -6,4 +6,4 @@ metadata:
   namespace: backup
 spec:
   url: https://vmware-tanzu.github.io/helm-charts
-  interval: 24h
+  interval: 12h

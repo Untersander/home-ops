@@ -1,0 +1,45 @@
+# Writes random test data to both PVCs and prints the checksums of all files
+apiVersion: v1
+kind: Pod
+metadata:
+  name: backup-test-write
+  namespace: backup-test
+spec:
+  restartPolicy: Never
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    fsGroup: 1000
+    seccompProfile: { type: RuntimeDefault }
+  containers:
+    - name: write
+      image: docker.io/library/busybox:1.38.0
+      command:
+        - /bin/sh
+        - -ec
+        - |
+          for vol in zfs hostpath; do
+            mkdir -p "/data/${vol}/nested"
+            head -c 4194304 /dev/urandom > "/data/${vol}/data.bin"
+            head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n' > "/data/${vol}/nested/token.txt"
+          done
+          cd /data
+          find . -type f | sort | xargs sha256sum
+      securityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+      volumeMounts:
+        - { name: zfs, mountPath: /data/zfs }
+        - { name: hostpath, mountPath: /data/hostpath }
+  volumes:
+    - name: zfs
+      persistentVolumeClaim: { claimName: backup-test-zfs }
+    - name: hostpath
+      persistentVolumeClaim: { claimName: backup-test-hostpath }

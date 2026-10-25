@@ -1,5 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Web UI through the gateway; the services call the built-in IDP via OC_URL, i.e. through the gateway as well
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

@@ -6,4 +6,4 @@ metadata:
   namespace: media
 spec:
   url: https://jellyfin.github.io/jellyfin-helm
-  interval: 24h
+  interval: 12h

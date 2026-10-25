@@ -1,6 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# S3 for the gateway (s3.k8s.garden) and the backup movers in every namespace, admin API for the operator.
-# No egress beyond DNS (single node, no RPC peers).
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -15,7 +13,6 @@ spec:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: envoy-gateway
             app.kubernetes.io/name: envoy
-        # components/backup-k8up and components/backup-kopiur movers, any namespace
         - matchLabels:
             k8upjob: "true"
           matchExpressions:

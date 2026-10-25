@@ -22,6 +22,8 @@ Both are defined in `infra/backup/repositories` and `infra/backup/k8up`.
 
 The components create no PVCs. The app defines its PVCs itself, and nothing is backed up until a PVC carries the app label.
 
+`task backup:test` checks end to end that `backup-kopiur` backups restore, see `tests/backup`.
+
 ### Labels
 
 | On        | Label                                   | Meaning                                                                                                                      |

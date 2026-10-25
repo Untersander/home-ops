@@ -1,6 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Clients through the gateway, the *arr apps and Seerr from within the namespace.
-# Egress: LLDAP (LDAP-Auth plugin) and the internet for metadata and plugins.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

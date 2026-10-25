@@ -5,4 +5,4 @@ metadata:
   name: grafana-community
 spec:
   url: https://grafana-community.github.io/helm-charts
-  interval: 24h
+  interval: 12h

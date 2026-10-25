@@ -1,6 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Everything, including the Actions runner and job pods, reaches Forgejo through the gateway.
-# Egress: database, Authelia OIDC through the gateway, and the internet for webhooks, mirrors, migrations and mail.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

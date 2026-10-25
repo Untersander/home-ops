@@ -16,7 +16,7 @@ People are created in the LLDAP UI (log in as `admin`). Groups:
 
 | Group     | Access                                                         |
 | --------- | -------------------------------------------------------------- |
-| `admins`  | all apps, admin role in Grafana, Forgejo and Jellyfin          |
+| `admins`  | all apps, admin role in Grafana, Forgejo, Immich and Jellyfin  |
 | `family`  | all apps as a normal user                                      |
 
 Groups and the service accounts `authelia` (password manager, for password resets) and `jellyfin` (read-only bind) are declared in [lldap/bootstrap-configmap.yaml](./lldap/bootstrap-configmap.yaml) and applied by the bootstrap sidecar on every start.
@@ -104,3 +104,24 @@ Plugin settings live on the `jellyfin-config` PVC, not in Git.
 | LDAP Admin Filter | `(memberof=cn=admins,ou=groups,dc=k8s,dc=garden)` |
 | Enable User Creation | on |
 | Allow Password Change | off (the bind user is read-only; passwords are changed in LLDAP or via Authelia's reset) |
+
+## Immich (configured in the Immich UI)
+
+OAuth settings live in Immich's database, not in Git: a config file (`IMMICH_CONFIG_FILE`) would make all admin settings read-only and reset everything it doesn't list to the defaults.
+Administration → Settings → Authentication Settings → OAuth:
+
+| Setting | Value |
+| --- | --- |
+| Issuer URL | `https://auth.k8s.garden` |
+| Client ID | `immich` |
+| Client Secret | `op read "op://Kubernetes/Authelia OIDC immich/credential"` |
+| Token Endpoint Auth Method | `client_secret_basic` |
+| Scope | `openid email profile immich` (`immich` carries the `immich_role` claim) |
+| Role Claim | `immich_role` (default): `admin` for `admins`, `user` otherwise, synced on every login |
+| Storage Label Claim | `preferred_username` (default) |
+| Button Text | `Login with Authelia` |
+| Auto Register | on |
+| Mobile Redirect URI Override | off (Authelia accepts `app.immich:///oauth-callback` directly) |
+
+Existing Immich users are linked by email on their first SSO login, so their Immich email must match the one in LLDAP.
+Keep password login enabled until SSO works for the admin account.

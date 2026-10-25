@@ -1,0 +1,33 @@
+# One PVC per kopiur policy of components/backup-kopiur:
+# ZFS is backed up via CSI snapshot (policy backup-test), hostpath live (policy backup-test-direct).
+# Delete reclaim policy, so deleting them really loses the data.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-test-zfs
+  namespace: backup-test
+  labels:
+    backup.k8s.garden/app: backup-test
+spec:
+  storageClassName: openebs-zfs-shared
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-test-hostpath
+  namespace: backup-test
+  labels:
+    backup.k8s.garden/app: backup-test
+    backup.k8s.garden/copy-method: Direct # openebs-hostpath-ssd sc (cluster default) has no CSI snapshots
+spec:
+  storageClassName: openebs-hostpath-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

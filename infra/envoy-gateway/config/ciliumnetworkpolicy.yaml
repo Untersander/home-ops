@@ -1,7 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Envoy proxy: listeners are open to everyone that can route here (LAN, VPN, pods hairpinning
-# through *.k8s.garden); WAN is filtered by nftables. Envoy listens on port + 10000 (80 -> 10080).
-# Egress to any pod, every backend restricts its own ingress.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -38,7 +35,6 @@ spec:
               operator: Exists
 ---
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Controller and certgen job: serve xDS to the proxies, talk to the API server
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

@@ -1,7 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Controller and webhook (webhook calls come from the API server via the default-deny baseline).
-# The kopia server and maintenance jobs are labelled managed-by: kopiur and get their egress
-# from infra/cilium/policies/backup.yaml.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -31,7 +28,6 @@ spec:
               protocol: TCP
 ---
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Kopia repository server: reachable by the controller and the movers in every namespace
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

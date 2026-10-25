@@ -5,4 +5,4 @@ metadata:
   name: blackbox-exporter
 spec:
   url: https://prometheus-community.github.io/helm-charts
-  interval: 24h
+  interval: 12h

@@ -5,4 +5,4 @@ metadata:
   name: k8up-io
 spec:
   url: https://k8up-io.github.io/k8up
-  interval: 24h
+  interval: 12h

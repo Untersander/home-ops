@@ -1,6 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# UI through the gateway. Egress: Prometheus, Authelia OIDC through the gateway,
-# the API server (dashboard/datasource sidecars) and the internet for dashboard downloads
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -27,7 +25,6 @@ spec:
         - ports:
             - port: "9090"
               protocol: TCP
-    # auth.k8s.garden (OIDC token/userinfo back channel)
     - toEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: envoy-gateway
@@ -38,7 +35,6 @@ spec:
               protocol: TCP
     - toEntities:
         - kube-apiserver
-    # grafana.com and GitHub dashboards; public internet only, no LAN
     - toCIDRSet:
         - cidrGroupRef: public-internet
       toPorts:

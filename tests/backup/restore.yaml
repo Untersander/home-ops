@@ -1,0 +1,44 @@
+# Recreates both PVCs from the latest backup, the way a real app restores:
+# the ZFS PVC through the populator Restore backup-test (dataSourceRef), filled when the first pod uses it;
+# the hostpath PVC by a manual Restore, which creates it (non-CSI volumes can't use the populator).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-test-zfs
+  namespace: backup-test
+spec:
+  storageClassName: openebs-zfs-shared
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  dataSourceRef:
+    apiGroup: kopiur.home-operations.com
+    kind: Restore
+    name: backup-test
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/restore_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: Restore
+metadata:
+  name: backup-test-hostpath
+  namespace: backup-test
+spec:
+  source:
+    fromPolicy:
+      name: backup-test-direct
+      sourcePath: /pvc/backup-test-hostpath
+  target:
+    pvc:
+      name: backup-test-hostpath
+      storageClassName: openebs-hostpath-ssd
+      capacity: 1Gi
+      accessModes: ["ReadWriteOnce"]
+  credentialProjection:
+    enabled: true
+  mover:
+    securityContext: { runAsUser: 1000, runAsGroup: 1000, runAsNonRoot: true }
+    podSecurityContext: { fsGroup: 1000 }
+  policy:
+    onMissingSnapshot: Fail

@@ -1,6 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# DNS for the LAN and VPN clients, DHCP via hostPort, web UI through the gateway.
-# Egress: upstream resolvers and blocklist downloads, DHCP replies.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -14,14 +12,12 @@ spec:
     # LAN clients (real source IP via the L2 announced LoadBalancer)
     - fromCIDRSet:
         - cidr: 10.0.0.0/16
-        - cidr: 2a02:169:4a00::/48 # home prefix
+        - cidr: 2a02:169:4a00::/48
         - cidr: fd00::/8
-        - cidr: fe80::/10
       toPorts:
         - ports:
             - port: "53"
               protocol: ANY
-    # WireGuard clients, masqueraded behind the wg-manager pod
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: wg
@@ -47,7 +43,6 @@ spec:
             - port: "80"
               protocol: TCP
   egress:
-    # Upstream DNS (plain and DoT) and gravity blocklists; public internet only, no LAN
     - toCIDRSet:
         - cidrGroupRef: public-internet
       toPorts:
@@ -58,15 +53,6 @@ spec:
               protocol: TCP
             - port: "443"
               protocol: TCP
-    # Pi-hole queries several upstreams at once; late answers get ICMP port unreachable back
-    - toCIDRSet:
-        - cidrGroupRef: public-internet
-      icmps:
-        - fields:
-            - type: DestinationUnreachable
-              family: IPv4
-            - type: DestinationUnreachable
-              family: IPv6
     # DHCP offers/acks to clients (broadcast or the LAN)
     - toEntities:
         - world

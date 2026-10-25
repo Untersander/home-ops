@@ -1,6 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Server: web/API through the gateway, talks to the database, Valkey, machine learning
-# and the internet (version check, reverse geocoding data)
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -44,6 +42,15 @@ spec:
         - ports:
             - port: "3003"
               protocol: TCP
+    # auth.k8s.garden (OIDC discovery/token/userinfo back channel)
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: envoy-gateway
+            app.kubernetes.io/name: envoy
+      toPorts:
+        - ports:
+            - port: "10443"
+              protocol: TCP
     # Public internet only, no LAN
     - toCIDRSet:
         - cidrGroupRef: public-internet
@@ -53,7 +60,6 @@ spec:
               protocol: TCP
 ---
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Machine learning: only the server calls it, downloads models from Hugging Face
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -83,7 +89,6 @@ spec:
               protocol: TCP
 ---
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Valkey: reachable by the server alone, no egress beyond DNS
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -105,8 +110,6 @@ spec:
               protocol: TCP
 ---
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Database (apps/immich/db, not reconciled by Flux): app access only,
-# operator access and API server egress come from infra/cilium/policies/cnpg.yaml
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

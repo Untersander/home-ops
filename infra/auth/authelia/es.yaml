@@ -42,3 +42,6 @@ spec:
     - secretKey: grafana-client-secret-digest
       remoteRef:
         key: "Authelia OIDC grafana/digest"
+    - secretKey: immich-client-secret-digest
+      remoteRef:
+        key: "Authelia OIDC immich/digest"

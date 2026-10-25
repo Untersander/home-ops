@@ -38,3 +38,22 @@ identity_providers:
         userinfo_signed_response_alg: none
         token_endpoint_auth_method: client_secret_basic
         consent_mode: implicit
+      - client_id: immich
+        client_name: Immich
+        client_secret: '{{ secret "/secrets/immich-client-secret-digest" }}'
+        public: false
+        authorization_policy: family
+        require_pkce: true
+        pkce_challenge_method: S256
+        redirect_uris:
+          - https://photos.k8s.garden/auth/login
+          - https://photos.k8s.garden/user-settings
+          - app.immich:///oauth-callback
+        scopes: [openid, profile, email, immich]
+        response_types: [code]
+        grant_types: [authorization_code]
+        access_token_signed_response_alg: none
+        userinfo_signed_response_alg: none
+        token_endpoint_auth_method: client_secret_basic
+        consent_mode: implicit
+        claims_policy: immich

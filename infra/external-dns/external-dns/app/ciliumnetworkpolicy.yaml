@@ -1,6 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# external-dns (Cloudflare API) and the vpnk8sgarden-updater cron (ip.wtf, ipify):
-# API server and HTTPS to the internet
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -11,7 +9,6 @@ spec:
   egress:
     - toEntities:
         - kube-apiserver
-    # Public internet only, no LAN
     - toCIDRSet:
         - cidrGroupRef: public-internet
       toPorts:

@@ -5,4 +5,4 @@ metadata:
   name: metrics-server
 spec:
   url: https://kubernetes-sigs.github.io/metrics-server/
-  interval: 24h
+  interval: 12h

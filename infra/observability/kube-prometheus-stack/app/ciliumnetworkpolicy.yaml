@@ -1,5 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Prometheus: queried by Grafana, scrapes pods, kubelet, API server and node-exporter (host network)
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -22,8 +21,6 @@ spec:
         - cluster
 ---
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Operator and its admission-create/-patch hook jobs (webhook certificates):
-# webhook calls come from the API server via the default-deny baseline
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

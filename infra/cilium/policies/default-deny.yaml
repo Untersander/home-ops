@@ -1,7 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumclusterwidenetworkpolicy_v2.json
-# Default deny in both directions for every pod outside kube-system and flux-system
-# (flux-system ships its own NetworkPolicies). Each workload allows what it needs on top.
-# hostNetwork pods are not endpoints and are not affected.
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
@@ -15,11 +12,9 @@ spec:
           - kube-system
           - flux-system
   ingress:
-    # kubelet probes and admission webhooks / aggregated APIs (the API server runs on the host network)
     - fromEntities:
         - host
         - kube-apiserver
-    # Prometheus scrapes everything
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: observability
@@ -33,8 +28,6 @@ spec:
         - ports:
             - port: "53"
               protocol: ANY
-    # Apps resolving A and AAAA in parallel close the socket after the first answer; the kernel answers
-    # the late reply with ICMP port unreachable to the kube-dns ClusterIP, which Cilium sees as "world"
     - toCIDR:
         - 10.96.0.10/32
         - fdee:1::a/128

@@ -1,6 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Apps reach Authelia through the gateway, also for the OIDC back channel (token/userinfo).
-# Egress: LDAP, Valkey and SMTP.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:

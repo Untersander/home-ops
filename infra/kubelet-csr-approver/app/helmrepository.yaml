@@ -5,4 +5,4 @@ metadata:
   name: kubelet-csr-approver
 spec:
   url: https://postfinance.github.io/kubelet-csr-approver
-  interval: 24h
+  interval: 12h

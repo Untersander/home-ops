@@ -1,5 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Scraped by Prometheus (default-deny baseline), probes HTTP(S) targets on the internet
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -10,7 +9,6 @@ spec:
     matchLabels:
       app.kubernetes.io/name: prometheus-blackbox-exporter
   egress:
-    # Public internet only, no LAN
     - toCIDRSet:
         - cidrGroupRef: public-internet
       toPorts:

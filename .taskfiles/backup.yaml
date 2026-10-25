@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+vars:
+  NS: backup-test
+  TEST_DIR: '{{.ROOT_DIR}}/tests/backup'
+  # Waits until resource $1 reaches one of the phases in $2 (regex); fails on Failed or after 15 min
+  WAIT_PHASE: |
+    wait_phase() {
+      for _ in $(seq 180); do
+        phase="$(kubectl -n {{.NS}} get "$1" -o jsonpath='{.status.phase}')"
+        if printf '%s' "$phase" | grep -qxE "$2"; then echo "$1: $phase"; return 0; fi
+        if [ "$phase" = Failed ]; then
+          echo "$1: Failed"
+          kubectl -n {{.NS}} get "$1" -o jsonpath='{.status.logTail}{"\n"}'
+          return 1
+        fi
+        sleep 5
+      done
+      echo "$1: timed out in phase ${phase:-<none>}"
+      kubectl -n {{.NS}} get pod,pvc,kopiasnap,kopiarestore
+      return 1
+    }
+
+tasks:
+  test:
+    desc: 'Back up test data with kopiur, delete its PVCs, restore them and compare the checksums (tests/backup)'
+    cmds:
+      - task: test:cleanup
+      - defer: { task: test:cleanup }
+      - |
+        set -euo pipefail
+        {{.WAIT_PHASE}}
+
+        echo "### Set up namespace {{.NS}} with components/backup-kopiur"
+        kubectl kustomize {{.TEST_DIR}} | APP={{.NS}} flux envsubst --strict | kubectl apply -f -
+        kubectl -n {{.NS}} wait --for=condition=Ready kopiasp --all --timeout=2m
+
+        echo "### 1/4 Write test data"
+        kubectl apply -f {{.TEST_DIR}}/pvc.yaml -f {{.TEST_DIR}}/write.yaml
+        wait_phase pod/backup-test-write Succeeded
+        expected="$(kubectl -n {{.NS}} logs pod/backup-test-write)"
+        echo "$expected"
+
+        echo "### 2/4 Back up"
+        for snap in $(kubectl create -f {{.TEST_DIR}}/snapshot.yaml -o name); do
+          wait_phase "$snap" Succeeded
+        done
+
+        echo "### 3/4 Delete pod and PVCs"
+        kubectl -n {{.NS}} delete pod backup-test-write
+        # Finished backup movers keep the PVCs in Terminating
+        kubectl -n {{.NS}} delete pod -l app.kubernetes.io/managed-by=kopiur --field-selector=status.phase==Succeeded
+        kubectl -n {{.NS}} delete pvc backup-test-zfs backup-test-hostpath --timeout=5m
+
+        echo "### 4/4 Restore and compare"
+        kubectl apply -f {{.TEST_DIR}}/restore.yaml
+        # kopiarestore, not restore: that short name also matches k8up's Restore
+        wait_phase kopiarestore/backup-test-hostpath Completed
+        # The verify pod is the first user of the ZFS PVC, which starts the populator restore
+        kubectl apply -f {{.TEST_DIR}}/verify.yaml
+        wait_phase pod/backup-test-verify Succeeded
+        actual="$(kubectl -n {{.NS}} logs pod/backup-test-verify)"
+        echo "$actual"
+
+        if [ "$actual" = "$expected" ]; then
+          echo "OK: all files restored unchanged"
+        else
+          echo "FAILED: restored files differ from the written ones"
+          exit 1
+        fi
+
+  test:cleanup:
+    desc: Delete the namespace of backup:test and everything in it, e.g. after an aborted run
+    status:
+      - '! kubectl get namespace {{.NS}}'
+    cmds:
+      - kubectl -n {{.NS}} delete job,pod --all
+      # Snapshots and policies have finalizers that clean up the kopia repository with the
+      # credentials kopiur projected into the namespace, so they go before the namespace
+      - kubectl -n {{.NS}} delete kopiasnap --all --timeout=5m
+      - kubectl -n {{.NS}} delete kopiasched,kopiasp,kopiarestore --all --timeout=5m
+      - kubectl delete namespace {{.NS}} --timeout=5m

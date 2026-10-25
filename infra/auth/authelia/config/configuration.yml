@@ -61,6 +61,13 @@ storage:
   local:
     path: /data/db.sqlite3
 
+# Computed user attributes (CEL), exposed to OIDC clients through custom claims below
+definitions:
+  user_attributes:
+    # Immich reads the role from the immich_role claim on every login
+    immich_role:
+      expression: '"admins" in groups ? "admin" : "user"'
+
 # Proton Mail; the token (1Password "Proton SMTP Token") can only send as its own address
 notifier:
   smtp:
@@ -90,3 +97,12 @@ identity_providers:
       # Grafana reads these from the ID token instead of the userinfo endpoint
       grafana:
         id_token: [email, name, groups, preferred_username]
+      immich:
+        custom_claims:
+          immich_role:
+            attribute: immich_role
+
+    # Custom scopes; their claims come from the client's claims policy and are returned by the userinfo endpoint
+    scopes:
+      immich:
+        claims: [immich_role]

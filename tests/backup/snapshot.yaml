@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/snapshot_v1alpha1.json
+# Back both PVCs up now (kubectl create, for generateName)
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: Snapshot
+metadata:
+  generateName: backup-test-zfs-
+  namespace: backup-test
+spec:
+  policyRef:
+    name: backup-test
+  source:
+    sourceIndex: 0
+    target:
+      pvc:
+        name: backup-test-zfs
+        namespace: backup-test
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/snapshot_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: Snapshot
+metadata:
+  generateName: backup-test-hostpath-
+  namespace: backup-test
+spec:
+  policyRef:
+    name: backup-test-direct
+  source:
+    sourceIndex: 0
+    target:
+      pvc:
+        name: backup-test-hostpath
+        namespace: backup-test

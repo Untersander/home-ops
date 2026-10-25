@@ -1,0 +1,39 @@
+# Prints the checksums of all restored files, in the same format as write.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: backup-test-verify
+  namespace: backup-test
+spec:
+  restartPolicy: Never
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    seccompProfile: { type: RuntimeDefault }
+  containers:
+    - name: verify
+      image: docker.io/library/busybox:1.38.0
+      command:
+        - /bin/sh
+        - -ec
+        - |
+          cd /data
+          find . -type f | sort | xargs sha256sum
+      securityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+      volumeMounts:
+        - { name: zfs, mountPath: /data/zfs, readOnly: true }
+        - { name: hostpath, mountPath: /data/hostpath, readOnly: true }
+  volumes:
+    - name: zfs
+      persistentVolumeClaim: { claimName: backup-test-zfs, readOnly: true }
+    - name: hostpath
+      persistentVolumeClaim: { claimName: backup-test-hostpath, readOnly: true }

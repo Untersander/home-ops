@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+# Setup of `task backup:test`: the namespace and components/backup-kopiur, as a real app gets it.
+# Rendered with `flux envsubst` (APP=backup-test) instead of Flux; the other files are the test steps.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: backup-test
+resources:
+  - ./ns.yaml
+components:
+  - ../../components/backup-kopiur

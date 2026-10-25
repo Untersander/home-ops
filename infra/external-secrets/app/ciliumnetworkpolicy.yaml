@@ -1,5 +1,4 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# All components talk to the API server; webhook calls come from it via the default-deny baseline
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -12,7 +11,6 @@ spec:
         - kube-apiserver
 ---
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
-# Controller: 1Password (SDK)
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
