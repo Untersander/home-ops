@@ -18,9 +18,6 @@ spec:
     accessKeyIdKey: access-key-id
     secretAccessKeyKey: secret-access-key
     includeEndpoint: false
-    # Garage rejects requests signed for another region (boto defaults to us-east-1)
-    additionalData:
-      region: garage
 ---
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/barmancloud.cnpg.io/objectstore_v1.json
 # Referenced by the cluster's spec.plugins (barmanObjectName: ${APP}); backups land in cnpg-backups/${APP}/<cluster>/
