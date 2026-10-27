@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+# Barman Cloud backups (WAL archive + base backups) of the CNPG cluster ${APP}-db, see ../README.md
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - ./cnpg.yaml

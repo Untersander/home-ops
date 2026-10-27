@@ -23,3 +23,11 @@ spec:
               protocol: TCP
             - port: "8000"
               protocol: TCP
+    # Barman Cloud plugin (CNPG-I gRPC)
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: plugin-barman-cloud
+      toPorts:
+        - ports:
+            - port: "9090"
+              protocol: TCP

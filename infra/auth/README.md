@@ -125,3 +125,12 @@ Administration → Settings → Authentication Settings → OAuth:
 
 Existing Immich users are linked by email on their first SSO login, so their Immich email must match the one in LLDAP.
 Keep password login enabled until SSO works for the admin account.
+
+## Dawarich
+
+Configured by env in [apps/dawarich/dawarich/values.yaml](../../apps/dawarich/dawarich/values.yaml): "Login with Authelia" creates accounts on first login (`OIDC_AUTO_REGISTER`), signing up with email/password is off.
+Dawarich has no role claim, admins are made in its UI. On the first start it seeds the admin `demo@dawarich.app` with password `password`:
+
+1. Log in once via Authelia to create your account, then log out.
+2. Log in as `demo@dawarich.app` / `password`, make your account an admin (Settings → Users), log out.
+3. Log in via Authelia and delete the demo user.

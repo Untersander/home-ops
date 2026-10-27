@@ -1,0 +1,19 @@
+# Uploaded imports, exports and other Active Storage files; the location history itself is in Postgres
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dawarich-storage
+  namespace: dawarich
+  labels:
+    backup.k8s.garden/app: dawarich
+spec:
+  storageClassName: openebs-zfs-shared-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  dataSourceRef:
+    apiGroup: kopiur.home-operations.com
+    kind: Restore
+    name: dawarich

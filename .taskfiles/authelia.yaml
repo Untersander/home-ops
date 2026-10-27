@@ -75,7 +75,7 @@ tasks:
       PKCE: '{{.PKCE | default "true"}}'
       CLAIMS_POLICY: '{{.CLAIMS_POLICY | default ""}}'
       # implicit skips the consent screen: only for confidential first-party clients, never for public ones
-      CONSENT: '{{.CONSENT | default "pre-configured"}}'
+      CONSENT: '{{.CONSENT | default "implicit"}}'
       # Template filter expression, rendered by Authelia ({{"{{"}} would otherwise be rendered by Task)
       SECRET_EXPR: '{{"{{"}} secret "/secrets/{{.CLIENT}}-client-secret-digest" }}'
     preconditions:

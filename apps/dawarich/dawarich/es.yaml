@@ -1,0 +1,41 @@
+# Signs sessions and derives the keys for encrypted settings, changing it signs everyone out (openssl rand -hex 64)
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: dawarich-app
+  namespace: dawarich
+spec:
+  refreshInterval: 6h0m0s
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  target:
+    template:
+      type: generic
+      data:
+        secret-key-base: "{{ .secretKeyBase }}"
+  data:
+    - secretKey: secretKeyBase
+      remoteRef:
+        key: "Dawarich/secret-key-base"
+---
+# OIDC client for Authelia (plaintext secret; Authelia only knows its digest)
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: dawarich-oidc
+  namespace: dawarich
+spec:
+  refreshInterval: 6h0m0s
+  secretStoreRef:
+    name: 1password-sdk
+    kind: ClusterSecretStore
+  target:
+    template:
+      type: generic
+      data:
+        secret: "{{ .secret }}"
+  data:
+    - secretKey: secret
+      remoteRef:
+        key: "Authelia OIDC dawarich/credential"

@@ -23,3 +23,17 @@ spec:
   globalAlias: k8up-apps
   # Real backup data, keep it if the resource is deleted
   deletionPolicy: Retain
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagebucket_v1beta1.json
+# Barman Cloud (CNPG) WAL archives and base backups, one prefix per app, see components/backup-cnpg
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageBucket
+metadata:
+  name: cnpg-backups
+spec:
+  clusterRef:
+    name: garage-infra
+    namespace: object-storage
+  globalAlias: cnpg-backups
+  # Real backup data, keep it if the resource is deleted
+  deletionPolicy: Retain

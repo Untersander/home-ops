@@ -13,3 +13,25 @@ spec:
   targetNamespace: db
   prune: true
   interval: 1h
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+# Barman Cloud plugin (CNPG-I): WAL archiving and base backups to Garage, see components/backup-cnpg
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cnpg-barman-cloud
+  namespace: db
+spec:
+  # The chart issues its gRPC TLS certificates with cert-manager
+  dependsOn:
+    - name: db
+    - name: cert-manager
+      namespace: cert-manager
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./infra/db/barman-cloud
+  targetNamespace: db
+  prune: true
+  interval: 1h

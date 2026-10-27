@@ -24,6 +24,8 @@ The components create no PVCs. The app defines its PVCs itself, and nothing is b
 
 `task backup:test` checks end to end that `backup-kopiur` backups restore, see `tests/backup`.
 
+Databases (CNPG) are backed up separately with `backup-cnpg`, see [below](#backups-backup-cnpg).
+
 ### Labels
 
 | On        | Label                                   | Meaning                                                                                                                      |
@@ -172,3 +174,81 @@ spec:
 ```
 
 Label restore target PVCs with `k8up.io/backup: "false"` (and without `backup.k8s.garden/app`) so they aren't backed up themselves.
+
+## Backups: `backup-cnpg`
+
+WAL archiving and nightly base backups of an app's CNPG cluster with the [Barman Cloud plugin](https://cloudnative-pg.io/plugin-barman-cloud/) (`infra/db/barman-cloud`), to the Garage bucket `cnpg-backups` (`infra/backup/buckets`).
+Unlike `backup-kopiur`'s `Direct` copies of a live volume, these backups are consistent and can be restored to any point in time within the retention window.
+
+| Creates                     | Purpose                                                                     |
+| --------------------------- | --------------------------------------------------------------------------- |
+| GarageKey `${APP}-cnpg`     | per-app key for `cnpg-backups` (needs `backup.k8s.garden/enabled` on the namespace) |
+| ObjectStore `${APP}`        | `s3://cnpg-backups/${APP}/`, backups under `<cluster name>/`, retention     |
+| ScheduledBackup `${APP}`    | base backup of the cluster, right away and then nightly                     |
+
+| Variable               | Default         | Used for                                       |
+| ---------------------- | --------------- | ---------------------------------------------- |
+| `APP`                  | required        | resource names, bucket prefix                  |
+| `BACKUP_CNPG_CLUSTER`  | `${APP}-db`     | name of the CNPG cluster                       |
+| `BACKUP_CNPG_SCHEDULE` | `0 0 2 * * *`   | base backups (six fields, with seconds)        |
+| `BACKUP_CNPG_RETENTION`| `30d`           | recovery window (`d`, `w` or `m`)              |
+
+### Enable it for a cluster
+
+Add the component to the Flux Kustomization that deploys the cluster, and make the cluster archive its WAL through the plugin:
+
+```yaml
+# ks.yaml
+spec:
+  components:
+    - ../../../components/backup-cnpg
+  dependsOn:
+    - name: garage-buckets
+      namespace: backup
+    - name: cnpg-barman-cloud
+      namespace: db
+  postBuild:
+    substitute:
+      APP: myapp
+---
+# cnpg-cluster.yaml
+spec:
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: myapp
+```
+
+Status: `kubectl -n myapp get cluster myapp-db` (condition `ContinuousArchiving`), `kubectl -n myapp get backups`.
+
+### Restore
+
+CNPG restores into a new cluster. Bootstrap it from the ObjectStore and point the app at it, or delete the old cluster and recreate it under the same name.
+A recreated cluster must archive to a different `serverName` (or ObjectStore) than the one it restores from, otherwise it refuses to start on a non-empty archive:
+
+```yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: myapp-db
+spec:
+  # same instances, imageName, storage, ... as before
+  bootstrap:
+    recovery:
+      source: origin
+      # recoveryTarget: { targetTime: "2026-10-01 12:00:00+02" } # default: latest
+  externalClusters:
+    - name: origin
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: myapp
+          serverName: myapp-db # the cluster the backups came from
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: myapp
+        serverName: myapp-db-r1 # new archive path for the restored cluster
+```

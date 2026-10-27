@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagekey_v1beta1.json
+# Per-app key for the shared cnpg-backups bucket
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: ${APP}-cnpg
+spec:
+  clusterRef:
+    name: garage-infra
+    namespace: object-storage
+  bucketPermissions:
+    - bucketRef:
+        name: cnpg-backups
+        namespace: backup
+      read: true
+      write: true
+  secretTemplate:
+    accessKeyIdKey: access-key-id
+    secretAccessKeyKey: secret-access-key
+    includeEndpoint: false
+    # Garage rejects requests signed for another region (boto defaults to us-east-1)
+    additionalData:
+      region: garage
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/barmancloud.cnpg.io/objectstore_v1.json
+# Referenced by the cluster's spec.plugins (barmanObjectName: ${APP}); backups land in cnpg-backups/${APP}/<cluster>/
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: ${APP}
+spec:
+  configuration:
+    destinationPath: s3://cnpg-backups/${APP}/
+    endpointURL: http://garage-infra.object-storage.svc.cluster.local:3900
+    s3Credentials:
+      accessKeyId:
+        name: ${APP}-cnpg
+        key: access-key-id
+      secretAccessKey:
+        name: ${APP}-cnpg
+        key: secret-access-key
+      region:
+        name: ${APP}-cnpg
+        key: region
+    wal:
+      compression: gzip
+    data:
+      compression: gzip
+  # Base backups and the WAL needed to recover to any point in this window
+  retentionPolicy: "${BACKUP_CNPG_RETENTION:=30d}"
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/postgresql.cnpg.io/scheduledbackup_v1.json
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: ${APP}
+spec:
+  cluster:
+    name: ${BACKUP_CNPG_CLUSTER:=${APP}-db}
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
+  # Six fields (with seconds), outside the kopiur (01:xx) and k8up (03:30) windows
+  schedule: "${BACKUP_CNPG_SCHEDULE:=0 0 2 * * *}"
+  # First base backup right away, WAL archiving alone can't be restored
+  immediate: true
+  backupOwnerReference: self

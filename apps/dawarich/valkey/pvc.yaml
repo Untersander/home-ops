@@ -1,0 +1,14 @@
+# Append-only file of the Sidekiq queue, so queued jobs (imports, track and stats calculation) survive a restart.
+# Points themselves are written to Postgres directly. Not backed up.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dawarich-valkey
+  namespace: dawarich
+spec:
+  storageClassName: openebs-hostpath-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

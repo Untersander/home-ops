@@ -1,0 +1,25 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: dawarich-db
+  namespace: dawarich
+spec:
+  instances: 1
+  storage:
+    size: 10Gi
+    storageClass: openebs-hostpath-ssd-retain
+  imageName: ghcr.io/cloudnative-pg/postgis:18-3.6-standard-trixie
+  bootstrap:
+    initdb:
+      database: dawarich
+      owner: dawarich
+      # PostGIS isn't a trusted extension, the dawarich owner can't create it in the migrations
+      postInitApplicationSQL:
+        - CREATE EXTENSION IF NOT EXISTS postgis;
+        - CREATE EXTENSION IF NOT EXISTS pgcrypto;
+  # WAL archive and base backups to Garage, see components/backup-cnpg
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: dawarich

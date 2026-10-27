@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dawarich-valkey
+  namespace: dawarich
+spec:
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./apps/dawarich/valkey
+  targetNamespace: dawarich
+  prune: true
+  interval: 1h
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dawarich-db
+  namespace: dawarich
+spec:
+  components:
+    - ../../../components/backup-cnpg
+  postBuild:
+    substitute:
+      APP: dawarich
+  # The cluster archives its WAL through the plugin into the cnpg-backups bucket from the start
+  dependsOn:
+    - name: garage-buckets
+      namespace: backup
+    - name: cnpg-barman-cloud
+      namespace: db
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./apps/dawarich/db
+  targetNamespace: dawarich
+  prune: true
+  interval: 1h
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dawarich-app
+  namespace: dawarich
+spec:
+  components:
+    - ../../../components/backup-kopiur
+  postBuild:
+    substitute:
+      APP: dawarich
+  # kopiur's webhook rejects policies while the ClusterRepository doesn't exist,
+  # and the auto-restore PVC must not be created before the repository is there
+  dependsOn:
+    - name: dawarich-db
+    - name: dawarich-valkey
+    - name: backup-repositories
+      namespace: backup
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./apps/dawarich/dawarich
+  targetNamespace: dawarich
+  prune: true
+  interval: 1h

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+# The operator calls the plugin over gRPC. The uploads to Garage run in the sidecar
+# the plugin injects into the instance pods, see infra/cilium/policies/cnpg.yaml.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: barman-cloud
+  namespace: db
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: plugin-barman-cloud
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: cloudnative-pg
+      toPorts:
+        - ports:
+            - port: "9090"
+              protocol: TCP
+  egress:
+    - toEntities:
+        - kube-apiserver

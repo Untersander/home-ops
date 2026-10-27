@@ -23,6 +23,12 @@ spec:
           matchExpressions:
             - key: k8s:io.kubernetes.pod.namespace
               operator: Exists
+        # CNPG instances, Barman Cloud sidecar (components/backup-cnpg)
+        - matchExpressions:
+            - key: cnpg.io/cluster
+              operator: Exists
+            - key: k8s:io.kubernetes.pod.namespace
+              operator: Exists
       toPorts:
         - ports:
             - port: "3900"

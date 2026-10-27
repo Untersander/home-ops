@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+# Has to run in the operator's namespace, the operator finds it via the annotated barman-cloud Service
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: barman-cloud
+  namespace: db
+spec:
+  chart:
+    spec:
+      sourceRef:
+        kind: HelmRepository
+        name: cnpg
+      chart: plugin-barman-cloud
+      version: 0.8.1
+  driftDetection:
+    mode: enabled
+  interval: 1h

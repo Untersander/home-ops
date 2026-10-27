@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagereferencegrant_v1beta1.json
-# Allow the per-app k8up keys of components/backup-k8up to use the shared k8up bucket.
+# Allow the per-app keys of components/backup-k8up and components/backup-cnpg to use the shared buckets.
 # kopiur uses the central kopiur-cluster key (credential projection) instead.
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageReferenceGrant
@@ -14,3 +14,5 @@ spec:
   to:
     - kind: GarageBucket
       name: k8up-apps
+    - kind: GarageBucket
+      name: cnpg-backups

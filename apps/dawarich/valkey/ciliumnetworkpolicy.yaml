@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: dawarich-valkey
+  namespace: dawarich
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: dawarich-valkey
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: dawarich
+            app.kubernetes.io/instance: dawarich
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP

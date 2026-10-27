@@ -45,3 +45,6 @@ spec:
     - secretKey: immich-client-secret-digest
       remoteRef:
         key: "Authelia OIDC immich/digest"
+    - secretKey: dawarich-client-secret-digest
+      remoteRef:
+        key: "Authelia OIDC dawarich/digest"

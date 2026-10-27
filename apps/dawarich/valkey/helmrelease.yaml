@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dawarich-valkey
+  namespace: dawarich
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: dawarich-valkey
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  values:
+    controllers:
+      main:
+        # RWO volume
+        strategy: Recreate
+        containers:
+          app:
+            image:
+              repository: docker.io/valkey/valkey
+              tag: 9.1.0-alpine3.23
+            # Sidekiq jobs are kept in the append-only file, no snapshots
+            args:
+              - --save
+              - ""
+              - --appendonly
+              - "yes"
+            resources:
+              requests:
+                cpu: 10m
+                memory: 128M
+
+    defaultPodOptions:
+      securityContext:
+        seccompProfile: { type: RuntimeDefault }
+
+    service:
+      main:
+        controller: main
+        ports:
+          valkey:
+            port: 6379
+
+    persistence:
+      data:
+        existingClaim: dawarich-valkey
+        globalMounts:
+          - path: /data

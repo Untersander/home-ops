@@ -57,3 +57,19 @@ identity_providers:
         token_endpoint_auth_method: client_secret_basic
         consent_mode: implicit
         claims_policy: immich
+      - client_id: dawarich
+        client_name: Dawarich
+        client_secret: '{{ secret "/secrets/dawarich-client-secret-digest" }}'
+        public: false
+        authorization_policy: family
+        require_pkce: true
+        pkce_challenge_method: S256
+        redirect_uris:
+          - https://dawarich.k8s.garden/users/auth/openid_connect/callback
+        scopes: [openid, email, profile, groups]
+        response_types: [code]
+        grant_types: [authorization_code]
+        access_token_signed_response_alg: none
+        userinfo_signed_response_alg: none
+        token_endpoint_auth_method: client_secret_basic
+        consent_mode: implicit
