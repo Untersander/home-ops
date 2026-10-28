@@ -1289,7 +1289,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 10,
+        "w": 18,
         "x": 6,
         "y": 32
       },
@@ -1350,8 +1350,8 @@
       "gridPos": {
         "h": 8,
         "w": 8,
-        "x": 16,
-        "y": 32
+        "x": 0,
+        "y": 40
       },
       "targets": [
         {
@@ -1415,6 +1415,88 @@
       }
     },
     {
+      "type": "timeseries",
+      "id": 22,
+      "title": "Load cycle count",
+      "description": "Head load/unload cycles (193). NAS drives are typically rated for about 600k; fast growth means aggressive head parking.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 8,
+        "y": 40
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "refId": "A",
+          "expr": "smartctl_device_attribute{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\", attribute_value_type=\"raw\", attribute_id=\"193\"}",
+          "range": true,
+          "legendFormat": "{{device}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "sishort",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0,
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 300000
+              },
+              {
+                "color": "red",
+                "value": 550000
+              }
+            ]
+          },
+          "max": 600000
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "type": "row",
       "id": 20,
       "title": "All SMART attributes",
@@ -1423,7 +1505,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 48
       },
       "panels": []
     },
@@ -1440,7 +1522,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 41
+        "y": 49
       },
       "targets": [
         {
