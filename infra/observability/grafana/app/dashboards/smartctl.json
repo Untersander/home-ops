@@ -532,8 +532,8 @@
     {
       "type": "table",
       "id": 9,
-      "title": "Disks",
-      "description": "One row per disk. smartctl exit status is a bitmask: 4 = some command failed, 8 = disk failing, 16/32 = prefail/usage attribute below threshold (now or in the past), 64 = error log has entries, 128 = self-test log has errors.",
+      "title": "Disk drives",
+      "description": "Inventory of all disks reported by smartctl-exporter.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -551,7 +551,7 @@
             "uid": "${datasource}"
           },
           "refId": "A",
-          "expr": "max by (instance, device, model_family, model_name, serial_number, firmware_version) (smartctl_device{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"})",
+          "expr": "max by (instance, device, interface, model_family, model_name, serial_number, firmware_version, form_factor, sata_version) (smartctl_device{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"})",
           "range": false,
           "instant": true,
           "format": "table"
@@ -562,28 +562,6 @@
             "uid": "${datasource}"
           },
           "refId": "B",
-          "expr": "max by (instance, device) (smartctl_device_smart_status{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"})",
-          "range": false,
-          "instant": true,
-          "format": "table"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "refId": "C",
-          "expr": "max by (instance, device) (smartctl_device_temperature{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\", temperature_type=\"current\"})",
-          "range": false,
-          "instant": true,
-          "format": "table"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "refId": "D",
           "expr": "max by (instance, device) (smartctl_device_capacity_bytes{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"})",
           "range": false,
           "instant": true,
@@ -594,8 +572,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "refId": "E",
-          "expr": "max by (instance, device) (smartctl_device_power_on_seconds{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"})",
+          "refId": "C",
+          "expr": "max by (instance, device) (smartctl_device_rotation_rate{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"})",
           "range": false,
           "instant": true,
           "format": "table"
@@ -605,41 +583,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "refId": "F",
-          "expr": "max by (instance, device) (smartctl_device_power_cycle_count{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"})",
-          "range": false,
-          "instant": true,
-          "format": "table"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "refId": "G",
-          "expr": "sum by (instance, device) (smartctl_device_attribute{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\", attribute_value_type=\"raw\", attribute_id=~\"5|197|198\"})",
-          "range": false,
-          "instant": true,
-          "format": "table"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "refId": "H",
-          "expr": "max by (instance, device) (smartctl_device_attribute{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\", attribute_value_type=\"raw\", attribute_name=\"Total_LBAs_Written\"}) * 512 or max by (instance, device) (smartctl_device_bytes_written{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"})",
-          "range": false,
-          "instant": true,
-          "format": "table"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "refId": "I",
-          "expr": "max by (instance, device) (smartctl_device_smartctl_exit_status{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"})",
+          "refId": "D",
+          "expr": "max by (instance, device) (smartctl_device_smart_status{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"})",
           "range": false,
           "instant": true,
           "format": "table"
@@ -659,35 +604,31 @@
             },
             "renameByName": {
               "instance": "Node",
-              "device": "Device",
-              "model_family": "Family",
-              "model_name": "Model",
-              "serial_number": "Serial",
-              "firmware_version": "Firmware",
-              "Value #B": "SMART status",
-              "Value #C": "Temperature",
-              "Value #D": "Capacity",
-              "Value #E": "Power-on time",
-              "Value #F": "Power cycles",
-              "Value #G": "Bad sectors",
-              "Value #H": "Data written",
-              "Value #I": "smartctl exit status"
+              "device": "Disk",
+              "interface": "Type",
+              "model_family": "Model family",
+              "model_name": "Device model",
+              "Value #B": "Size",
+              "Value #C": "Rotation",
+              "form_factor": "Form factor",
+              "sata_version": "Interface",
+              "serial_number": "Serial number",
+              "firmware_version": "FW version",
+              "Value #D": "S.M.A.R.T OK"
             },
             "indexByName": {
               "instance": 0,
               "device": 1,
-              "model_family": 2,
-              "model_name": 3,
-              "serial_number": 4,
-              "firmware_version": 5,
-              "Value #B": 6,
-              "Value #C": 7,
-              "Value #D": 8,
-              "Value #E": 9,
-              "Value #F": 10,
-              "Value #G": 11,
-              "Value #H": 12,
-              "Value #I": 13
+              "interface": 2,
+              "model_family": 3,
+              "model_name": 4,
+              "Value #B": 5,
+              "Value #C": 6,
+              "form_factor": 7,
+              "sata_version": 8,
+              "serial_number": 9,
+              "firmware_version": 10,
+              "Value #D": 11
             }
           }
         }
@@ -718,7 +659,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "SMART status"
+              "options": "S.M.A.R.T OK"
             },
             "properties": [
               {
@@ -753,45 +694,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Temperature"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "celsius"
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "orange",
-                      "value": 50
-                    },
-                    {
-                      "color": "red",
-                      "value": 60
-                    }
-                  ]
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-text"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Capacity"
+              "options": "Size"
             },
             "properties": [
               {
@@ -803,59 +706,63 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Power-on time"
+              "options": "Rotation"
             },
             "properties": [
               {
                 "id": "unit",
-                "value": "s"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Bad sectors"
-            },
-            "properties": [
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "orange",
-                      "value": 1
-                    },
-                    {
-                      "color": "red",
-                      "value": 10
-                    }
-                  ]
-                }
+                "value": "rotrpm"
               },
               {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-background",
-                  "mode": "basic"
-                }
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "text": "SSD",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "Data written"
+              "options": "Node"
             },
             "properties": [
               {
-                "id": "unit",
-                "value": "decbytes"
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Disk"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Type"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
               }
             ]
           }
@@ -877,7 +784,7 @@
             "desc": false
           },
           {
-            "displayName": "Device",
+            "displayName": "Disk",
             "desc": false
           }
         ]
@@ -1416,7 +1323,7 @@
     },
     {
       "type": "timeseries",
-      "id": 22,
+      "id": 20,
       "title": "Load cycle count",
       "description": "Head load/unload cycles (193). NAS drives are typically rated for about 600k; fast growth means aggressive head parking.",
       "datasource": {
@@ -1497,21 +1404,471 @@
       }
     },
     {
+      "type": "bargauge",
+      "id": 21,
+      "title": "Power-on time",
+      "description": "Hours the drive has been powered on. Most NAS drives come with a 3-year warranty and are designed for about 5 years of 24/7 use.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 48
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "refId": "A",
+          "expr": "max by (instance, device) (smartctl_device_power_on_seconds{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"}) / 3600",
+          "range": false,
+          "instant": true,
+          "legendFormat": "{{device}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "min": 0,
+          "max": 52560,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 26280
+              },
+              {
+                "color": "red",
+                "value": 43800
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "auto",
+        "sizing": "auto",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "maxVizHeight": 300
+      }
+    },
+    {
+      "type": "bargauge",
+      "id": 22,
+      "title": "Heads loaded",
+      "description": "Head_Flying_Hours (240) as a share of power-on time. Seagate packs extra data into the raw value, so only its lower 32 bits (the hours) are used. A low share means the heads spend a lot of time parked.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 48
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "refId": "A",
+          "expr": "max by (instance, device) (smartctl_device_attribute{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\", attribute_value_type=\"raw\", attribute_id=\"240\"}) % 4294967296 / (max by (instance, device) (smartctl_device_power_on_seconds{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"}) / 3600)",
+          "range": false,
+          "instant": true,
+          "legendFormat": "{{device}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "auto",
+        "sizing": "auto",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "maxVizHeight": 300
+      }
+    },
+    {
+      "type": "bargauge",
+      "id": 23,
+      "title": "Start/stop count",
+      "description": "Spindle start/stop cycles (4). Thresholds are a rough guide, check the drive's datasheet.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 54
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "refId": "A",
+          "expr": "smartctl_device_attribute{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\", attribute_value_type=\"raw\", attribute_id=\"4\"}",
+          "range": false,
+          "instant": true,
+          "legendFormat": "{{device}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "max": 2000,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 750
+              },
+              {
+                "color": "red",
+                "value": 1500
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "auto",
+        "sizing": "auto",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "maxVizHeight": 300
+      }
+    },
+    {
+      "type": "bargauge",
+      "id": 24,
+      "title": "Power cycle count",
+      "description": "Full power on/off cycles (12). Thresholds are a rough guide, check the drive's datasheet.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 54
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "refId": "A",
+          "expr": "max by (instance, device) (smartctl_device_power_cycle_count{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"})",
+          "range": false,
+          "instant": true,
+          "legendFormat": "{{device}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "max": 2500,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1000
+              },
+              {
+                "color": "red",
+                "value": 2000
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "auto",
+        "sizing": "auto",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "maxVizHeight": 300
+      }
+    },
+    {
+      "type": "bargauge",
+      "id": 25,
+      "title": "Power-off retract count",
+      "description": "Emergency head retracts (192), mostly caused by sudden power loss. These wear the heads more than normal parking.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 60
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "refId": "A",
+          "expr": "smartctl_device_attribute{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\", attribute_value_type=\"raw\", attribute_id=\"192\"}",
+          "range": false,
+          "instant": true,
+          "legendFormat": "{{device}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "max": 2000,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 500
+              },
+              {
+                "color": "red",
+                "value": 1500
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "auto",
+        "sizing": "auto",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "maxVizHeight": 300
+      }
+    },
+    {
+      "type": "bargauge",
+      "id": 26,
+      "title": "Total data written / read",
+      "description": "Lifetime data from Total_LBAs_Written (241) and Total_LBAs_Read (242), assuming 512-byte LBAs. NAS HDDs are typically rated for 180 TB/year of combined workload.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 60
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "refId": "A",
+          "expr": "max by (instance, device) (smartctl_device_attribute{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\", attribute_value_type=\"raw\", attribute_name=\"Total_LBAs_Written\"}) * 512 or max by (instance, device) (smartctl_device_bytes_written{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"})",
+          "range": false,
+          "instant": true,
+          "legendFormat": "{{device}} written"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "refId": "B",
+          "expr": "max by (instance, device) (smartctl_device_attribute{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\", attribute_value_type=\"raw\", attribute_name=\"Total_LBAs_Read\"}) * 512",
+          "range": false,
+          "instant": true,
+          "legendFormat": "{{device}} read"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decbytes",
+          "min": 0,
+          "max": null,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "auto",
+        "sizing": "auto",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "maxVizHeight": 300
+      }
+    },
+    {
       "type": "row",
-      "id": 20,
+      "id": 27,
       "title": "All SMART attributes",
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 66
       },
       "panels": []
     },
     {
       "type": "table",
-      "id": 21,
+      "id": 28,
       "title": "ATA attributes",
       "description": "Normalized value, worst and threshold per attribute. Flags starting with P mark pre-failure attributes. Some Seagate raw values (1, 7, 188) pack several counters and aren't meaningful as plain numbers.",
       "datasource": {
@@ -1522,7 +1879,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 49
+        "y": 67
       },
       "targets": [
         {
