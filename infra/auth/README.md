@@ -129,8 +129,9 @@ Keep password login enabled until SSO works for the admin account.
 ## Dawarich
 
 Configured by env in [apps/dawarich/dawarich/values.yaml](../../apps/dawarich/dawarich/values.yaml): "Login with Authelia" creates accounts on first login (`OIDC_AUTO_REGISTER`), signing up with email/password is off.
-Dawarich has no role claim, admins are made in its UI. On the first start it seeds the admin `demo@dawarich.app` with password `password`:
+Dawarich has no role claim, admins are made in the Rails console. Log in once via Authelia to create your account, then promote it and delete the seeded demo admin (`demo@dawarich.app` / `safepassword`):
 
-1. Log in once via Authelia to create your account, then log out.
-2. Log in as `demo@dawarich.app` / `password`, make your account an admin (Settings → Users), log out.
-3. Log in via Authelia and delete the demo user.
+```sh
+kubectl -n dawarich exec deploy/dawarich -- bin/rails runner \
+  'User.find_by!(email: "you@example.com").update!(admin: true); User.find_by(email: "demo@dawarich.app")&.destroy!'
+```

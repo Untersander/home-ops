@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: smartctl-exporter
+spec:
+  chart:
+    spec:
+      sourceRef:
+        kind: HelmRepository
+        name: smartctl-exporter
+      chart: prometheus-smartctl-exporter
+      version: 0.18.0
+  driftDetection:
+    mode: enabled
+  interval: 1h
+  values:
+    fullnameOverride: smartctl-exporter
+    # Only binds a PodSecurityPolicy ClusterRole, PSPs no longer exist
+    rbac:
+      create: false
+    serviceMonitor:
+      enabled: true
+      relabelings:
+        # Report the node name instead of the pod IP
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: instance
+    prometheusRules:
+      enabled: true

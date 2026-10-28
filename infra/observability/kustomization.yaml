@@ -9,5 +9,6 @@ resources:
   - ./kube-state-metrics/ks.yaml
   - ./metrics-server/ks.yaml
   - ./blackbox-exporter/ks.yaml
+  - ./smartctl-exporter/ks.yaml
   - ./internet-speedtest/ks.yaml
   - ./iperf3-server/ks.yaml
