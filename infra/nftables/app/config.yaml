@@ -48,9 +48,10 @@ data:
         }
 
         chain inbound_private {
-            # dnsmasq on 10.0.0.1:53 is the IoT allowlist plus local names for Pi-hole, LAN clients use Pi-hole.
-            # Pi-hole's queries come from its pod, not via br0
-            ip daddr 10.0.0.1 meta l4proto { tcp, udp } th dport 53 drop
+            # dnsmasq on the br0 addresses (v4 and v6) is the IoT allowlist plus local names for Pi-hole,
+            # LAN clients use Pi-hole. Pi-hole's queries come from its pod, not via br0, and LoadBalancer
+            # traffic (10.0.0.5) is DNATed to the pod by Cilium before it gets here
+            meta l4proto { tcp, udp } th dport 53 drop
             accept
         }
 

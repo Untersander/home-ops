@@ -12,7 +12,8 @@ data:
     interface=enp7s0
     # lo is added implicitly and holds the Talos host DNS addresses (169.254.116.108, fd54::...:53)
     except-interface=lo
-    bind-dynamic
+    # bind-dynamic would ignore queries arriving on other interfaces, like Pi-hole's from its pod (lxc*)
+    bind-interfaces
     no-resolv
     no-hosts
     # Every answer has to come from upstream, a cache hit would not refresh the nft set.

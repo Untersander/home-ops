@@ -36,6 +36,14 @@ kind: ResolverConfig
 hostDNS:
   enabled: true
 ---
+# cp-0 is the router: don't accept router advertisements from the LAN or IoT network, the default
+# route comes from the WAN (dhcpcd). dnsmasq (infra/dhcpv6-pd) sends the RAs on br0
+apiVersion: v1alpha1
+kind: SysctlConfig
+params:
+  net.ipv6.conf.br0.accept_ra: "0"
+  net.ipv6.conf.enp7s0.accept_ra: "0"
+---
 apiVersion: v1alpha1
 kind: UnattendedInstallConfig
 provisioning:
