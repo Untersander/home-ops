@@ -21,10 +21,10 @@ spec:
       hostNetwork: true
       containers:
       - name: dnsmasq
-        image: alpine:3.24.3
-        command: ["/bin/sh", "-c"]
-        # dnsmasq-dnssec-nftset is the Alpine build with nftset support
-        args: ["apk add --no-cache dnsmasq-dnssec-nftset && exec dnsmasq --keep-in-foreground --conf-file=/etc/dnsmasq/dnsmasq.conf"]
+        # Alpine's dnsmasq-dnssec-nftset, built in jan/containers (git.k8s.garden, mirrored to github.com/Untersander/containers).
+        # Entrypoint: dnsmasq --keep-in-foreground
+        image: ghcr.io/untersander/dnsmasq:2.92.0@sha256:b03866fc48e7ec3c23de208fc956003dba1d90faf60d34480de17a991c9718b1
+        args: ["--conf-file=/etc/dnsmasq/dnsmasq.conf"]
         securityContext:
           capabilities:
             add: ["NET_ADMIN", "NET_RAW"]
