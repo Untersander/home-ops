@@ -6,7 +6,7 @@ controllers:
     strategy: Recreate
     containers:
       app:
-        image:
+        image: &image
           repository: docker.io/freikin/dawarich
           tag: 1.19.0
         # Same as upstream's compose file: the entrypoint syncs the static assets into public/,
@@ -21,6 +21,8 @@ controllers:
           SELF_HOSTED: "true"
           # Bundler wants a writable home, the root filesystem is read-only
           HOME: /tmp
+          # Created by the tmpdir init container
+          TMPDIR: /tmp/ruby
           APPLICATION_HOSTS: dawarich.k8s.garden
           # Also enables force_ssl, Envoy sends X-Forwarded-Proto: https
           APPLICATION_PROTOCOL: https
@@ -97,7 +99,7 @@ controllers:
                     value: https
               failureThreshold: 60
               periodSeconds: 10
-        securityContext:
+        securityContext: &securityContext
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
           capabilities:
@@ -106,6 +108,14 @@ controllers:
           requests:
             cpu: 50m
             memory: 768Mi
+    initContainers:
+      # emptyDir (sub)paths are world-writable without the sticky bit, Ruby's Dir.tmpdir rejects them
+      # and Puma can't buffer request bodies over ~112KB (500 on uploads). A directory created by the
+      # app user is accepted. Also creates the watched-imports directory the Import::WatcherJob scans.
+      tmpdir:
+        image: *image
+        command: ["mkdir", "-p", "/tmp/ruby", "/var/app/tmp/imports/watched"]
+        securityContext: *securityContext
 
 defaultPodOptions:
   securityContext:
