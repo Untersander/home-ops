@@ -83,6 +83,10 @@ op item edit --vault Kubernetes "Flux home-ops-internal" "known_hosts[text]=$(ss
 op read "op://Kubernetes/Flux home-ops-internal/public key"
 ```
 
+### Container images
+Own images (dnsmasq) are built from `ssh://git@git.k8s.garden/jan/containers.git`, mirrored to [Untersander/containers](https://github.com/Untersander/containers), on the Forgejo runner with the rootless buildkitd in [apps/buildkit](../apps/buildkit/).
+They are pushed to `git.k8s.garden/jan/<app>` and `ghcr.io/untersander/<app>`; this repo uses the ghcr.io images so Renovate (GitHub Actions) can see them, `git.k8s.garden` resolves to a private IP.
+
 ## Storage
 Possible storage solutions:
 - OpenEBS

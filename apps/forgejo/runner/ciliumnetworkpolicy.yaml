@@ -80,6 +80,15 @@ spec:
         - ports:
             - port: "8089"
               protocol: TCP
+    # Image builds (apps/buildkit)
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: buildkit
+            app.kubernetes.io/name: buildkitd
+      toPorts:
+        - ports:
+            - port: "1234"
+              protocol: TCP
     # Public internet only, no LAN
     - toCIDRSet:
         - cidrGroupRef: public-internet

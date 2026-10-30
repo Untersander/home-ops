@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: buildkitd-config
+  namespace: buildkit
+data:
+  buildkitd.toml: |
+    [worker.oci]
+      gc = true
+      # Absolute sizes: the hostpath PVC reports the whole disk, percentages would be of that
+      reservedSpace = "2GB"
+      maxUsedSpace = "20GB"
+      minFreeSpace = "20GB"

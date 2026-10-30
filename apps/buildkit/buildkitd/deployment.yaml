@@ -1,0 +1,77 @@
+# Rootless BuildKit for the Forgejo Actions image builds (jan/containers on git.k8s.garden).
+# Jobs connect with buildx --driver remote, see ./ciliumnetworkpolicy.yaml for who may.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buildkitd
+  namespace: buildkit
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: buildkitd
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: buildkitd
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      containers:
+        - name: buildkitd
+          image: docker.io/moby/buildkit:v0.34.1-rootless@sha256:f68752a5a94acfcdad2d07867b7075601a421638e17fc5f28efc1c814d0c4f89
+          args:
+            - --addr=unix:///run/user/1000/buildkit/buildkitd.sock
+            # No TLS: only the runner's job pods can reach it (network policy)
+            - --addr=tcp://0.0.0.0:1234
+            - --config=/etc/buildkit/buildkitd.toml
+            # Build steps run in buildkitd's PID namespace instead of their own, which would need
+            # an unmasked /proc (see buildkit docs/rootless.md)
+            - --oci-worker-no-process-sandbox
+          # Rootless BuildKit creates user and mount namespaces, which RuntimeDefault seccomp blocks
+          # (user.max_user_namespaces is set in talos/machine-patches/userns-patch.yaml)
+          securityContext:
+            seccompProfile:
+              type: Unconfined
+            appArmorProfile:
+              type: Unconfined
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          ports:
+            - name: buildkitd
+              containerPort: 1234
+          readinessProbe:
+            exec:
+              command: ["buildctl", "debug", "workers"]
+            periodSeconds: 30
+          livenessProbe:
+            exec:
+              command: ["buildctl", "debug", "workers"]
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 8Gi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/buildkit
+              readOnly: true
+            - name: cache
+              mountPath: /home/user/.local/share/buildkit
+      volumes:
+        - name: config
+          configMap:
+            name: buildkitd-config
+        - name: cache
+          persistentVolumeClaim:
+            claimName: buildkitd-cache

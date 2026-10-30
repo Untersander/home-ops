@@ -1,0 +1,12 @@
+# Build cache, not backed up
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: buildkitd-cache
+  namespace: buildkit
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
