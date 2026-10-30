@@ -18,7 +18,7 @@ spec:
 
     image:
       repository: code.forgejo.org/forgejo/runner
-      tag: 13.2.0
+      tag: 13.2.1
 
     # The chart expects the runner UUID in the secret. It is the first 16 characters
     # of the shared secret as raw bytes (like forgejo-cli actions register), so derive it here.
