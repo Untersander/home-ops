@@ -13,6 +13,6 @@ spec:
   interfaces:
     - ^br.*
     - ^eno.*
-    - ^enp.*s0
+    - ^enp([89]|10)s0$ # not enp7s0 (IoT) or enp2s0f0np0 (WAN)
     - ^enp2s0f1np1
   loadBalancerIPs: true

@@ -10,8 +10,17 @@ data:
     define DEV_PRIVATE = br0
     define DEV_WORLD = enp2s0f0np0
     define NET_PRIVATE = 10.0.0.0/16
+    define DEV_IOT = enp7s0
+    define NET_PODS = 10.244.0.0/16
 
     table inet global {
+
+        # IPs of the domains allowed for the IoT network, filled by dnsmasq (infra/dhcpv6-pd/app/dnsmasq.yaml)
+        set iot_allow4 {
+            type ipv4_addr
+            flags timeout
+            timeout 1d
+        }
 
         chain inbound_world {
             # accepting ping (icmp-echo-request) for diagnostic purposes.
@@ -30,6 +39,21 @@ data:
             drop
         }
 
+        chain inbound_iot {
+            icmp type echo-request limit rate 5/second burst 4 packets accept
+            # DHCP and DNS via dnsmasq, nothing else on the node (k8s API, Talos API, ...)
+            udp dport 67 accept
+            ip daddr 10.0.10.1 meta l4proto { tcp, udp } th dport 53 accept
+            drop
+        }
+
+        chain inbound_private {
+            # dnsmasq on 10.0.0.1:53 is the IoT allowlist plus local names for Pi-hole, LAN clients use Pi-hole.
+            # Pi-hole's queries come from its pod, not via br0
+            ip daddr 10.0.0.1 meta l4proto { tcp, udp } th dport 53 drop
+            accept
+        }
+
         chain inbound {
             type filter hook input priority filter; policy accept;
 
@@ -37,7 +61,7 @@ data:
             ct state vmap { established : accept, related : accept, invalid : drop }
 
             # allow loopback traffic, anything else jump to chain for further evaluation
-            iifname vmap { lo : accept, $DEV_WORLD : jump inbound_world, $DEV_PRIVATE : accept }
+            iifname vmap { lo : accept, $DEV_WORLD : jump inbound_world, $DEV_PRIVATE : jump inbound_private, $DEV_IOT : jump inbound_iot }
 
         }
 
@@ -56,6 +80,14 @@ data:
             drop
         }
 
+        chain forward_iot {
+            # Cilium already rewrote LoadBalancer IPs (Jellyfin via envoy at 10.0.0.20) to pod IPs
+            ip daddr $NET_PODS accept
+            # Internet only to IPs of allowed domains, no LAN
+            oifname $DEV_WORLD ip daddr @iot_allow4 accept
+            drop
+        }
+
         chain forward {
             type filter hook forward priority filter; policy accept;
 
@@ -64,7 +96,7 @@ data:
 
             # connections from the internal net to the internet or to other
             # internal nets are allowed
-            iifname vmap { lo : accept, $DEV_WORLD : jump forward_world, $DEV_PRIVATE : accept }
+            iifname vmap { lo : accept, $DEV_WORLD : jump forward_world, $DEV_PRIVATE : accept, $DEV_IOT : jump forward_iot }
 
         }
 

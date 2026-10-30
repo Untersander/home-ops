@@ -23,6 +23,11 @@ spec:
               value: ALL
             - name: FTLCONF_dns_domain_name
               value: home
+            # DHCP and therefore the home names live in the host dnsmasq (infra/dhcpv6-pd), don't answer them locally
+            - name: FTLCONF_dns_domain_local
+              value: "false"
+            - name: FTLCONF_dns_revServers
+              value: "true,10.0.0.0/24,10.0.0.1,home;true,10.0.10.0/24,10.0.0.1,home;true,fd00::/64,10.0.0.1,home;true,2a02:169:4a00::/48,10.0.0.1,home"
             - name: FTLCONF_ntp_ipv4_active
               value: "false"
             - name: FTLCONF_ntp_ipv6_active
@@ -32,23 +37,7 @@ spec:
             - name: TZ
               value: Europe/Zurich
             - name: FTLCONF_dhcp_active
-              value: "true"
-            - name: FTLCONF_dhcp_start
-              value: "10.0.0.50"
-            - name: FTLCONF_dhcp_end
-              value: "10.0.0.200"
-            - name: FTLCONF_dhcp_router
-              value: "10.0.0.1"
-            - name: FTLCONF_dhcp_netmask
-              value: "255.255.255.0"
-            - name: FTLCONF_dhcp_ipv6
-              value: "true"
-            - name: FTLCONF_dhcp_rapidCommit
-              value: "true"
-            - name: FTLCONF_dhcp_multiDNS
               value: "false"
-            - name: FTLCONF_misc_dnsmasq_lines
-              value: "dhcp-option=option:dns-server,10.0.0.5"
           envFrom:
             - secretRef:
                 name: pihole-webserver-api-secret
@@ -56,9 +45,6 @@ spec:
           name: pihole
           ports:
             - containerPort: 53
-              protocol: UDP
-            - containerPort: 67
-              hostPort: 67
               protocol: UDP
             - containerPort: 80
               protocol: TCP

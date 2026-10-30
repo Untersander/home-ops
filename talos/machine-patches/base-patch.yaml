@@ -1,35 +1,48 @@
-machine:
-  features:
-    kubePrism:
-      enabled: true
-      port: 7445
-  install:
-    wipe: true
-    diskSelector:
-  sysctls:
-    net.ipv4.ip_forward: 1
-    net.ipv6.conf.all.forwarding: 1
-  kubelet:
-    extraArgs:
-      rotate-server-certificates: true
-cluster:
-  allowSchedulingOnControlPlanes: true
-  controllerManager:
-    extraArgs:
-      node-cidr-mask-size-ipv6: 96
-  clusterName: K8s-Garden # Configures the cluster's name.
-  network:
-    # Disable for cilium
-    cni:
-      name: none # Name of CNI to use.
-    # The pod subnet CIDR.
-    podSubnets:
-      - 10.244.0.0/16
-      - fdee::/80
-    # The service subnet CIDR.
-    serviceSubnets:
-      - 10.96.0.0/12
-      - fdee:1::/108
-  proxy:
-    # Disable kube-proxy deployment on cluster bootstrap.
-    disabled: true
+apiVersion: v1alpha1
+kind: KubeClusterConfig
+clusterName: K8s-Garden # Configures the cluster's name.
+---
+apiVersion: v1alpha1
+kind: KubeNetworkConfig
+# The pod subnet CIDR.
+podSubnets:
+  - 10.244.0.0/16
+  - fdee::/80
+# The service subnet CIDR.
+serviceSubnets:
+  - 10.96.0.0/12
+  - fdee:1::/108
+nodeCIDRMaskSizeIPv6: 96
+---
+# Disable for cilium
+apiVersion: v1alpha1
+kind: KubeFlannelCNIConfig
+$patch: delete
+---
+# Disable kube-proxy deployment on cluster bootstrap, replaced by cilium.
+apiVersion: v1alpha1
+kind: KubeProxyConfig
+enabled: false
+---
+# Allow scheduling on the control plane: drop the default NoSchedule taint.
+apiVersion: v1alpha1
+kind: KubeNodeConfig
+taints:
+  $patch: delete
+---
+apiVersion: v1alpha1
+kind: KubeletConfig
+extraArgs:
+  rotate-server-certificates: "true"
+---
+apiVersion: v1alpha1
+kind: SysctlConfig
+params:
+  net.ipv4.ip_forward: "1"
+  net.ipv6.conf.all.forwarding: "1"
+---
+# The installer image is set by the Taskfile (factory schematic), the disk per node.
+apiVersion: v1alpha1
+kind: UnattendedInstallConfig
+provisioning:
+  wipe: true

@@ -26,13 +26,6 @@ spec:
         - ports:
             - port: "53"
               protocol: ANY
-    # DHCP discover/request are broadcasts from 0.0.0.0, which is "world"
-    - fromEntities:
-        - world
-      toPorts:
-        - ports:
-            - port: "67"
-              protocol: UDP
     # Web UI (websecure listener)
     - fromEndpoints:
         - matchLabels:
@@ -53,10 +46,10 @@ spec:
               protocol: TCP
             - port: "443"
               protocol: TCP
-    # DHCP offers/acks to clients (broadcast or the LAN)
+    # home names and reverse zones from the host dnsmasq (infra/dhcpv6-pd)
     - toEntities:
-        - world
+        - host
       toPorts:
         - ports:
-            - port: "68"
-              protocol: UDP
+            - port: "53"
+              protocol: ANY

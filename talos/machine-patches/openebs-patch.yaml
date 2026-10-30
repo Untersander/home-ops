@@ -1,22 +1,17 @@
-machine:
-  sysctls:
-    vm.nr_hugepages: "1024"
-  kubelet:
-    extraMounts:
-      - destination: /var/local
-        type: bind
-        source: /var/local
-        options:
-          - bind
-          - rshared
-          - rw
-cluster:
-  apiServer:
-    admissionControl:
-      - name: PodSecurity
-        configuration:
-          apiVersion: pod-security.admission.config.k8s.io/v1beta1
-          kind: PodSecurityConfiguration
-          exemptions:
-            namespaces:
-              - openebs
+# The former kubelet extraMount of /var/local has no equivalent in Talos 1.14 and was unused,
+# hostpath volumes live on the local-system-ssd user volume (/var/mnt/local-system-ssd).
+apiVersion: v1alpha1
+kind: SysctlConfig
+params:
+  vm.nr_hugepages: "1024"
+---
+apiVersion: v1alpha1
+kind: KubeAdmissionControlConfig
+name: PodSecurity
+configuration:
+  apiVersion: pod-security.admission.config.k8s.io/v1beta1
+  kind: PodSecurityConfiguration
+  exemptions:
+    # appended to the generated kube-system exemption
+    namespaces:
+      - openebs

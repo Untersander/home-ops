@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dnsmasq
+  namespace: dhcpv6-pd
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  selector:
+    matchLabels:
+      app: dnsmasq
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: dnsmasq
+    spec:
+      # Serves DHCP/RA on br0 and enp7s0 and writes to the host's nft set inet global iot_allow4
+      hostNetwork: true
+      containers:
+      - name: dnsmasq
+        image: alpine:3.24.3
+        command: ["/bin/sh", "-c"]
+        # dnsmasq-dnssec-nftset is the Alpine build with nftset support
+        args: ["apk add --no-cache dnsmasq-dnssec-nftset && exec dnsmasq --keep-in-foreground --conf-file=/etc/dnsmasq/dnsmasq.conf"]
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN", "NET_RAW"]
+        volumeMounts:
+        - mountPath: /etc/dnsmasq
+          name: dnsmasq-config
+        - mountPath: /var/lib/dnsmasq
+          name: dnsmasq-leases
+      volumes:
+      - configMap:
+          name: dnsmasq-config
+        name: dnsmasq-config
+      - persistentVolumeClaim:
+          claimName: dnsmasq-leases
+        name: dnsmasq-leases

@@ -1,7 +1,6 @@
-machine:
-  kernel:
-    modules:
-      - name: zfs
+apiVersion: v1alpha1
+kind: KernelModuleConfig
+name: zfs
 ---
 apiVersion: v1alpha1
 kind: VolumeConfig

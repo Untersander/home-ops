@@ -65,6 +65,7 @@ tasks:
     desc: Generate the machine config for NODE
     deps: [secrets:pull]
     vars: *factory-vars
+    # The node patch has to come last: a later patch to UnattendedInstallConfig drops its diskSelector (Talos 1.14)
     cmd: |
       talosctl gen config {{.CLUSTER_NAME}} {{.K8S_API_ENDPOINT}} \
         --with-secrets secrets.yaml \
@@ -74,9 +75,9 @@ tasks:
         --config-patch @machine-patches/disk-patch.yaml \
         --config-patch @machine-patches/openebs-patch.yaml \
         --config-patch @machine-patches/userns-patch.yaml \
+        --config-patch '{"apiVersion": "v1alpha1", "kind": "UnattendedInstallConfig", "installer": {"image": "{{.INSTALLER_IMAGE}}"}}' \
         --config-patch @machine-patches/{{.NODE}}-patch.yaml \
         --output-types controlplane \
-        --install-image {{.INSTALLER_IMAGE}} \
         --install-disk "" \
         --force \
         -o machine-configs/{{.NODE}}.yaml
@@ -120,6 +121,8 @@ tasks:
         fi
 
   apply-config:
+    deps:
+      - task: gen-config
     desc: 'Apply the machine config to IP_ADDRESS (first boot: INSECURE=true, extra flags after --, e.g. -- --dry-run)'
     preconditions:
       - test -f machine-configs/{{.NODE}}.yaml

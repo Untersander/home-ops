@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dnsmasq-config
+  namespace: dhcpv6-pd
+data:
+  dnsmasq.conf: |
+    # DHCP, DHCPv6 and router advertisements for the LAN (br0), and DHCP plus allowlist DNS for the
+    # IoT network (enp7s0, Samsung TV). Everyone else uses Pi-hole for DNS, which forwards home and
+    # the reverse zones to 10.0.0.1 (FTLCONF_dns_revServers).
+    interface=br0
+    interface=enp7s0
+    # lo is added implicitly and holds the Talos host DNS addresses (169.254.116.108, fd54::...:53)
+    except-interface=lo
+    bind-dynamic
+    no-resolv
+    no-hosts
+    # Every answer has to come from upstream, a cache hit would not refresh the nft set.
+    # Lease names are answered without the cache
+    cache-size=0
+    log-queries
+    log-dhcp
+    log-facility=-
+
+    domain=home
+    local=/home/
+    dhcp-leasefile=/var/lib/dnsmasq/dnsmasq.leases
+    dhcp-authoritative
+    dhcp-rapid-commit
+
+    # LAN
+    dhcp-range=set:lan,10.0.0.50,10.0.0.200,255.255.255.0,1h
+    dhcp-option=tag:lan,option:dns-server,10.0.0.5
+    # Router advertisements and DHCPv6 for every prefix on br0 (Init7 PD from dhcpcd, fd00::/64),
+    # SLAAC as fallback for clients without DHCPv6 (Android)
+    enable-ra
+    dhcp-range=::1000,::1fff,constructor:br0,slaac,64,12h
+    dhcp-option=option6:dns-server,[fd00::5]
+    dhcp-option=option6:domain-search,home
+
+    # IoT, IPv4 only. Router and DNS default to 10.0.10.1
+    dhcp-range=set:iot,10.0.10.100,10.0.10.200,255.255.255.0,12h
+
+    # IoT allowlist: everything not listed is NXDOMAIN, allowed domains are forwarded to Pi-hole
+    # and their IPs added to the nft set the forward_iot chain allows (infra/nftables/app/config.yaml).
+    # Find missing domains with: kubectl -n dhcpv6-pd logs deploy/dnsmasq | grep -A1 'from 10.0.10.'
+    address=/#/
+
+    # Jellyfin (play.noreplay.org -> envoy at 10.0.0.20, allowed via the pod CIDR)
+    server=/play.noreplay.org/10.0.0.5
+
+    # Disney+
+    server=/disneyplus.com/disney-plus.net/disneystreaming.com/dssott.com/bamgrid.com/dilcdn.com/disneyaccount.com/registerdisney.go.com/10.0.0.5
+    nftset=/disneyplus.com/disney-plus.net/disneystreaming.com/dssott.com/bamgrid.com/dilcdn.com/disneyaccount.com/registerdisney.go.com/4#inet#global#iot_allow4
