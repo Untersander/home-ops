@@ -69,44 +69,65 @@ spec:
                   token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
                   ca_file=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 
+                  # Busybox sh ignores -e inside $(...), failures in here have to return explicitly
                   get_ipv4() {
-                    value=$(curl -4fsS --max-time 10 "$1")
+                    value=$(curl -4fsS --max-time 10 "$1") || {
+                      echo "unable to read public IP from $1" >&2
+                      return 1
+                    }
                     printf '%s' "$value" | awk -F. '
                       NF == 4 && $1 >= 0 && $1 <= 255 && $2 >= 0 && $2 <= 255 &&
                       $3 >= 0 && $3 <= 255 && $4 >= 0 && $4 <= 255 { found = 1 }
                       END { exit found ? 0 : 1 }
-                    '
+                    ' || {
+                      echo "invalid public IP from $1: ${value}" >&2
+                      return 1
+                    }
                     printf '%s' "$value"
                   }
 
-                  ip_wtf=$(get_ipv4 https://ip.wtf)
-                  ipify=$(get_ipv4 https://api.ipify.org)
+                  ip_wtf=$(get_ipv4 https://ip.wtf) || exit 1
+                  ipify=$(get_ipv4 https://api.ipify.org) || exit 1
                   if [ "$ip_wtf" != "$ipify" ]; then
                     echo "public IP sources disagree: ${ip_wtf} vs ${ipify}" >&2
                     exit 1
                   fi
 
+                  response=/tmp/response.json
                   auth_header="Authorization: Bearer ${token}"
                   endpoint_url="${api_server}${api_path}"
                   endpoint_json=$(printf '{"apiVersion":"externaldns.k8s.io/v1alpha1","kind":"DNSEndpoint","metadata":{"name":"%s","annotations":{"external-dns":"public"}},"spec":{"endpoints":[{"dnsName":"%s","recordType":"A","targets":["%s"]}]}}' "$ENDPOINT_NAME" "$DNS_NAME" "$ip_wtf")
                   patch_json=$(printf '{"spec":{"endpoints":[{"dnsName":"%s","recordType":"A","targets":["%s"]}]}}' "$DNS_NAME" "$ip_wtf")
 
-                  http_code=$(curl -sS -o /dev/null -w '%{http_code}' --cacert "$ca_file" \
-                    -H "$auth_header" "$endpoint_url")
+                  api() {
+                    http_code=$(curl -sS -o "$response" -w '%{http_code}' --cacert "$ca_file" \
+                      -H "$auth_header" "$@")
+                  }
+
+                  # The response has the reason, curl -f would only show the status code
+                  api_failed() {
+                    echo "unable to $1 DNSEndpoint: HTTP ${http_code}" >&2
+                    cat "$response" >&2
+                    exit 1
+                  }
+
+                  api "$endpoint_url"
                   case "$http_code" in
                     200)
-                      curl -fsS --cacert "$ca_file" -X PATCH \
-                        -H "$auth_header" -H 'Content-Type: application/merge-patch+json' \
-                        --data "$patch_json" "$endpoint_url" >/dev/null
+                      current=$(tr -d ' \n' < "$response" | sed -n 's/.*"targets":\["\([^"]*\)".*/\1/p')
+                      api -X PATCH -H 'Content-Type: application/merge-patch+json' \
+                        --data "$patch_json" "$endpoint_url"
+                      [ "$http_code" = 200 ] || api_failed update
+                      echo "updated ${DNS_NAME} A: ${current} -> ${ip_wtf}"
                       ;;
                     404)
-                      curl -fsS --cacert "$ca_file" -X POST \
-                        -H "$auth_header" -H 'Content-Type: application/json' \
-                        --data "$endpoint_json" "${api_server}/apis/externaldns.k8s.io/v1alpha1/namespaces/${POD_NAMESPACE}/dnsendpoints" >/dev/null
+                      api -X POST -H 'Content-Type: application/json' \
+                        --data "$endpoint_json" "${api_server}/apis/externaldns.k8s.io/v1alpha1/namespaces/${POD_NAMESPACE}/dnsendpoints"
+                      [ "$http_code" = 201 ] || api_failed create
+                      echo "created ${DNS_NAME} A: ${ip_wtf}"
                       ;;
                     *)
-                      echo "unable to read DNSEndpoint: HTTP ${http_code}" >&2
-                      exit 1
+                      api_failed read
                       ;;
                   esac
               env:
