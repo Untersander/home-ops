@@ -1404,8 +1404,69 @@
       }
     },
     {
-      "type": "bargauge",
+      "type": "timeseries",
       "id": 21,
+      "title": "Load cycles per day",
+      "description": "Rolling 24-hour increase in load cycles (193).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "refId": "A",
+          "expr": "delta((max by (instance, device) (smartctl_device_attribute{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\", attribute_value_type=\"raw\", attribute_id=\"193\"}))[1d:5m])",
+          "range": true,
+          "legendFormat": "{{device}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0,
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "bargauge",
+      "id": 22,
       "title": "Power-on time",
       "description": "Hours the drive has been powered on. Most NAS drives come with a 3-year warranty and are designed for about 5 years of 24/7 use.",
       "datasource": {
@@ -1416,7 +1477,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 48
+        "y": 56
       },
       "targets": [
         {
@@ -1481,9 +1542,9 @@
     },
     {
       "type": "bargauge",
-      "id": 22,
-      "title": "Heads loaded",
-      "description": "Head_Flying_Hours (240) as a share of power-on time. Seagate packs extra data into the raw value, so only its lower 32 bits (the hours) are used. A low share means the heads spend a lot of time parked.",
+      "id": 23,
+      "title": "Heads loaded (last 7 days)",
+      "description": "Share of recent power-on time the heads were loaded, from Head_Flying_Hours (240). Seagate packs extra data into the raw value, so only its lower 32 bits (the hours) are used. Both counters have hour resolution, so expect some noise. A low share means the heads are parking a lot.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -1492,7 +1553,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 48
+        "y": 56
       },
       "targets": [
         {
@@ -1501,7 +1562,7 @@
             "uid": "${datasource}"
           },
           "refId": "A",
-          "expr": "max by (instance, device) (smartctl_device_attribute{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\", attribute_value_type=\"raw\", attribute_id=\"240\"}) % 4294967296 / (max by (instance, device) (smartctl_device_power_on_seconds{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"}) / 3600)",
+          "expr": "clamp_max(delta((max by (instance, device) (smartctl_device_attribute{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\", attribute_value_type=\"raw\", attribute_id=\"240\"}) % 4294967296)[7d:5m]) / delta((max by (instance, device) (smartctl_device_power_on_seconds{job=\"smartctl-exporter\", instance=~\"$instance\", device=~\"$device\"}) / 3600)[7d:5m]), 1)",
           "range": false,
           "instant": true,
           "legendFormat": "{{device}}"
@@ -1549,7 +1610,7 @@
     },
     {
       "type": "bargauge",
-      "id": 23,
+      "id": 24,
       "title": "Start/stop count",
       "description": "Spindle start/stop cycles (4). Thresholds are a rough guide, check the drive's datasheet.",
       "datasource": {
@@ -1560,7 +1621,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 54
+        "y": 62
       },
       "targets": [
         {
@@ -1625,7 +1686,7 @@
     },
     {
       "type": "bargauge",
-      "id": 24,
+      "id": 25,
       "title": "Power cycle count",
       "description": "Full power on/off cycles (12). Thresholds are a rough guide, check the drive's datasheet.",
       "datasource": {
@@ -1636,7 +1697,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 54
+        "y": 62
       },
       "targets": [
         {
@@ -1701,7 +1762,7 @@
     },
     {
       "type": "bargauge",
-      "id": 25,
+      "id": 26,
       "title": "Power-off retract count",
       "description": "Emergency head retracts (192), mostly caused by sudden power loss. These wear the heads more than normal parking.",
       "datasource": {
@@ -1712,7 +1773,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 60
+        "y": 68
       },
       "targets": [
         {
@@ -1777,7 +1838,7 @@
     },
     {
       "type": "bargauge",
-      "id": 26,
+      "id": 27,
       "title": "Total data written / read",
       "description": "Lifetime data from Total_LBAs_Written (241) and Total_LBAs_Read (242), assuming 512-byte LBAs. NAS HDDs are typically rated for 180 TB/year of combined workload.",
       "datasource": {
@@ -1788,7 +1849,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 60
+        "y": 68
       },
       "targets": [
         {
@@ -1855,20 +1916,20 @@
     },
     {
       "type": "row",
-      "id": 27,
+      "id": 28,
       "title": "All SMART attributes",
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 66
+        "y": 74
       },
       "panels": []
     },
     {
       "type": "table",
-      "id": 28,
+      "id": 29,
       "title": "ATA attributes",
       "description": "Normalized value, worst and threshold per attribute. Flags starting with P mark pre-failure attributes. Some Seagate raw values (1, 7, 188) pack several counters and aren't meaningful as plain numbers.",
       "datasource": {
@@ -1879,7 +1940,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 67
+        "y": 75
       },
       "targets": [
         {
