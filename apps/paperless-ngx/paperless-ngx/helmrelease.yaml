@@ -18,7 +18,7 @@ spec:
           app:
             image:
               repository: ghcr.io/paperless-ngx/paperless-ngx
-              tag: 3.4.0
+              tag: 3.4.1
             env:
               TZ: Europe/Zurich
               PAPERLESS_URL: https://paperless.k8s.garden
