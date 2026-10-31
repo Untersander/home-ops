@@ -36,3 +36,9 @@ spec:
         # Commands based on: https://immich.app/docs/administration/postgres-standalone/#without-superuser-permission
         - CREATE EXTENSION vchord CASCADE;
         - CREATE EXTENSION earthdistance CASCADE;
+  # WAL archive and base backups to Garage, see components/backup-cnpg
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: immich

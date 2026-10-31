@@ -5,6 +5,18 @@ metadata:
   name: immich-db
   namespace: immich
 spec:
+  components:
+    - ../../../components/backup-cnpg
+  postBuild:
+    substitute:
+      APP: immich
+      BACKUP_CNPG_CLUSTER: immich-database
+  # The cluster archives its WAL through the plugin into the cnpg-backups bucket
+  dependsOn:
+    - name: garage-buckets
+      namespace: backup
+    - name: cnpg-barman-cloud
+      namespace: db
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -21,6 +33,35 @@ metadata:
   name: immich
   namespace: immich
 spec:
+  components:
+    - ../../../components/backup-kopiur
+  postBuild:
+    substitute:
+      APP: immich
+      # After Immich's own database dump in /data/backups (02:00 UTC), so the backup carries the latest one
+      BACKUP_KOPIUR_CRON: "H 5 * * *"
+  # Immich can regenerate these. An explicit list replaces kopiur's default rules, so they're repeated here.
+  # Patches run before substitution, the target is the component's literal name (a regex)
+  patches:
+    - target:
+        kind: SnapshotPolicy
+        name: \$\{APP\}
+      patch: |
+        - op: add
+          path: /spec/files
+          value:
+            ignoreRules:
+              - /thumbs
+              - /encoded-video
+              - /lost+found
+              - System Volume Information
+              - $RECYCLE.BIN
+              - "@eaDir"
+              - .snapshot
+  # kopiur's webhook rejects policies while the ClusterRepository doesn't exist
+  dependsOn:
+    - name: backup-repositories
+      namespace: backup
   sourceRef:
     kind: GitRepository
     name: flux-system

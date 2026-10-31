@@ -3,6 +3,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: immich-media-pvc
   namespace: immich
+  labels:
+    backup.k8s.garden/app: immich
 spec:
   accessModes:
     - ReadWriteMany
