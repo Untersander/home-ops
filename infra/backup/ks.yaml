@@ -51,7 +51,34 @@ spec:
   interval: 1h
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
-# Cluster-wide repositories used by components/backup-kopiur and components/backup-k8up
+# Secret backup-s3 (Backblaze B2). The health check holds back backup-repositories, which substitutes
+# from it, until it exists.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: backup-s3
+  namespace: backup
+spec:
+  dependsOn:
+    - name: external-secrets-config
+      namespace: external-secrets
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  path: ./infra/backup/s3
+  targetNamespace: backup
+  prune: true
+  interval: 1h
+  timeout: 5m
+  healthChecks:
+    - apiVersion: external-secrets.io/v1
+      kind: ExternalSecret
+      name: backup-s3
+      namespace: backup
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+# Cluster-wide repository used by components/backup-kopiur
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -62,6 +89,11 @@ spec:
     - name: kopiur
     - name: k8up
     - name: garage-buckets
+    - name: backup-s3
+  postBuild:
+    substituteFrom:
+      - kind: Secret
+        name: backup-s3
   sourceRef:
     kind: GitRepository
     name: flux-system

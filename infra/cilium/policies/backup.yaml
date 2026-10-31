@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumclusterwidenetworkpolicy_v2.json
 # Backup movers in the app namespaces (components/backup-k8up, components/backup-kopiur):
-# they write to Garage (or the kopia server) and use the API server.
+# k8up writes to Garage, kopiur to Backblaze B2 (or the kopia server), and both use the API server.
 # Garage and the kopia server allow the matching ingress in their own policies.
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
@@ -32,6 +32,13 @@ spec:
     matchLabels:
       app.kubernetes.io/managed-by: kopiur
   egress:
+    - toCIDRSet:
+        - cidrGroupRef: public-internet
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+    # Source of the seed of ClusterRepository backblaze
     - toEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: object-storage

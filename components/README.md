@@ -6,11 +6,11 @@ They live outside `apps/` and `infra/` because Flux scans those directories and 
 ## Backups: `backup-kopiur` and `backup-k8up`
 
 Each tool has its own component, so an app can be backed up with kopiur, k8up or both.
-Both write to the in-cluster Garage:
+kopiur writes to Backblaze B2, k8up to the in-cluster Garage:
 
 | Tool   | Repository                                                                             |
 | ------ | -------------------------------------------------------------------------------------- |
-| kopiur | `ClusterRepository garage` (bucket `kopiur-apps`, prefix `cluster/`)                    |
+| kopiur | `ClusterRepository backblaze` (Backblaze B2, prefix `kopiur/`)                          |
 | k8up   | restic repository in bucket `k8up-apps` (endpoint/bucket set as k8up operator globals) |
 
 Both are defined in `infra/backup/repositories` and `infra/backup/k8up`.

@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/garage.rajsingh.info/garagekey_v1beta1.json
-# Central key of the kopiur ClusterRepository, projected into app namespaces by kopiur
+# Key of the previous kopiur ClusterRepository garage, reads the source of the backblaze seed
 apiVersion: garage.rajsingh.info/v1beta1
 kind: GarageKey
 metadata:

@@ -26,6 +26,13 @@ spec:
         - ports:
             - port: "3900"
               protocol: TCP
+    # Backblaze B2
+    - toCIDRSet:
+        - cidrGroupRef: public-internet
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
 ---
 # yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumnetworkpolicy_v2.json
 apiVersion: cilium.io/v2
