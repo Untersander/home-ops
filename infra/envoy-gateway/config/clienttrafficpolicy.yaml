@@ -14,7 +14,3 @@ spec:
       requestReceivedTimeout: 600s
       idleTimeout: 600s
       streamIdleTimeout: 600s
-  # Keep %2F as sent. The default redirects to the decoded path, which breaks Forgejo API calls for
-  # branches with a slash: Renovate gets a 404 for renovate/* and aborts the run
-  path:
-    escapedSlashesAction: KeepUnchanged
