@@ -299,18 +299,18 @@ persistence:
     readOnly: false
   cache:
     # -- set to false to use emptyDir
-    enabled: false
+    enabled: true
     # -- Type of volume for cache storage (pvc, hostPath, emptyDir). If 'enabled' is false, 'emptyDir' is used regardless of this setting.
     type: pvc
     # -- Path on the host node for cache storage, only used if type is 'hostPath'.
     hostPath: ""
     # -- PVC specific settings, only used if type is 'pvc'.
     accessMode: ReadWriteOnce
-    size: 10Gi
+    size: 20Gi
     # -- Custom annotations to be added to the PVC
     annotations: {}
     # -- If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner.
-    storageClass: ""
+    storageClass: "openebs-hostpath-ssd"
     ## -- Use an existing PVC for this mount
     # existingClaim: ''
 

@@ -34,6 +34,12 @@ apiVersion: v1alpha1
 kind: KubeletConfig
 extraArgs:
   rotate-server-certificates: "true"
+# Image GC defaults (85% high) coincide with the imagefs.available<15% eviction threshold on the 50GiB EPHEMERAL
+# volume, so pods got evicted before old images were removed. Start GC well below the eviction point.
+config:
+  imageGCHighThresholdPercent: 70
+  imageGCLowThresholdPercent: 60
+  imageMaximumGCAge: 168h
 ---
 apiVersion: v1alpha1
 kind: SysctlConfig
