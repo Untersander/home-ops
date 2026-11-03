@@ -54,6 +54,7 @@ tasks:
 
         # Creates {{.PVC}} on SC again, bound to PV $1 or (empty) provisioned new.
         # Labels and annotations carry the Flux/Helm ownership and backup labels; binding state is set anew.
+        # Own field manager: Flux takes over fields of kubectl* managers and would then try to drop volumeName.
         recreate_pvc() {
           jq --arg sc {{.SC}} --arg size "$size" --arg pv "$1" '{
             apiVersion, kind,
@@ -66,7 +67,7 @@ tasks:
               storageClassName: $sc, accessModes: .spec.accessModes, volumeMode: .spec.volumeMode,
               resources: {requests: {storage: $size}}
             } + (if $pv == "" then {} else {volumeName: $pv} end))
-          }' "$old_json" | kubectl create -f -
+          }' "$old_json" | kubectl create --field-manager=pvc-move -f -
         }
 
         if [ "{{.COPY}}" = false ]; then

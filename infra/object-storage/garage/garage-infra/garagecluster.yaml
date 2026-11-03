@@ -17,7 +17,9 @@ spec:
     #             garage.rajsingh.info/tier: storage
     #         topologyKey: kubernetes.io/hostname
     metadata:
-      storageClassName: openebs-zfs-shared-retain
+      # Immutable while replicas are live (operator webhook), only used when the PVC is first created.
+      # The PVC was moved to ZFS by hand (task storage:pvc:move), see `kubectl get pvc` for its real class.
+      storageClassName: openebs-hostpath-ssd-retain
       size: 1Gi
     data:
       storageClassName: openebs-zfs-shared-retain
