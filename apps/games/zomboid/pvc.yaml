@@ -25,7 +25,7 @@ metadata:
   name: zomboid-workshop
   namespace: games
 spec:
-  storageClassName: openebs-hostpath-ssd
+  storageClassName: openebs-zfs-shared
   accessModes:
     - ReadWriteOnce
   resources:

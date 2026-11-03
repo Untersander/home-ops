@@ -4,6 +4,7 @@ metadata:
   name: etc-wireguard
   namespace: wg
 spec:
+  storageClassName: openebs-zfs-shared-retain
   accessModes:
     - ReadWriteOnce
   resources:

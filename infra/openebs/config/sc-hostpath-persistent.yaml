@@ -8,7 +8,6 @@ metadata:
       - name: BasePath
         value: "/var/mnt/local-system-ssd/openebs/local"
     openebs.io/cas-type: local
-    storageclass.kubernetes.io/is-default-class: "true"
   name: openebs-hostpath-ssd
 provisioner: openebs.io/local
 reclaimPolicy: Delete

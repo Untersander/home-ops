@@ -6,7 +6,7 @@ metadata:
   name: dawarich-valkey
   namespace: dawarich
 spec:
-  storageClassName: openebs-hostpath-ssd
+  storageClassName: openebs-zfs-shared
   accessModes:
     - ReadWriteOnce
   resources:

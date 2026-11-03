@@ -1,0 +1,127 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+vars:
+  # Old PVC objects, kept for rollback (rebind the retained old PV with them)
+  PVC_MOVE_DIR: '{{.ROOT_DIR}}/tmp/pvc-move'
+
+tasks:
+  pvc:move:
+    desc: 'Move a PVC to another storage class under the same name (NAMESPACE= PVC= SC=, optional SIZE=, COPY=false for caches)'
+    summary: |
+      Copies the data into a new PVC on SC, then renames that PVC to the original name by rebinding its PV.
+      The old PV is set to Retain and kept as a fallback, delete it once the app works.
+      Suspend the app's Flux Kustomization (and HelmRelease) and scale it down first,
+      afterwards set storageClassName in the manifest before resuming.
+      COPY=false (caches) recreates the PVC empty on SC instead of copying.
+    requires:
+      vars: [NAMESPACE, PVC, SC]
+    vars:
+      COPY: '{{.COPY | default "true"}}'
+    cmds:
+      - |
+        set -euo pipefail
+        k() { kubectl -n {{.NAMESPACE}} "$@"; }
+        # Waits until pod $1 is Succeeded; fails on Failed or after 30 min
+        wait_succeeded() {
+          for _ in $(seq 360); do
+            phase="$(k get pod "$1" -o jsonpath='{.status.phase}')"
+            case "$phase" in
+              Succeeded) return 0 ;;
+              Failed) k logs "$1"; return 1 ;;
+            esac
+            sleep 5
+          done
+          echo "$1: timed out in phase ${phase:-<none>}"
+          return 1
+        }
+
+        # Also finished pods: they keep the PVC in Terminating
+        users="$(k get pod -o json | jq -r --arg pvc {{.PVC}} \
+          '.items[] | select(any(.spec.volumes[]?; .persistentVolumeClaim.claimName == $pvc)) | .metadata.name')"
+        if [ -n "$users" ]; then
+          echo "{{.PVC}} is still used by pods:" $users
+          exit 1
+        fi
+
+        mkdir -p {{.PVC_MOVE_DIR}}
+        old_json={{.PVC_MOVE_DIR}}/{{.NAMESPACE}}_{{.PVC}}.json
+        k get pvc {{.PVC}} -o json > "$old_json"
+        old_pv="$(jq -r .spec.volumeName "$old_json")"
+        size="{{.SIZE | default ""}}"
+        size="${size:-$(jq -r .spec.resources.requests.storage "$old_json")}"
+        kubectl patch pv "$old_pv" -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+
+        # Creates {{.PVC}} on SC again, bound to PV $1 or (empty) provisioned new.
+        # Labels and annotations carry the Flux/Helm ownership and backup labels; binding state is set anew.
+        recreate_pvc() {
+          jq --arg sc {{.SC}} --arg size "$size" --arg pv "$1" '{
+            apiVersion, kind,
+            metadata: {
+              name: .metadata.name, namespace: .metadata.namespace, labels: (.metadata.labels // {}),
+              annotations: ((.metadata.annotations // {}) | with_entries(select(.key |
+                test("^(pv\\.kubernetes\\.io|volume\\.(beta\\.)?kubernetes\\.io)/|^kubectl\\.kubernetes\\.io/last-applied") | not)))
+            },
+            spec: ({
+              storageClassName: $sc, accessModes: .spec.accessModes, volumeMode: .spec.volumeMode,
+              resources: {requests: {storage: $size}}
+            } + (if $pv == "" then {} else {volumeName: $pv} end))
+          }' "$old_json" | kubectl create -f -
+        }
+
+        if [ "{{.COPY}}" = false ]; then
+          k delete pvc {{.PVC}} --timeout=2m
+          recreate_pvc ""
+          echo "OK: {{.PVC}} recreated empty on {{.SC}}. Old PV $old_pv is retained, delete it once the app works."
+          exit 0
+        fi
+
+        echo "### Copy {{.PVC}} ($old_pv) to {{.SC}} ($size)"
+        jq --arg sc {{.SC}} --arg size "$size" '{
+          apiVersion: "v1", kind: "PersistentVolumeClaim",
+          metadata: {name: (.metadata.name + "-move"), namespace: .metadata.namespace},
+          spec: {storageClassName: $sc, accessModes: .spec.accessModes, resources: {requests: {storage: $size}}}
+        }' "$old_json" | kubectl create -f -
+        kubectl create -f - <<EOF
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: pvc-move
+          namespace: {{.NAMESPACE}}
+        spec:
+          restartPolicy: Never
+          nodeSelector:
+            kubernetes.io/hostname: cp-0
+          containers:
+            - name: copy
+              image: docker.io/library/busybox:1.38.0
+              # du differs on ZFS (compression), so compare the number of files
+              command:
+                - /bin/sh
+                - -ec
+                - cp -a /src/. /dst/; s=\$(find /src | wc -l); d=\$(find /dst | wc -l); echo "files \$s, copied \$d"; [ \$s = \$d ]
+              # Root keeps owners and modes of the files
+              securityContext:
+                runAsUser: 0
+              volumeMounts:
+                - { name: src, mountPath: /src, readOnly: true }
+                - { name: dst, mountPath: /dst }
+          volumes:
+            - { name: src, persistentVolumeClaim: { claimName: {{.PVC}}, readOnly: true } }
+            - { name: dst, persistentVolumeClaim: { claimName: {{.PVC}}-move } }
+        EOF
+        wait_succeeded pvc-move
+        k logs pvc-move
+        k delete pod pvc-move
+
+        echo "### Rebind the new PV to {{.PVC}}"
+        new_pv="$(k get pvc {{.PVC}}-move -o jsonpath='{.spec.volumeName}')"
+        kubectl patch pv "$new_pv" -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+        k delete pvc {{.PVC}}-move {{.PVC}} --timeout=2m
+        kubectl patch pv "$new_pv" --type json -p '[{"op":"remove","path":"/spec/claimRef"}]'
+        recreate_pvc "$new_pv"
+        k wait --for=jsonpath='{.status.phase}'=Bound pvc/{{.PVC}} --timeout=2m
+        policy="$(kubectl get sc {{.SC}} -o jsonpath='{.reclaimPolicy}')"
+        kubectl patch pv "$new_pv" -p "{\"spec\":{\"persistentVolumeReclaimPolicy\":\"$policy\"}}"
+
+        echo "OK: {{.PVC}} is on {{.SC}} (PV $new_pv). Old PV $old_pv is retained, delete it once the app works."

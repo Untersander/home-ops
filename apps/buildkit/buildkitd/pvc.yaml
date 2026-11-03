@@ -5,6 +5,7 @@ metadata:
   name: buildkitd-cache
   namespace: buildkit
 spec:
+  storageClassName: openebs-zfs-shared
   accessModes:
     - ReadWriteOnce
   resources:

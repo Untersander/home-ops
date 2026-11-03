@@ -17,7 +17,7 @@ spec:
     #             garage.rajsingh.info/tier: storage
     #         topologyKey: kubernetes.io/hostname
     metadata:
-      storageClassName: openebs-hostpath-ssd-retain
+      storageClassName: openebs-zfs-shared-retain
       size: 1Gi
     data:
       storageClassName: openebs-zfs-shared-retain

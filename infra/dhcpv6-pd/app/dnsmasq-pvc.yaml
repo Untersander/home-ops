@@ -4,6 +4,7 @@ metadata:
   name: dnsmasq-leases
   namespace: dhcpv6-pd
 spec:
+  storageClassName: openebs-zfs-shared
   accessModes:
     - ReadWriteOnce
   resources:

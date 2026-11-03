@@ -47,6 +47,6 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
-  storageClassName: openebs-hostpath-ssd
-  volumeName: pvc-bfd4dad3-d9a9-4311-a201-e0b6c0423672
+      storage: 10Gi
+  storageClassName: openebs-zfs-shared
+  volumeName: pvc-b3e6d853-1d1b-4181-ae60-f050833f3334

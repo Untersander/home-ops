@@ -2,6 +2,9 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: openebs-zfs-shared
+  annotations:
+    # Interim default while the system SSD is repartitioned, moves to the SSD pool class afterwards
+    storageclass.kubernetes.io/is-default-class: "true"
 parameters:
   recordsize: "128k"
   compression: "lz4"

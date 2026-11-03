@@ -8,7 +8,7 @@ spec:
 
   storage:
     size: 5Gi
-    storageClass: openebs-hostpath-ssd-retain
+    storageClass: openebs-zfs-retain
   # To restore from old pv, use the following configuration:
     # pvcTemplate:
     #   accessModes:

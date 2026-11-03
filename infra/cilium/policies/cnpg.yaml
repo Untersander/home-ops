@@ -2,7 +2,7 @@
 # Every CNPG cluster (instances and initdb/join jobs): the operator reaches the instance manager,
 # the instance manager talks to the API server. App access to 5432 lives next to each cluster.
 # The Barman Cloud sidecar (components/backup-cnpg) archives WAL and base backups to Garage.
-# Replication between instances isn't allowed, all clusters run with instances: 1.
+# Replication between a cluster's own instances is allowed next to each cluster (switchovers, storage moves).
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:

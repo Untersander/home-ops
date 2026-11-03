@@ -88,7 +88,7 @@ spec:
         storageSpec:
           volumeClaimTemplate:
             spec:
-              storageClassName: openebs-hostpath-ssd
+              storageClassName: openebs-zfs-shared
               resources:
                 requests:
                   storage: 20Gi

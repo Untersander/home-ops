@@ -4,6 +4,7 @@ metadata:
   name: dhcpcd-state-store
   namespace: dhcpv6-pd
 spec:
+  storageClassName: openebs-zfs-shared
   accessModes:
     - ReadWriteOnce
   resources:

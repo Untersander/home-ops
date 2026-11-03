@@ -7,7 +7,7 @@ spec:
   instances: 1
   storage:
     size: 10Gi
-    storageClass: openebs-hostpath-ssd-retain
+    storageClass: openebs-zfs-retain
   imageName: ghcr.io/cloudnative-pg/postgis:18-3.6-standard-trixie
   bootstrap:
     initdb:

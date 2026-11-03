@@ -17,3 +17,19 @@ spec:
         - ports:
             - port: "5432"
               protocol: TCP
+    # Streaming replication between the cluster's own instances (switchover to a new instance, e.g. a storage move)
+    - fromEndpoints:
+        - matchLabels:
+            cnpg.io/cluster: dawarich-db
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            cnpg.io/cluster: dawarich-db
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP

@@ -270,11 +270,11 @@ persistence:
     # -- set to false to use emptyDir
     enabled: true
     accessMode: ReadWriteOnce
-    size: 5Gi
+    size: 10Gi
     # -- Custom annotations to be added to the PVC
     annotations: {}
     # -- If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner.
-    storageClass: "openebs-hostpath-ssd"
+    storageClass: "openebs-zfs-shared"
     ## -- Use an existing PVC for this mount
     # Static PVC bound to the existing config volume, see pv.yaml
     existingClaim: jellyfin-config
@@ -310,7 +310,7 @@ persistence:
     # -- Custom annotations to be added to the PVC
     annotations: {}
     # -- If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner.
-    storageClass: "openebs-hostpath-ssd"
+    storageClass: "openebs-zfs-shared"
     ## -- Use an existing PVC for this mount
     # existingClaim: ''
 

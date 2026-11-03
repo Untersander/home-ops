@@ -17,6 +17,8 @@ includes:
     taskfile: .taskfiles/authelia.yaml
   backup:
     taskfile: .taskfiles/backup.yaml
+  storage:
+    taskfile: .taskfiles/storage.yaml
   docs:
     taskfile: .taskfiles/docs.yaml
     dir: docs/network-animation
