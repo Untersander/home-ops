@@ -50,6 +50,11 @@ data:
     # Jellyfin (play.noreplay.org -> envoy at 10.0.0.20, allowed via the pod CIDR)
     server=/play.noreplay.org/10.0.0.5
 
+    # Clock (TLS validation fails without it) and Let's Encrypt issuer certificates (AIA, the TV fetches
+    # ISRG Root X1 for the YR1 -> Root YR -> X1 chain)
+    server=/time.samsungcloudsolution.com/pool.ntp.org/lencr.org/10.0.0.5
+    nftset=/time.samsungcloudsolution.com/pool.ntp.org/lencr.org/4#inet#global#iot_allow4
+
     # Disney+
     server=/disneyplus.com/disney-plus.net/disneystreaming.com/dssott.com/bamgrid.com/dilcdn.com/disneyaccount.com/registerdisney.go.com/10.0.0.5
     nftset=/disneyplus.com/disney-plus.net/disneystreaming.com/dssott.com/bamgrid.com/dilcdn.com/disneyaccount.com/registerdisney.go.com/4#inet#global#iot_allow4
