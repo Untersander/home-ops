@@ -10,7 +10,7 @@ spec:
         kind: HelmRepository
         name: smartctl-exporter
       chart: prometheus-smartctl-exporter
-      version: 0.18.0
+      version: 0.19.0
   driftDetection:
     mode: enabled
   interval: 1h
