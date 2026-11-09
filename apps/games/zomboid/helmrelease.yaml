@@ -28,6 +28,9 @@ spec:
               tag: 42.21-release-2@sha256:c165eb74027339bb22bc9a39ae352aa616c1fdd6983c8ec76420b643f1acd456
             env:
               TZ: Europe/Zurich
+              # 42.22.2 has no image tag yet, so SteamCMD pulls the public branch on start
+              # (re-downloads the delta on every restart, drop once the image tag is bumped)
+              FORCEUPDATE: "true"
               # world migrated from the in-game hosted server keeps its name, the save references it
               SERVERNAME: servertest
               # Mods/WorkshopItems are maintained in Server/servertest.ini on the data PVC
