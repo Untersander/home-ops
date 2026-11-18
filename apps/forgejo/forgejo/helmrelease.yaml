@@ -14,7 +14,7 @@ spec:
   values:
     image:
       # Pinned here instead of the chart's appVersion, the runner registration sidecar reuses it
-      fullOverride: &image code.forgejo.org/forgejo/forgejo:15.0.11-rootless
+      fullOverride: &image code.forgejo.org/forgejo/forgejo:17.0.1-rootless
       rootless: true
 
     deployment:
