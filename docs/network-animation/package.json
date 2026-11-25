@@ -11,13 +11,13 @@
     "render:inside:light": "remotion render src/index.ts network-inside-light ../network-inside-light.gif --codec=gif --every-nth-frame=2 --scale=0.75"
   },
   "dependencies": {
-    "@remotion/cli": "4.0.546",
+    "@remotion/cli": "4.0.547",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "remotion": "4.0.546"
+    "remotion": "4.0.547"
   },
   "devDependencies": {
-    "@types/react": "19.3.0",
+    "@types/react": "19.3.2",
     "typescript": "7.0.2"
   }
 }
